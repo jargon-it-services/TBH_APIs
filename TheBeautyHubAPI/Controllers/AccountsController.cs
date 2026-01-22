@@ -1,0 +1,215 @@
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
+using TheBeautyHubAPI.Models;
+using TheBeautyHubCore.DTOs;
+using TheBeautyHubCore.Services.Interfaces;
+
+namespace TheBeautyHubAPI.Controllers
+{
+    /// <summary>
+    /// API Controller for Account operations.
+    /// Provides CRUD endpoints for account management.
+    /// </summary>
+    [ApiController]
+    [Route("api/[controller]")]
+    public class AccountsController : ControllerBase
+    {
+        private readonly IAccountService _accountService;
+        private readonly IExceptionLogService _exceptionLogService;
+        private readonly IMapper _mapper;
+
+        public AccountsController(
+            IAccountService accountService, 
+            IExceptionLogService exceptionLogService,
+            IMapper mapper)
+        {
+            _accountService = accountService;
+            _exceptionLogService = exceptionLogService;
+            _mapper = mapper;
+        }
+
+        /// <summary>
+        /// Creates a new account
+        /// </summary>
+        /// <param name="request">Account creation request</param>
+        /// <returns>Created account</returns>
+        [HttpPost]
+        public async Task<ActionResult<AccountResponse>> CreateAccount([FromBody] CreateAccountRequest request)
+        {
+            try
+            {
+                var createDto = _mapper.Map<CreateAccountDto>(request);
+                var accountDto = await _accountService.CreateAccountAsync(createDto);
+                var response = _mapper.Map<AccountResponse>(accountDto);
+                
+                return CreatedAtAction(nameof(GetAccountById), new { id = response.AccountId }, response);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new { error = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                // Log the exception to database
+                await _exceptionLogService.LogExceptionAsync(ex, null, $"CreateAccount - AccountCode: {request?.AccountCode}");
+                return StatusCode(500, new { error = "An error occurred while creating the account" });
+            }
+        }
+
+        /// <summary>
+        /// Updates an existing account
+        /// </summary>
+        /// <param name="id">Account ID</param>
+        /// <param name="request">Account update request</param>
+        /// <returns>Updated account</returns>
+        [HttpPut("{id}")]
+        public async Task<ActionResult<AccountResponse>> UpdateAccount(Guid id, [FromBody] UpdateAccountRequest request)
+        {
+            try
+            {
+                if (id != request.AccountId)
+                {
+                    return BadRequest(new { error = "Account ID in URL does not match request body" });
+                }
+
+                var updateDto = _mapper.Map<UpdateAccountDto>(request);
+                var accountDto = await _accountService.UpdateAccountAsync(updateDto);
+                var response = _mapper.Map<AccountResponse>(accountDto);
+                
+                return Ok(response);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return NotFound(new { error = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                // Log the exception to database
+                await _exceptionLogService.LogExceptionAsync(ex, null, $"UpdateAccount - AccountId: {id}");
+                return StatusCode(500, new { error = "An error occurred while updating the account" });
+            }
+        }
+
+        /// <summary>
+        /// Deletes an account (soft delete)
+        /// </summary>
+        /// <param name="id">Account ID</param>
+        /// <returns>Success status</returns>
+        [HttpDelete("{id}")]
+        public async Task<ActionResult> DeleteAccount(Guid id)
+        {
+            try
+            {
+                var result = await _accountService.DeleteAccountAsync(id);
+                
+                if (result)
+                    return NoContent();
+                
+                return NotFound(new { error = "Account not found" });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                // Log the exception to database
+                await _exceptionLogService.LogExceptionAsync(ex, null, $"DeleteAccount - AccountId: {id}");
+                return StatusCode(500, new { error = "An error occurred while deleting the account" });
+            }
+        }
+
+        /// <summary>
+        /// Retrieves an account by ID
+        /// </summary>
+        /// <param name="id">Account ID</param>
+        /// <returns>Account details</returns>
+        [HttpGet("{id}")]
+        public async Task<ActionResult<AccountResponse>> GetAccountById(Guid id)
+        {
+            try
+            {
+                var accountDto = await _accountService.GetAccountByIdAsync(id);
+                
+                if (accountDto == null)
+                    return NotFound(new { error = "Account not found" });
+                
+                var response = _mapper.Map<AccountResponse>(accountDto);
+                return Ok(response);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                // Log the exception to database
+                await _exceptionLogService.LogExceptionAsync(ex, null, $"GetAccountById - AccountId: {id}");
+                return StatusCode(500, new { error = "An error occurred while retrieving the account" });
+            }
+        }
+
+        /// <summary>
+        /// Retrieves all accounts
+        /// </summary>
+        /// <returns>List of accounts</returns>
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<AccountResponse>>> GetAllAccounts()
+        {
+            try
+            {
+                var accountDtos = await _accountService.GetAllAccountsAsync();
+                var response = _mapper.Map<IEnumerable<AccountResponse>>(accountDtos);
+                
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                // Log the exception to database
+                await _exceptionLogService.LogExceptionAsync(ex, null, "GetAllAccounts");
+                return StatusCode(500, new { error = "An error occurred while retrieving accounts" });
+            }
+        }
+
+        /// <summary>
+        /// Retrieves an account by its unique code
+        /// </summary>
+        /// <param name="code">Account code</param>
+        /// <returns>Account details</returns>
+        [HttpGet("by-code/{code}")]
+        public async Task<ActionResult<AccountResponse>> GetAccountByCode(string code)
+        {
+            try
+            {
+                var accountDto = await _accountService.GetAccountByCodeAsync(code);
+                
+                if (accountDto == null)
+                    return NotFound(new { error = "Account not found" });
+                
+                var response = _mapper.Map<AccountResponse>(accountDto);
+                return Ok(response);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                // Log the exception to database
+                await _exceptionLogService.LogExceptionAsync(ex, null, $"GetAccountByCode - Code: {code}");
+                return StatusCode(500, new { error = "An error occurred while retrieving the account" });
+            }
+        }
+    }
+}
