@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: tbh-apis
+    env: dotnet
+    plan: free
+    buildCommand: dotnet publish -c Release -o out
+    startCommand: ./out/TBH_APIs
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production

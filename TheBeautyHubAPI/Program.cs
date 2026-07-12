@@ -96,4 +96,6 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.Run();
+// IMPORTANT: Listen on all interfaces
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+app.Run($"http://0.0.0.0:{port}");
