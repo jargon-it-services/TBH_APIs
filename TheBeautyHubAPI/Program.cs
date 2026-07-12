@@ -88,6 +88,15 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+// Configure the HTTP request pipeline
+app.UseRouting();
+
+// IMPORTANT: Disable HTTPS redirect in production on Render
+if (!app.Environment.IsProduction())
+{
+    app.UseHttpsRedirection();
+}
+
 app.UseHttpsRedirection();
 
 app.UseCors("AllowAll");
