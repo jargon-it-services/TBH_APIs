@@ -41,17 +41,9 @@ namespace TheBeautyHubAPI.Controllers
         {
             try
             {
-                var canConnect = await _dbContext.Database.CanConnectAsync();
-
-                if (!canConnect)
-                {
-                    return StatusCode(500, new
-                    {
-                        canConnect = false,
-                        message = "Database connection failed - cannot connect to database",
-                        connectionString = _dbContext.Database.GetDbConnection().ConnectionString
-                    });
-                }
+                var connection = _dbContext.Database.GetDbConnection();
+                await connection.OpenAsync();
+                await connection.CloseAsync();
 
                 return Ok(new { canConnect = true, message = "Database connection successful" });
             }
@@ -61,10 +53,13 @@ namespace TheBeautyHubAPI.Controllers
                 {
                     canConnect = false,
                     message = ex.Message,
+                    exceptionType = ex.GetType().Name,
+                    stackTrace = ex.StackTrace,
                     innerException = ex.InnerException?.Message
                 });
             }
         }
+
         /// <summary>
         /// Creates a new account
         /// </summary>
