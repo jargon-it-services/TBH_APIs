@@ -13,7 +13,7 @@ builder.Services.AddControllers();
 // Configure Entity Framework and SQL Server
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<BeautyHubDbContext>(options =>
-    options.UseSqlServer(connectionString));
+    options.UseNpgsql(connectionString));
 
 // Register repositories
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();

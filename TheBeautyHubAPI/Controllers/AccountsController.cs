@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using TheBeautyHubAPI.Models;
 using TheBeautyHubCore.DTOs;
 using TheBeautyHubCore.Services.Interfaces;
+using TheBeautyHubData.Context;
 
 namespace TheBeautyHubAPI.Controllers
 {
@@ -21,13 +22,13 @@ namespace TheBeautyHubAPI.Controllers
         private readonly IAccountService _accountService;
         private readonly IExceptionLogService _exceptionLogService;
         private readonly IMapper _mapper;
-        private readonly DbContext _dbContext;
+        private readonly BeautyHubDbContext _dbContext;
 
         public AccountsController(
             IAccountService accountService, 
             IExceptionLogService exceptionLogService,
             IMapper mapper,
-            DbContext dbContext)
+            BeautyHubDbContext dbContext)
         {
             _accountService = accountService;
             _exceptionLogService = exceptionLogService;
