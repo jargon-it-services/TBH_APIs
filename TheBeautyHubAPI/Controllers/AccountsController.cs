@@ -1,8 +1,9 @@
+using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using AutoMapper;
-using Microsoft.AspNetCore.Mvc;
 using TheBeautyHubAPI.Models;
 using TheBeautyHubCore.DTOs;
 using TheBeautyHubCore.Services.Interfaces;
@@ -20,17 +21,34 @@ namespace TheBeautyHubAPI.Controllers
         private readonly IAccountService _accountService;
         private readonly IExceptionLogService _exceptionLogService;
         private readonly IMapper _mapper;
+        private readonly DbContext _dbContext;
 
         public AccountsController(
             IAccountService accountService, 
             IExceptionLogService exceptionLogService,
-            IMapper mapper)
+            IMapper mapper,
+            DbContext dbContext)
         {
             _accountService = accountService;
             _exceptionLogService = exceptionLogService;
             _mapper = mapper;
+            _dbContext = dbContext;
         }
 
+        [HttpGet("test-db")]
+        public async Task<IActionResult> TestDbConnection()
+        {
+            try
+            {
+                // Test if DB connection works
+                var canConnect = await _dbContext.Database.CanConnectAsync();
+                return Ok(new { canConnect = canConnect, message = "Database connection test" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
+        }
         /// <summary>
         /// Creates a new account
         /// </summary>
