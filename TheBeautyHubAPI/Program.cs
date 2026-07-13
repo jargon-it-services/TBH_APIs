@@ -87,12 +87,28 @@ using (var scope = app.Services.CreateScope())
     var dbContext = scope.ServiceProvider.GetRequiredService<BeautyHubDbContext>();
     try
     {
-        dbContext.Database.Migrate();
-        Console.WriteLine("✅ Database migrations applied successfully");
+        // Check if database exists
+        var canConnect = await dbContext.Database.CanConnectAsync();
+        if (canConnect)
+        {
+            // Get pending migrations
+            var pendingMigrations = await dbContext.Database.GetPendingMigrationsAsync();
+            if (pendingMigrations.Any())
+            {
+                Console.WriteLine("📋 Pending migrations found, applying...");
+                await dbContext.Database.MigrateAsync();
+                Console.WriteLine("✅ Database migrations applied successfully");
+            }
+            else
+            {
+                Console.WriteLine("✅ Database is up to date");
+            }
+        }
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"❌ Error applying migrations: {ex.Message}");
+        Console.WriteLine($"⚠️ Warning: {ex.Message}");
+        // Continue anyway - tables might be created manually
     }
 }
 
