@@ -88,7 +88,6 @@ using (var scope = app.Services.CreateScope())
     try
     {
         // Drop and recreate all tables from DbContext model
-        await dbContext.Database.EnsureDeletedAsync();
         await dbContext.Database.EnsureCreatedAsync();
         Console.WriteLine("✅ Database and all tables created successfully");
     }
