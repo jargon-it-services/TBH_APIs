@@ -114,26 +114,26 @@ namespace TheBeautyHubData.Context
                 // Primary key
                 entity.HasKey(e => e.AccountId);
 
-                // Default value for AccountId
+                // Default value for AccountId - PostgreSQL
                 entity.Property(e => e.AccountId)
-                    .HasDefaultValueSql("NEWID()");
+                    .HasDefaultValueSql("gen_random_uuid()");
 
                 // Unique constraint on AccountCode
                 entity.HasIndex(e => e.AccountCode)
                     .IsUnique();
 
-                // Check constraints using ToTable
+                // Check constraints - PostgreSQL syntax
                 entity.ToTable(t =>
                 {
-                    t.HasCheckConstraint("CK_Account_AccountType", 
-                        "[AccountType] IN ('FirmOwner', 'Customer')");
-                    t.HasCheckConstraint("CK_Account_Mode", 
-                        "[Mode] IN ('subscription', 'one_time')");
+                    t.HasCheckConstraint("CK_Account_AccountType",
+                        "\"AccountType\" IN ('FirmOwner', 'Customer')");
+                    t.HasCheckConstraint("CK_Account_Mode",
+                        "\"Mode\" IN ('subscription', 'one_time')");
                 });
 
-                // Default value for CreatedAt
+                // Default value for CreatedAt - PostgreSQL
                 entity.Property(e => e.CreatedAt)
-                    .HasDefaultValueSql("SYSUTCDATETIME()");
+                    .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                 // Default value for IsDeleted
                 entity.Property(e => e.IsDeleted)
@@ -150,32 +150,32 @@ namespace TheBeautyHubData.Context
                 // Primary key
                 entity.HasKey(e => e.UserId);
 
-                // Default value for UserId
+                // Default value for UserId - PostgreSQL
                 entity.Property(e => e.UserId)
-                    .HasDefaultValueSql("NEWID()");
+                    .HasDefaultValueSql("gen_random_uuid()");
 
                 // Unique constraint on UserEmail
                 entity.HasIndex(e => e.UserEmail)
                     .IsUnique()
-                    .HasFilter("[UserEmail] IS NOT NULL");
+                    .HasFilter("\"UserEmail\" IS NOT NULL");
 
                 // Unique constraint on UserMobile
                 entity.HasIndex(e => e.UserMobile)
                     .IsUnique()
-                    .HasFilter("[UserMobile] IS NOT NULL");
+                    .HasFilter("\"UserMobile\" IS NOT NULL");
 
-                // Check constraints using ToTable
+                // Check constraints - PostgreSQL syntax
                 entity.ToTable(t =>
                 {
-                    t.HasCheckConstraint("CK_User_UserRole", 
-                        "[UserRole] IN ('Admin', 'Manager', 'Employee')");
-                    t.HasCheckConstraint("CK_User_WorkerPaymentType", 
-                        "[WorkerPaymentType] IS NULL OR [WorkerPaymentType] IN ('Fix Pay', 'FP + Incentive', 'Incentive')");
+                    t.HasCheckConstraint("CK_User_UserRole",
+                        "\"UserRole\" IN ('Admin', 'Manager', 'Employee')");
+                    t.HasCheckConstraint("CK_User_WorkerPaymentType",
+                        "\"WorkerPaymentType\" IS NULL OR \"WorkerPaymentType\" IN ('Fix Pay', 'FP + Incentive', 'Incentive')");
                 });
 
-                // Default value for CreatedAt
+                // Default value for CreatedAt - PostgreSQL
                 entity.Property(e => e.CreatedAt)
-                    .HasDefaultValueSql("SYSUTCDATETIME()");
+                    .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                 // Default value for IsDeleted
                 entity.Property(e => e.IsDeleted)
@@ -212,13 +212,13 @@ namespace TheBeautyHubData.Context
                 // Primary key
                 entity.HasKey(e => e.FirmId);
 
-                // Default value for FirmId
+                // Default value for FirmId - PostgreSQL
                 entity.Property(e => e.FirmId)
-                    .HasDefaultValueSql("NEWID()");
+                    .HasDefaultValueSql("gen_random_uuid()");
 
-                // Default value for CreatedAt
+                // Default value for CreatedAt - PostgreSQL
                 entity.Property(e => e.CreatedAt)
-                    .HasDefaultValueSql("SYSUTCDATETIME()");
+                    .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                 // Default value for IsDeleted
                 entity.Property(e => e.IsDeleted)
@@ -237,13 +237,13 @@ namespace TheBeautyHubData.Context
                 // Primary key
                 entity.HasKey(e => e.FirmDetailsId);
 
-                // Default value for FirmDetailsId
+                // Default value for FirmDetailsId - PostgreSQL
                 entity.Property(e => e.FirmDetailsId)
-                    .HasDefaultValueSql("NEWID()");
+                    .HasDefaultValueSql("gen_random_uuid()");
 
-                // Default value for CreatedAt
+                // Default value for CreatedAt - PostgreSQL
                 entity.Property(e => e.CreatedAt)
-                    .HasDefaultValueSql("SYSUTCDATETIME()");
+                    .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                 // Foreign key relationship with User
                 entity.HasOne(e => e.User)
@@ -270,13 +270,13 @@ namespace TheBeautyHubData.Context
                 // Primary key
                 entity.HasKey(e => e.PlanId);
 
-                // Default value for PlanId
+                // Default value for PlanId - PostgreSQL
                 entity.Property(e => e.PlanId)
-                    .HasDefaultValueSql("NEWID()");
+                    .HasDefaultValueSql("gen_random_uuid()");
 
-                // Default value for CreatedAt
+                // Default value for CreatedAt - PostgreSQL
                 entity.Property(e => e.CreatedAt)
-                    .HasDefaultValueSql("SYSUTCDATETIME()");
+                    .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                 // Default value for IsPlanActive
                 entity.Property(e => e.IsPlanActive)
@@ -289,13 +289,13 @@ namespace TheBeautyHubData.Context
                 // Primary key
                 entity.HasKey(e => e.SubscriptionId);
 
-                // Default value for SubscriptionId
+                // Default value for SubscriptionId - PostgreSQL
                 entity.Property(e => e.SubscriptionId)
-                    .HasDefaultValueSql("NEWID()");
+                    .HasDefaultValueSql("gen_random_uuid()");
 
-                // Default value for CreatedAt
+                // Default value for CreatedAt - PostgreSQL
                 entity.Property(e => e.CreatedAt)
-                    .HasDefaultValueSql("SYSUTCDATETIME()");
+                    .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                 // Default values for amounts
                 entity.Property(e => e.SubscriptionAmount)
@@ -307,13 +307,13 @@ namespace TheBeautyHubData.Context
                 entity.Property(e => e.SubscriptionAmountAfterDiscount)
                     .HasDefaultValue(0);
 
-                // Check constraints using ToTable
+                // Check constraints - PostgreSQL syntax
                 entity.ToTable(t =>
                 {
                     t.HasCheckConstraint("CK_Subscription_Status",
-                        "[Status] IN ('Active', 'Expired', 'Cancelled', 'Pending')");
+                        "\"Status\" IN ('Active', 'Expired', 'Cancelled', 'Pending')");
                     t.HasCheckConstraint("CK_Subscription_DiscountType",
-                        "[DiscountType] IS NULL OR [DiscountType] IN ('Wallet', 'Coupon')");
+                        "\"DiscountType\" IS NULL OR \"DiscountType\" IN ('Wallet', 'Coupon')");
                 });
 
                 // Foreign key relationship with Account
@@ -335,7 +335,7 @@ namespace TheBeautyHubData.Context
                 entity.HasKey(e => e.WalletId);
 
                 entity.Property(e => e.WalletId)
-                    .HasDefaultValueSql("NEWID()");
+                    .HasDefaultValueSql("gen_random_uuid()");
 
                 entity.Property(e => e.Amount)
                     .HasDefaultValue(0);
@@ -344,12 +344,12 @@ namespace TheBeautyHubData.Context
                     .HasDefaultValue(false);
 
                 entity.Property(e => e.CreatedAt)
-                    .HasDefaultValueSql("SYSUTCDATETIME()");
+                    .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                 entity.ToTable(t =>
                 {
                     t.HasCheckConstraint("CK_Wallet_WalletType",
-                        "[WalletType] IN ('ReferralBonus', 'Promotional', 'Cashback')");
+                        "\"WalletType\" IN ('ReferralBonus', 'Promotional', 'Cashback')");
                 });
 
                 entity.HasOne(e => e.Account)
@@ -364,10 +364,10 @@ namespace TheBeautyHubData.Context
                 entity.HasKey(e => e.ExpensesTypeId);
 
                 entity.Property(e => e.ExpensesTypeId)
-                    .HasDefaultValueSql("NEWID()");
+                    .HasDefaultValueSql("gen_random_uuid()");
 
                 entity.Property(e => e.CreatedAt)
-                    .HasDefaultValueSql("SYSUTCDATETIME()");
+                    .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                 entity.Property(e => e.IsDeleted)
                     .HasDefaultValue(false);
@@ -389,7 +389,7 @@ namespace TheBeautyHubData.Context
                 entity.HasKey(e => e.ServiceId);
 
                 entity.Property(e => e.ServiceId)
-                    .HasDefaultValueSql("NEWID()");
+                    .HasDefaultValueSql("gen_random_uuid()");
 
                 entity.Property(e => e.ServicePrice)
                     .HasDefaultValue(0);
@@ -398,7 +398,7 @@ namespace TheBeautyHubData.Context
                     .HasDefaultValue(false);
 
                 entity.Property(e => e.CreatedAt)
-                    .HasDefaultValueSql("SYSUTCDATETIME()");
+                    .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                 entity.Property(e => e.IsDeleted)
                     .HasDefaultValue(false);
@@ -406,7 +406,7 @@ namespace TheBeautyHubData.Context
                 entity.ToTable(t =>
                 {
                     t.HasCheckConstraint("CK_Services_IncentivePercentage",
-                        "[IncentivePercentage] IS NULL OR ([IncentivePercentage] >= 0 AND [IncentivePercentage] <= 100)");
+                        "\"IncentivePercentage\" IS NULL OR (\"IncentivePercentage\" >= 0 AND \"IncentivePercentage\" <= 100)");
                 });
 
                 entity.HasOne(e => e.Account)
@@ -431,10 +431,10 @@ namespace TheBeautyHubData.Context
                 entity.HasKey(e => e.TransactionTypeId);
 
                 entity.Property(e => e.TransactionTypeId)
-                    .HasDefaultValueSql("NEWID()");
+                    .HasDefaultValueSql("gen_random_uuid()");
 
                 entity.Property(e => e.CreatedAt)
-                    .HasDefaultValueSql("SYSUTCDATETIME()");
+                    .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                 entity.Property(e => e.IsTransactionTypeActive)
                     .HasDefaultValue(true);
@@ -442,7 +442,7 @@ namespace TheBeautyHubData.Context
                 entity.ToTable(t =>
                 {
                     t.HasCheckConstraint("CK_TransactionType_Type",
-                        "[Type] IN ('Service', 'Expenses')");
+                        "\"Type\" IN ('Service', 'Expenses')");
                 });
             });
 
@@ -452,10 +452,10 @@ namespace TheBeautyHubData.Context
                 entity.HasKey(e => e.TransactionRuleId);
 
                 entity.Property(e => e.TransactionRuleId)
-                    .HasDefaultValueSql("NEWID()");
+                    .HasDefaultValueSql("gen_random_uuid()");
 
                 entity.Property(e => e.CreatedAt)
-                    .HasDefaultValueSql("SYSUTCDATETIME()");
+                    .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                 entity.Property(e => e.IsActive)
                     .HasDefaultValue(true);
@@ -477,10 +477,10 @@ namespace TheBeautyHubData.Context
                 entity.HasKey(e => e.TransactionId);
 
                 entity.Property(e => e.TransactionId)
-                    .HasDefaultValueSql("NEWID()");
+                    .HasDefaultValueSql("gen_random_uuid()");
 
                 entity.Property(e => e.CreatedAt)
-                    .HasDefaultValueSql("SYSUTCDATETIME()");
+                    .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                 entity.Property(e => e.IsDeleted)
                     .HasDefaultValue(false);
@@ -494,7 +494,7 @@ namespace TheBeautyHubData.Context
                 entity.ToTable(t =>
                 {
                     t.HasCheckConstraint("CK_Transaction_Status",
-                        "[Status] IN ('Draft', 'Posted', 'Cancelled')");
+                        "\"Status\" IN ('Draft', 'Posted', 'Cancelled')");
                 });
 
                 entity.HasOne(e => e.Account)
@@ -514,10 +514,10 @@ namespace TheBeautyHubData.Context
                 entity.HasKey(e => e.TransactionDetailsId);
 
                 entity.Property(e => e.TransactionDetailsId)
-                    .HasDefaultValueSql("NEWID()");
+                    .HasDefaultValueSql("gen_random_uuid()");
 
                 entity.Property(e => e.CreatedAt)
-                    .HasDefaultValueSql("SYSUTCDATETIME()");
+                    .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                 entity.Property(e => e.IsDeleted)
                     .HasDefaultValue(false);
@@ -564,10 +564,10 @@ namespace TheBeautyHubData.Context
                 entity.HasKey(e => e.ReportId);
 
                 entity.Property(e => e.ReportId)
-                    .HasDefaultValueSql("NEWID()");
+                    .HasDefaultValueSql("gen_random_uuid()");
 
                 entity.Property(e => e.CreatedAt)
-                    .HasDefaultValueSql("SYSUTCDATETIME()");
+                    .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                 entity.Property(e => e.IsActive)
                     .HasDefaultValue(true);
@@ -579,10 +579,10 @@ namespace TheBeautyHubData.Context
                 entity.HasKey(e => e.Id);
 
                 entity.Property(e => e.Id)
-                    .HasDefaultValueSql("NEWID()");
+                    .HasDefaultValueSql("gen_random_uuid()");
 
                 entity.Property(e => e.CreatedAt)
-                    .HasDefaultValueSql("SYSUTCDATETIME()");
+                    .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                 entity.Property(e => e.IsActive)
                     .HasDefaultValue(true);
@@ -604,23 +604,23 @@ namespace TheBeautyHubData.Context
                 entity.HasKey(e => e.PartnerId);
 
                 entity.Property(e => e.PartnerId)
-                    .HasDefaultValueSql("NEWID()");
+                    .HasDefaultValueSql("gen_random_uuid()");
 
                 entity.Property(e => e.CreatedAt)
-                    .HasDefaultValueSql("SYSUTCDATETIME()");
+                    .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                 entity.HasIndex(e => e.Mobile)
                     .IsUnique()
-                    .HasFilter("[Mobile] IS NOT NULL");
+                    .HasFilter("\"Mobile\" IS NOT NULL");
 
                 entity.HasIndex(e => e.Email)
                     .IsUnique()
-                    .HasFilter("[Email] IS NOT NULL");
+                    .HasFilter("\"Email\" IS NOT NULL");
 
                 entity.ToTable(t =>
                 {
                     t.HasCheckConstraint("CK_Partner_Gender",
-                        "[Gender] IS NULL OR [Gender] IN ('Male', 'Female', 'Other')");
+                        "\"Gender\" IS NULL OR \"Gender\" IN ('Male', 'Female', 'Other')");
                 });
 
                 entity.HasOne(e => e.Account)
@@ -635,10 +635,10 @@ namespace TheBeautyHubData.Context
                 entity.HasKey(e => e.SessionId);
 
                 entity.Property(e => e.SessionId)
-                    .HasDefaultValueSql("NEWID()");
+                    .HasDefaultValueSql("gen_random_uuid()");
 
                 entity.Property(e => e.CreatedAt)
-                    .HasDefaultValueSql("SYSUTCDATETIME()");
+                    .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                 entity.HasOne(e => e.User)
                     .WithMany()
@@ -655,7 +655,7 @@ namespace TheBeautyHubData.Context
                     .ValueGeneratedOnAdd();
 
                 entity.Property(e => e.CreatedAt)
-                    .HasDefaultValueSql("SYSUTCDATETIME()");
+                    .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                 entity.HasOne(e => e.User)
                     .WithMany()
