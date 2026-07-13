@@ -98,6 +98,27 @@ namespace TheBeautyHubAPI.Controllers
             }
         }
 
+        [HttpGet("test-migration")]
+        public async Task<IActionResult> TestMigration()
+        {
+            try
+            {
+                var migrations = await _dbContext.Database.GetAppliedMigrationsAsync();
+                var pendingMigrations = await _dbContext.Database.GetPendingMigrationsAsync();
+
+                return Ok(new
+                {
+                    appliedMigrations = migrations.ToList(),
+                    pendingMigrations = pendingMigrations.ToList(),
+                    message = "Migration info retrieved"
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = ex.Message });
+            }
+        }
+
         /// <summary>
         /// Creates a new account
         /// </summary>
