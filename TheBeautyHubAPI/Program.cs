@@ -81,34 +81,20 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// ✅ RUN MIGRATIONS AUTOMATICALLY
+// ✅ ENSURE DATABASE AND TABLES ARE CREATED
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<BeautyHubDbContext>();
     try
     {
-        // Check if database exists
-        var canConnect = await dbContext.Database.CanConnectAsync();
-        if (canConnect)
-        {
-            // Get pending migrations
-            var pendingMigrations = await dbContext.Database.GetPendingMigrationsAsync();
-            if (pendingMigrations.Any())
-            {
-                Console.WriteLine("📋 Pending migrations found, applying...");
-                await dbContext.Database.MigrateAsync();
-                Console.WriteLine("✅ Database migrations applied successfully");
-            }
-            else
-            {
-                Console.WriteLine("✅ Database is up to date");
-            }
-        }
+        // Drop and recreate all tables from DbContext model
+        await dbContext.Database.EnsureDeletedAsync();
+        await dbContext.Database.EnsureCreatedAsync();
+        Console.WriteLine("✅ Database and all tables created successfully");
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"⚠️ Warning: {ex.Message}");
-        // Continue anyway - tables might be created manually
+        Console.WriteLine($"❌ Error creating database: {ex.Message}");
     }
 }
 
