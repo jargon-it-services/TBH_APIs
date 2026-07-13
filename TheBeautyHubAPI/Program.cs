@@ -10,7 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container
 builder.Services.AddControllers();
 
-// Configure Entity Framework and SQL Server
+// Configure Entity Framework and PostgreSQL
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<BeautyHubDbContext>(options =>
     options.UseNpgsql(connectionString));
@@ -70,7 +70,7 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-// Configure CORS (optional - for frontend integration)
+// Configure CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll",
@@ -81,19 +81,32 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-    app.UseSwagger();
-    app.UseSwaggerUI();
+// ✅ RUN MIGRATIONS AUTOMATICALLY
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<BeautyHubDbContext>();
+    try
+    {
+        dbContext.Database.Migrate();
+        Console.WriteLine("✅ Database migrations applied successfully");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"❌ Error applying migrations: {ex.Message}");
+    }
+}
+
+app.UseSwagger();
+app.UseSwaggerUI();
 
 // Configure the HTTP request pipeline
 app.UseRouting();
 
-// IMPORTANT: Disable HTTPS redirect in production on Render
+// Remove duplicate HTTPS redirect
 if (!app.Environment.IsProduction())
 {
     app.UseHttpsRedirection();
 }
-
-app.UseHttpsRedirection();
 
 app.UseCors("AllowAll");
 
@@ -101,6 +114,6 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-// IMPORTANT: Listen on all interfaces
+// Listen on all interfaces
 var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
 app.Run($"http://0.0.0.0:{port}");

@@ -60,6 +60,44 @@ namespace TheBeautyHubAPI.Controllers
             }
         }
 
+        [HttpGet("check-tables")]
+        public async Task<IActionResult> CheckTables()
+        {
+            try
+            {
+                // Get all table names from the database
+                var tables = await _dbContext.Database.SqlQuery<string>(
+                    $"SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'"
+                ).ToListAsync();
+
+                if (!tables.Any())
+                {
+                    return Ok(new
+                    {
+                        tablesFound = false,
+                        message = "No tables found. Run migrations: dotnet ef database update",
+                        tables = new List<string>()
+                    });
+                }
+
+                return Ok(new
+                {
+                    tablesFound = true,
+                    count = tables.Count,
+                    tables = tables,
+                    message = "Tables found successfully"
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    error = ex.Message,
+                    message = "Failed to check tables"
+                });
+            }
+        }
+
         /// <summary>
         /// Creates a new account
         /// </summary>
