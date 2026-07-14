@@ -81,15 +81,15 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// ✅ ENSURE DATABASE AND TABLES ARE CREATED
+// ✅ ENSURE DATABASE AND TABLES ARE CREATED FROM DBCONTEXT MODEL
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<BeautyHubDbContext>();
     try
     {
-        // Drop and recreate all tables from DbContext model
+        // Create database and tables from DbContext model
         await dbContext.Database.EnsureCreatedAsync();
-        Console.WriteLine("✅ Database and all tables created successfully");
+        Console.WriteLine("✅ Database and all tables created successfully from model");
     }
     catch (Exception ex)
     {
