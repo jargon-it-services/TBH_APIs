@@ -81,15 +81,15 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// ✅ ENSURE DATABASE AND TABLES ARE CREATED FROM DBCONTEXT MODEL
+// ✅ APPLY PENDING EF CORE MIGRATIONS
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<BeautyHubDbContext>();
     try
     {
-        // Create database and tables from DbContext model
-        await dbContext.Database.EnsureCreatedAsync();
-        Console.WriteLine("✅ Database and all tables created successfully from model");
+        // Apply pending migrations
+        await dbContext.Database.MigrateAsync();
+        Console.WriteLine("✅ Database migrations applied successfully");
     }
     catch (Exception ex)
     {
