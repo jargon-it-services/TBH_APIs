@@ -22,12 +22,12 @@ namespace TheBeautyHubData.Migrations
                     AccountType = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
                     Mode = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
                     IsUnderTrial = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
-                    TrialStartedOn = table.Column<DateTime>(type: "datetime2(7)", nullable: true),
+                    TrialStartedOn = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     TrialDuration = table.Column<int>(type: "integer", nullable: true),
-                    TrialExpiredOn = table.Column<DateTime>(type: "datetime2(7)", nullable: true),
+                    TrialExpiredOn = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     CreatedBy = table.Column<Guid>(type: "uuid", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2(7)", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
-                    LastUpdated = table.Column<DateTime>(type: "datetime2(7)", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
+                    LastUpdated = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false)
                 },
                 constraints: table =>
@@ -45,9 +45,9 @@ namespace TheBeautyHubData.Migrations
                     PlanName = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
                     PlanDescription = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
                     PlanCost = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2(7)", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
                     IsPlanActive = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true),
-                    LastUpdated = table.Column<DateTime>(type: "datetime2(7)", nullable: true),
+                    LastUpdated = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     PlanAppliedTo = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true)
                 },
                 constraints: table =>
@@ -62,8 +62,8 @@ namespace TheBeautyHubData.Migrations
                     ReportId = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
                     ReportName = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
                     IsActive = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2(7)", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
-                    LastUpdated = table.Column<DateTime>(type: "datetime2(7)", nullable: true)
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
+                    LastUpdated = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -76,9 +76,9 @@ namespace TheBeautyHubData.Migrations
                 {
                     TransactionTypeId = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
                     Type = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2(7)", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
                     IsTransactionTypeActive = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true),
-                    LastUpdated = table.Column<DateTime>(type: "datetime2(7)", nullable: true)
+                    LastUpdated = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -103,8 +103,8 @@ namespace TheBeautyHubData.Migrations
                     FirmRegistration = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
                     FirmLogo = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
                     CreatedBy = table.Column<Guid>(type: "uuid", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2(7)", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
-                    LastUpdated = table.Column<DateTime>(type: "datetime2(7)", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
+                    LastUpdated = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false)
                 },
                 constraints: table =>
@@ -131,7 +131,7 @@ namespace TheBeautyHubData.Migrations
                     DateofBirth = table.Column<DateTime>(type: "date", nullable: true),
                     Gender = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: true),
                     AccountId = table.Column<Guid>(type: "uuid", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2(7)", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP")
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP")
                 },
                 constraints: table =>
                 {
@@ -161,8 +161,8 @@ namespace TheBeautyHubData.Migrations
                     WorkerPaymentType = table.Column<string>(type: "character varying(30)", maxLength: 30, nullable: true),
                     ManagerId = table.Column<Guid>(type: "uuid", nullable: true),
                     CreatedBy = table.Column<Guid>(type: "uuid", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2(7)", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
-                    LastUpdated = table.Column<DateTime>(type: "datetime2(7)", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
+                    LastUpdated = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
                     Status = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false, defaultValue: "Active")
                 },
@@ -194,7 +194,7 @@ namespace TheBeautyHubData.Migrations
                     Amount = table.Column<decimal>(type: "numeric(18,2)", nullable: false, defaultValue: 0m),
                     WalletType = table.Column<string>(type: "character varying(30)", maxLength: 30, nullable: false),
                     IsUsed = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2(7)", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP")
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP")
                 },
                 constraints: table =>
                 {
@@ -216,9 +216,9 @@ namespace TheBeautyHubData.Migrations
                     AccountId = table.Column<Guid>(type: "uuid", nullable: false),
                     PlanId = table.Column<Guid>(type: "uuid", nullable: false),
                     Status = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
-                    ExpiryOn = table.Column<DateTime>(type: "datetime2(7)", nullable: true),
+                    ExpiryOn = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     CreatedBy = table.Column<Guid>(type: "uuid", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2(7)", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
                     SubscriptionAmount = table.Column<decimal>(type: "numeric(18,2)", nullable: false, defaultValue: 0m),
                     DiscountedAmount = table.Column<decimal>(type: "numeric(18,2)", nullable: false, defaultValue: 0m),
                     SubscriptionAmountAfterDiscount = table.Column<decimal>(type: "numeric(18,2)", nullable: false, defaultValue: 0m),
@@ -251,9 +251,9 @@ namespace TheBeautyHubData.Migrations
                     ReportId = table.Column<Guid>(type: "uuid", nullable: false),
                     AccountId = table.Column<Guid>(type: "uuid", nullable: false),
                     IsActive = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2(7)", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
                     CreatedBy = table.Column<Guid>(type: "uuid", nullable: true),
-                    LastUpdated = table.Column<DateTime>(type: "datetime2(7)", nullable: true)
+                    LastUpdated = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -280,8 +280,8 @@ namespace TheBeautyHubData.Migrations
                     AccountId = table.Column<Guid>(type: "uuid", nullable: false),
                     ExpensesTypeName = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
                     CreatedBy = table.Column<Guid>(type: "uuid", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2(7)", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
-                    LastUpdated = table.Column<DateTime>(type: "datetime2(7)", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
+                    LastUpdated = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
                     FirmId = table.Column<Guid>(type: "uuid", nullable: true)
                 },
@@ -317,8 +317,8 @@ namespace TheBeautyHubData.Migrations
                     IncentiveAmount = table.Column<decimal>(type: "numeric(18,2)", nullable: true),
                     IncentivePercentage = table.Column<decimal>(type: "numeric(5,2)", nullable: true),
                     CreatedBy = table.Column<Guid>(type: "uuid", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2(7)", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
-                    LastUpdated = table.Column<DateTime>(type: "datetime2(7)", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
+                    LastUpdated = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false)
                 },
                 constraints: table =>
@@ -353,7 +353,7 @@ namespace TheBeautyHubData.Migrations
                     RuleName = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
                     AccountId = table.Column<Guid>(type: "uuid", nullable: true),
                     FirmId = table.Column<Guid>(type: "uuid", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2(7)", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
                     IsActive = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true)
                 },
                 constraints: table =>
@@ -383,13 +383,13 @@ namespace TheBeautyHubData.Migrations
                     AccountId = table.Column<Guid>(type: "uuid", nullable: false),
                     FirmId = table.Column<Guid>(type: "uuid", nullable: true),
                     CreatedBy = table.Column<Guid>(type: "uuid", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2(7)", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
-                    LastUpdated = table.Column<DateTime>(type: "datetime2(7)", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
+                    LastUpdated = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
-                    PostedDate = table.Column<DateTime>(type: "datetime2(7)", nullable: true),
-                    TransactionDate = table.Column<DateTime>(type: "datetime2(7)", nullable: true),
-                    CheckInTime = table.Column<DateTime>(type: "datetime2(7)", nullable: true),
-                    CheckOutTime = table.Column<DateTime>(type: "datetime2(7)", nullable: true)
+                    PostedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    TransactionDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CheckInTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CheckOutTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -419,7 +419,7 @@ namespace TheBeautyHubData.Migrations
                     ErrorMessage = table.Column<string>(type: "text", nullable: false),
                     DeviceName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
                     UserId = table.Column<Guid>(type: "uuid", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2(7)", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP")
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP")
                 },
                 constraints: table =>
                 {
@@ -440,7 +440,7 @@ namespace TheBeautyHubData.Migrations
                     UserId = table.Column<Guid>(type: "uuid", nullable: false),
                     AccountId = table.Column<Guid>(type: "uuid", nullable: false),
                     FirmId = table.Column<Guid>(type: "uuid", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2(7)", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP")
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP")
                 },
                 constraints: table =>
                 {
@@ -471,15 +471,15 @@ namespace TheBeautyHubData.Migrations
                 {
                     SessionId = table.Column<Guid>(type: "uuid", nullable: false, defaultValueSql: "gen_random_uuid()"),
                     UserId = table.Column<Guid>(type: "uuid", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2(7)", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
-                    LastSeenAt = table.Column<DateTime>(type: "datetime2(7)", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
+                    LastSeenAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     IpAddress = table.Column<string>(type: "character varying(45)", maxLength: 45, nullable: true),
                     UserAgent = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     DeviceId = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: true),
                     AccessTokenJti = table.Column<Guid>(type: "uuid", nullable: false),
                     RefreshTokenHash = table.Column<byte[]>(type: "bytea", maxLength: 32, nullable: false),
-                    RefreshTokenExpiresAt = table.Column<DateTime>(type: "datetime2(7)", nullable: false),
-                    RevokedAt = table.Column<DateTime>(type: "datetime2(7)", nullable: true),
+                    RefreshTokenExpiresAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    RevokedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     RevocationReason = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true)
                 },
                 constraints: table =>
@@ -508,8 +508,8 @@ namespace TheBeautyHubData.Migrations
                     AccountId = table.Column<Guid>(type: "uuid", nullable: true),
                     FirmId = table.Column<Guid>(type: "uuid", nullable: true),
                     CreatedBy = table.Column<Guid>(type: "uuid", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2(7)", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
-                    LastUpdated = table.Column<DateTime>(type: "datetime2(7)", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
+                    LastUpdated = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false)
                 },
                 constraints: table =>

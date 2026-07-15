@@ -12,8 +12,8 @@ using TheBeautyHubData.Context;
 namespace TheBeautyHubData.Migrations
 {
     [DbContext(typeof(BeautyHubDbContext))]
-    [Migration("20260715045604_InitialMigration")]
-    partial class InitialMigration
+    [Migration("20260715052050_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
