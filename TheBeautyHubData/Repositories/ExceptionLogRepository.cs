@@ -1,4 +1,7 @@
-using Microsoft.Data.SqlClient;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using TheBeautyHubData.Context;
 using TheBeautyHubData.Entities;
@@ -15,84 +18,67 @@ namespace TheBeautyHubData.Repositories
             _context = context;
         }
 
-        public async Task<long> InsertAsync(ExceptionLog log)
+        public async Task<ExceptionLog> InsertAsync(ExceptionLog exceptionLog)
         {
-            var parameters = new[]
-            {
-                new SqlParameter("@Type", log.Type),
-                new SqlParameter("@ErrorMessage", log.ErrorMessage),
-                new SqlParameter("@DeviceName", (object?)log.DeviceName ?? DBNull.Value),
-                new SqlParameter("@UserId", (object?)log.UserId ?? DBNull.Value)
-            };
+            _context.ExceptionLogs.Add(exceptionLog);
+            await _context.SaveChangesAsync();
+            return exceptionLog;
+        }
 
-            var result = await _context.Database
-                .SqlQueryRaw<long>("EXEC usp_Insert_ExceptionLog @Type, @ErrorMessage, @DeviceName, @UserId", parameters)
+        public async Task<int> DeleteAsync(long exceptionLogId)
+        {
+            var exceptionLog = await _context.ExceptionLogs.FindAsync(exceptionLogId);
+            if (exceptionLog == null) return 0;
+            
+            _context.ExceptionLogs.Remove(exceptionLog);
+            await _context.SaveChangesAsync();
+            return 1;
+        }
+
+        public async Task<ExceptionLog?> GetByIdAsync(long exceptionLogId)
+        {
+            return await _context.ExceptionLogs.FindAsync(exceptionLogId);
+        }
+
+        public async Task<IEnumerable<ExceptionLog>> GetAllAsync(int pageNumber = 1, int pageSize = 100)
+        {
+            return await _context.ExceptionLogs
+                .OrderByDescending(e => e.CreatedAt)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
-
-            return result.FirstOrDefault();
         }
 
-        public async Task<int> DeleteAsync(long id)
+        public async Task<IEnumerable<ExceptionLog>> GetByUserIdAsync(Guid userId, int pageNumber = 1, int pageSize = 100)
         {
-            var parameter = new SqlParameter("@Id", id);
-            return await _context.Database.ExecuteSqlRawAsync("EXEC usp_Delete_ExceptionLog @Id", parameter);
+            return await _context.ExceptionLogs
+                .Where(e => e.UserId == userId)
+                .OrderByDescending(e => e.CreatedAt)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
         }
 
-        public async Task<ExceptionLog?> GetByIdAsync(long id)
+        public async Task<IEnumerable<ExceptionLog>> GetByTypeAsync(string exceptionType, int pageNumber = 1, int pageSize = 100)
         {
-            var parameter = new SqlParameter("@Id", id);
-            var result = await _context.ExceptionLogs
-                .FromSqlRaw("EXEC usp_Get_ExceptionLogById @Id", parameter)
+            return await _context.ExceptionLogs
+                .Where(e => e.ExceptionType == exceptionType)
+                .OrderByDescending(e => e.CreatedAt)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+        }
+
+        public async Task<int> DeleteOldLogsAsync(int daysOld)
+        {
+            var cutoffDate = DateTime.UtcNow.AddDays(-daysOld);
+            var oldLogs = await _context.ExceptionLogs
+                .Where(e => e.CreatedAt < cutoffDate)
                 .ToListAsync();
             
-            return result.FirstOrDefault();
-        }
-
-        public async Task<IEnumerable<ExceptionLog>> GetAllAsync(int pageSize = 100, int pageNumber = 1)
-        {
-            var parameters = new[]
-            {
-                new SqlParameter("@PageSize", pageSize),
-                new SqlParameter("@PageNumber", pageNumber)
-            };
-
-            return await _context.ExceptionLogs
-                .FromSqlRaw("EXEC usp_Get_AllExceptionLogs @PageSize, @PageNumber", parameters)
-                .ToListAsync();
-        }
-
-        public async Task<IEnumerable<ExceptionLog>> GetByUserIdAsync(Guid userId, int pageSize = 100, int pageNumber = 1)
-        {
-            var parameters = new[]
-            {
-                new SqlParameter("@UserId", userId),
-                new SqlParameter("@PageSize", pageSize),
-                new SqlParameter("@PageNumber", pageNumber)
-            };
-
-            return await _context.ExceptionLogs
-                .FromSqlRaw("EXEC usp_Get_ExceptionLogsByUserId @UserId, @PageSize, @PageNumber", parameters)
-                .ToListAsync();
-        }
-
-        public async Task<IEnumerable<ExceptionLog>> GetByTypeAsync(string type, int pageSize = 100, int pageNumber = 1)
-        {
-            var parameters = new[]
-            {
-                new SqlParameter("@Type", type),
-                new SqlParameter("@PageSize", pageSize),
-                new SqlParameter("@PageNumber", pageNumber)
-            };
-
-            return await _context.ExceptionLogs
-                .FromSqlRaw("EXEC usp_Get_ExceptionLogsByType @Type, @PageSize, @PageNumber", parameters)
-                .ToListAsync();
-        }
-
-        public async Task<int> DeleteOldLogsAsync(int daysToKeep = 90)
-        {
-            var parameter = new SqlParameter("@DaysToKeep", daysToKeep);
-            return await _context.Database.ExecuteSqlRawAsync("EXEC usp_Delete_OldExceptionLogs @DaysToKeep", parameter);
+            _context.ExceptionLogs.RemoveRange(oldLogs);
+            await _context.SaveChangesAsync();
+            return oldLogs.Count;
         }
     }
 }

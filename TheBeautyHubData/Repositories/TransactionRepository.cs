@@ -1,4 +1,7 @@
-using Microsoft.Data.SqlClient;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using TheBeautyHubData.Context;
 using TheBeautyHubData.Entities;
@@ -15,84 +18,50 @@ namespace TheBeautyHubData.Repositories
             _context = context;
         }
 
-        public async Task<Transaction> InsertAsync(Transaction transaction)
+        public async Task<Transaction> InsertTransactionAsync(Transaction transaction)
         {
-            var parameters = new[]
-            {
-                new SqlParameter("@Status", transaction.Status ?? "Draft"),
-                new SqlParameter("@TotalAmount", transaction.TotalAmount),
-                new SqlParameter("@AccountId", transaction.AccountId),
-                new SqlParameter("@FirmId", (object?)transaction.FirmId ?? DBNull.Value),
-                new SqlParameter("@CreatedBy", (object?)transaction.CreatedBy ?? DBNull.Value),
-                new SqlParameter("@PostedDate", (object?)transaction.PostedDate ?? DBNull.Value),
-                new SqlParameter("@TransactionDate", (object?)transaction.TransactionDate ?? DBNull.Value),
-                new SqlParameter("@CheckInTime", (object?)transaction.CheckInTime ?? DBNull.Value),
-                new SqlParameter("@CheckOutTime", (object?)transaction.CheckOutTime ?? DBNull.Value)
-            };
-
-            var result = await _context.Transactions
-                .FromSqlRaw("EXEC usp_Insert_Transaction @Status, @TotalAmount, @AccountId, @FirmId, @CreatedBy, @PostedDate, @TransactionDate, @CheckInTime, @CheckOutTime", parameters)
-                .ToListAsync();
-
-            return result.FirstOrDefault() ?? transaction;
+            _context.Transactions.Add(transaction);
+            await _context.SaveChangesAsync();
+            return transaction;
         }
 
-        public async Task<Transaction> UpdateAsync(Transaction transaction)
+        public async Task<Transaction> UpdateTransactionAsync(Transaction transaction)
         {
-            var parameters = new[]
-            {
-                new SqlParameter("@TransactionId", transaction.TransactionId),
-                new SqlParameter("@Status", transaction.Status ?? "Draft"),
-                new SqlParameter("@TotalAmount", transaction.TotalAmount),
-                new SqlParameter("@PostedDate", (object?)transaction.PostedDate ?? DBNull.Value),
-                new SqlParameter("@TransactionDate", (object?)transaction.TransactionDate ?? DBNull.Value),
-                new SqlParameter("@CheckInTime", (object?)transaction.CheckInTime ?? DBNull.Value),
-                new SqlParameter("@CheckOutTime", (object?)transaction.CheckOutTime ?? DBNull.Value)
-            };
-
-            var result = await _context.Transactions
-                .FromSqlRaw("EXEC usp_Update_Transaction @TransactionId, @Status, @TotalAmount, @PostedDate, @TransactionDate, @CheckInTime, @CheckOutTime", parameters)
-                .ToListAsync();
-
-            return result.FirstOrDefault() ?? transaction;
+            transaction.LastUpdated = DateTime.UtcNow;
+            _context.Transactions.Update(transaction);
+            await _context.SaveChangesAsync();
+            return transaction;
         }
 
-        public async Task<int> DeleteAsync(Guid transactionId)
+        public async Task<int> DeleteTransactionAsync(Guid transactionId)
         {
-            var parameter = new SqlParameter("@TransactionId", transactionId);
-            return await _context.Database.ExecuteSqlRawAsync("EXEC usp_Delete_Transaction @TransactionId", parameter);
-        }
-
-        public async Task<Transaction?> GetByIdAsync(Guid transactionId)
-        {
-            var parameter = new SqlParameter("@TransactionId", transactionId);
-            var result = await _context.Transactions
-                .FromSqlRaw("EXEC usp_Get_TransactionById @TransactionId", parameter)
-                .ToListAsync();
+            var transaction = await _context.Transactions.FindAsync(transactionId);
+            if (transaction == null) return 0;
             
-            return result.FirstOrDefault();
+            transaction.IsDeleted = true;
+            transaction.LastUpdated = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+            return 1;
         }
 
-        public async Task<IEnumerable<Transaction>> GetAllAsync()
+        public async Task<Transaction?> GetTransactionByIdAsync(Guid transactionId)
         {
             return await _context.Transactions
-                .FromSqlRaw("EXEC usp_Get_AllTransactions")
+                .Where(t => t.TransactionId == transactionId && !t.IsDeleted)
+                .FirstOrDefaultAsync();
+        }
+
+        public async Task<IEnumerable<Transaction>> GetAllTransactionsAsync()
+        {
+            return await _context.Transactions
+                .Where(t => !t.IsDeleted)
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<Transaction>> GetByAccountIdAsync(Guid accountId)
+        public async Task<IEnumerable<Transaction>> GetTransactionsByAccountIdAsync(Guid accountId)
         {
-            var parameter = new SqlParameter("@AccountId", accountId);
             return await _context.Transactions
-                .FromSqlRaw("EXEC usp_Get_TransactionsByAccountId @AccountId", parameter)
-                .ToListAsync();
-        }
-
-        public async Task<IEnumerable<Transaction>> GetByFirmIdAsync(Guid firmId)
-        {
-            var parameter = new SqlParameter("@FirmId", firmId);
-            return await _context.Transactions
-                .FromSqlRaw("EXEC usp_Get_TransactionsByFirmId @FirmId", parameter)
+                .Where(t => t.AccountId == accountId && !t.IsDeleted)
                 .ToListAsync();
         }
     }
