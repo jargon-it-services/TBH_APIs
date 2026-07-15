@@ -147,7 +147,15 @@ namespace TheBeautyHubAPI.Controllers
             {
                 // Log the exception to database
                 await _exceptionLogService.LogExceptionAsync(ex, null, $"CreateAccount - AccountCode: {request?.AccountCode}");
-                return StatusCode(500, new { error = "An error occurred while creating the account" });
+
+                // TEMPORARY: Return detailed error for debugging
+                return StatusCode(500, new
+                {
+                    error = "An error occurred while creating the account",
+                    details = ex.Message,
+                    innerError = ex.InnerException?.Message,
+                    stackTrace = ex.StackTrace
+                });
             }
         }
 
