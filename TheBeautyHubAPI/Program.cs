@@ -87,12 +87,12 @@ using (var scope = app.Services.CreateScope())
     var dbContext = scope.ServiceProvider.GetRequiredService<BeautyHubDbContext>();
     try
     {
-        // TEMPORARY: Drop and recreate database to clear migration history
-        Console.WriteLine("⚠️ Dropping existing database...");
-        await dbContext.Database.EnsureDeletedAsync();
-        Console.WriteLine("✅ Database dropped");
+        // TEMPORARY: Clear migration history to force fresh schema creation
+        Console.WriteLine("⚠️ Clearing migration history...");
+        await dbContext.Database.ExecuteSqlRawAsync("DROP TABLE IF EXISTS \"__EFMigrationsHistory\";");
+        Console.WriteLine("✅ Migration history cleared");
 
-        // Apply pending migrations on fresh database
+        // Apply pending migrations on fresh start
         await dbContext.Database.MigrateAsync();
         Console.WriteLine("✅ Database migrations applied successfully");
     }
