@@ -18,14 +18,14 @@ namespace TheBeautyHubData.Repositories
             _context = context;
         }
 
-        public async Task<Transaction> InsertTransactionAsync(Transaction transaction)
+        public async Task<Transaction> InsertAsync(Transaction transaction)
         {
             _context.Transactions.Add(transaction);
             await _context.SaveChangesAsync();
             return transaction;
         }
 
-        public async Task<Transaction> UpdateTransactionAsync(Transaction transaction)
+        public async Task<Transaction> UpdateAsync(Transaction transaction)
         {
             transaction.LastUpdated = DateTime.UtcNow;
             _context.Transactions.Update(transaction);
@@ -33,7 +33,7 @@ namespace TheBeautyHubData.Repositories
             return transaction;
         }
 
-        public async Task<int> DeleteTransactionAsync(Guid transactionId)
+        public async Task<int> DeleteAsync(Guid transactionId)
         {
             var transaction = await _context.Transactions.FindAsync(transactionId);
             if (transaction == null) return 0;
@@ -44,24 +44,31 @@ namespace TheBeautyHubData.Repositories
             return 1;
         }
 
-        public async Task<Transaction?> GetTransactionByIdAsync(Guid transactionId)
+        public async Task<Transaction?> GetByIdAsync(Guid transactionId)
         {
             return await _context.Transactions
                 .Where(t => t.TransactionId == transactionId && !t.IsDeleted)
                 .FirstOrDefaultAsync();
         }
 
-        public async Task<IEnumerable<Transaction>> GetAllTransactionsAsync()
+        public async Task<IEnumerable<Transaction>> GetAllAsync()
         {
             return await _context.Transactions
                 .Where(t => !t.IsDeleted)
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<Transaction>> GetTransactionsByAccountIdAsync(Guid accountId)
+        public async Task<IEnumerable<Transaction>> GetByAccountIdAsync(Guid accountId)
         {
             return await _context.Transactions
                 .Where(t => t.AccountId == accountId && !t.IsDeleted)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Transaction>> GetByFirmIdAsync(Guid firmId)
+        {
+            return await _context.Transactions
+                .Where(t => t.FirmId == firmId && !t.IsDeleted)
                 .ToListAsync();
         }
     }

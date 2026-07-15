@@ -78,5 +78,23 @@ namespace TheBeautyHubData.Repositories
                 .Where(u => u.AccountId == accountId && !u.IsDeleted)
                 .ToListAsync();
         }
+
+        public async Task<int> UpdateUserPasswordAsync(Guid userId, byte[] passwordHash)
+        {
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null) return 0;
+
+            user.UserPasswordHash = passwordHash;
+            user.LastUpdated = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+            return 1;
+        }
+
+        public async Task<IEnumerable<User>> GetUsersByManagerIdAsync(Guid managerId)
+        {
+            return await _context.Users
+                .Where(u => u.ManagerId == managerId && !u.IsDeleted)
+                .ToListAsync();
+        }
     }
 }

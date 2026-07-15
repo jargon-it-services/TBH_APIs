@@ -60,5 +60,19 @@ namespace TheBeautyHubData.Repositories
                 .Where(s => s.AccountId == accountId)
                 .ToListAsync();
         }
+
+        public async Task<IEnumerable<Subscription>> GetActiveSubscriptionsByAccountIdAsync(Guid accountId)
+        {
+            return await _context.Subscriptions
+                .Where(s => s.AccountId == accountId && s.Status == "Active")
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Subscription>> GetSubscriptionsByPlanIdAsync(Guid planId)
+        {
+            return await _context.Subscriptions
+                .Where(s => s.PlanId == planId)
+                .ToListAsync();
+        }
     }
 }
