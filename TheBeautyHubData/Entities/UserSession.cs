@@ -28,13 +28,11 @@ namespace TheBeautyHubData.Entities
         /// Date and time when session was created (UTC)
         /// </summary>
         [Required]
-        [Column(TypeName = "datetime2(7)")]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         /// <summary>
         /// Date and time when session was last seen
         /// </summary>
-        [Column(TypeName = "datetime2(7)")]
         public DateTime? LastSeenAt { get; set; }
 
         /// <summary>
@@ -72,13 +70,11 @@ namespace TheBeautyHubData.Entities
         /// Date and time when refresh token expires
         /// </summary>
         [Required]
-        [Column(TypeName = "datetime2(7)")]
         public DateTime RefreshTokenExpiresAt { get; set; }
 
         /// <summary>
         /// Date and time when session was revoked
         /// </summary>
-        [Column(TypeName = "datetime2(7)")]
         public DateTime? RevokedAt { get; set; }
 
         /// <summary>

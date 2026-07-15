@@ -53,13 +53,11 @@ namespace TheBeautyHubData.Entities
         /// Date and time when transaction was created (UTC)
         /// </summary>
         [Required]
-        [Column(TypeName = "datetime2(7)")]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         /// <summary>
         /// Date and time when transaction was last updated
         /// </summary>
-        [Column(TypeName = "datetime2(7)")]
         public DateTime? LastUpdated { get; set; }
 
         /// <summary>
@@ -71,25 +69,21 @@ namespace TheBeautyHubData.Entities
         /// <summary>
         /// Date when transaction was posted
         /// </summary>
-        [Column(TypeName = "datetime2(7)")]
         public DateTime? PostedDate { get; set; }
 
         /// <summary>
         /// Date of the transaction
         /// </summary>
-        [Column(TypeName = "datetime2(7)")]
         public DateTime? TransactionDate { get; set; }
 
         /// <summary>
         /// Check-in time
         /// </summary>
-        [Column(TypeName = "datetime2(7)")]
         public DateTime? CheckInTime { get; set; }
 
         /// <summary>
         /// Check-out time
         /// </summary>
-        [Column(TypeName = "datetime2(7)")]
         public DateTime? CheckOutTime { get; set; }
 
         // Navigation properties

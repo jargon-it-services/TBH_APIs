@@ -40,7 +40,6 @@ namespace TheBeautyHubData.Entities
         /// <summary>
         /// Date and time when subscription expires
         /// </summary>
-        [Column(TypeName = "datetime2(7)")]
         public DateTime? ExpiryOn { get; set; }
 
         /// <summary>
@@ -52,7 +51,6 @@ namespace TheBeautyHubData.Entities
         /// Date and time when subscription was created
         /// </summary>
         [Required]
-        [Column(TypeName = "datetime2(7)")]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         /// <summary>

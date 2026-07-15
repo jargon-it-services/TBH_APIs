@@ -36,13 +36,11 @@ namespace TheBeautyHubData.Entities
         /// Date and time when report was created (UTC)
         /// </summary>
         [Required]
-        [Column(TypeName = "datetime2(7)")]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         /// <summary>
         /// Date and time when report was last updated
         /// </summary>
-        [Column(TypeName = "datetime2(7)")]
         public DateTime? LastUpdated { get; set; }
 
         // Navigation properties

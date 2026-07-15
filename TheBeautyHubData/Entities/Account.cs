@@ -57,7 +57,6 @@ namespace TheBeautyHubData.Entities
         /// <summary>
         /// Date and time when trial period started
         /// </summary>
-        [Column(TypeName = "datetime2(7)")]
         public DateTime? TrialStartedOn { get; set; }
 
         /// <summary>
@@ -68,7 +67,6 @@ namespace TheBeautyHubData.Entities
         /// <summary>
         /// Date and time when trial period expires
         /// </summary>
-        [Column(TypeName = "datetime2(7)")]
         public DateTime? TrialExpiredOn { get; set; }
 
         /// <summary>
@@ -80,13 +78,11 @@ namespace TheBeautyHubData.Entities
         /// Date and time when account was created (UTC)
         /// </summary>
         [Required]
-        [Column(TypeName = "datetime2(7)")]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         /// <summary>
         /// Date and time when account was last updated
         /// </summary>
-        [Column(TypeName = "datetime2(7)")]
         public DateTime? LastUpdated { get; set; }
 
         /// <summary>

@@ -46,7 +46,6 @@ namespace TheBeautyHubData.Entities
         /// Date and time when exception occurred (UTC)
         /// </summary>
         [Required]
-        [Column(TypeName = "datetime2(7)")]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         // Navigation properties
