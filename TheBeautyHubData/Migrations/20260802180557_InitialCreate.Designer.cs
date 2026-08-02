@@ -12,7 +12,7 @@ using TheBeautyHubData.Context;
 namespace TheBeautyHubData.Migrations
 {
     [DbContext(typeof(BeautyHubDbContext))]
-    [Migration("20260715055636_InitialCreate")]
+    [Migration("20260802180557_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
