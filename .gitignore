@@ -217,3 +217,7 @@ $RECYCLE.BIN/
 # Custom
 Deploy/
 *.orig
+
+.env
+*.env
+docker-compose.override.yml
