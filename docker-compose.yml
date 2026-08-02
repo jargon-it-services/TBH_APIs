@@ -12,5 +12,4 @@ services:
       ASPNETCORE_ENVIRONMENT: Production
       ConnectionStrings__DefaultConnection: ${DB_CONNECTION}
     restart: unless-stopped
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+    network_mode: host
