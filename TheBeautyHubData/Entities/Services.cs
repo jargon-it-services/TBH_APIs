@@ -72,6 +72,60 @@ namespace TheBeautyHubData.Entities
         [Column(TypeName = "decimal(5,2)")]
         public decimal? IncentivePercentage { get; set; }
 
+        [Required]
+        [StringLength(100)]
+        public string Category { get; set; } = string.Empty;
+
+        [Required]
+        public int DurationMinutes { get; set; }
+
+        [Required]
+        [StringLength(20)]
+        public string ApplicableGender { get; set; } = "unisex";
+
+        [Required]
+        [Column("Type")]
+        [StringLength(30)]
+        public string OfferingType { get; set; } = "in_salon";
+
+        [Required]
+        [StringLength(20)]
+        public string Status { get; set; } = "active";
+
+        [Required]
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal MaterialCost { get; set; }
+
+        [Required]
+        [StringLength(20)]
+        public string CommissionType { get; set; } = "flat";
+
+        [Required]
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal CommissionValue { get; set; }
+
+        [Required]
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal OtherCost { get; set; }
+
+        [Required]
+        public bool HomeServiceAvailable { get; set; }
+
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal? HomeVisitCharges { get; set; }
+
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal? ServiceRadiusKm { get; set; }
+
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal? ExtraChargePerKm { get; set; }
+
+        [Required]
+        public bool AllBranches { get; set; } = true;
+
+        [StringLength(500)]
+        public string? Photo { get; set; }
+
         /// <summary>
         /// User ID who created this service
         /// </summary>
@@ -112,5 +166,7 @@ namespace TheBeautyHubData.Entities
         /// </summary>
         [ForeignKey("ServiceTypeId")]
         public virtual TransactionType? ServiceType { get; set; }
+
+        public virtual ICollection<BranchService> BranchServices { get; set; } = new List<BranchService>();
     }
 }

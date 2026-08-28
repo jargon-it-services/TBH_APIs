@@ -77,13 +77,10 @@ namespace TheBeautyHubAPI
             CreateMap<CreateExpensesTypeDto, ExpensesType>();
             CreateMap<UpdateExpensesTypeDto, ExpensesType>();
 
-            // Services mappings
-            CreateMap<CreateServicesRequest, CreateServicesDto>();
-            CreateMap<UpdateServicesRequest, UpdateServicesDto>();
-            CreateMap<ServicesDto, ServicesResponse>();
-            CreateMap<Services, ServicesDto>();
-            CreateMap<CreateServicesDto, Services>();
-            CreateMap<UpdateServicesDto, Services>();
+            CreateMap<ServiceCatalogItemDto, ServiceCatalogItemResponse>();
+            CreateMap<ServiceListItemDto, ServiceListItemResponse>();
+            CreateMap<ServiceDetailDto, ServiceDetailResponse>();
+            CreateMap<ServiceBranchItemDto, ServiceBranchItemResponse>();
 
             // TransactionType mappings
             CreateMap<CreateTransactionTypeRequest, CreateTransactionTypeDto>();

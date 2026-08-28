@@ -422,6 +422,36 @@ namespace TheBeautyHubData.Context
                 entity.Property(e => e.IsDeleted)
                     .HasDefaultValue(false);
 
+                entity.Property(e => e.DurationMinutes)
+                    .HasDefaultValue(0);
+
+                entity.Property(e => e.ApplicableGender)
+                    .HasDefaultValue("unisex");
+
+                entity.Property(e => e.OfferingType)
+                    .HasDefaultValue("in_salon");
+
+                entity.Property(e => e.Status)
+                    .HasDefaultValue("active");
+
+                entity.Property(e => e.MaterialCost)
+                    .HasDefaultValue(0);
+
+                entity.Property(e => e.CommissionType)
+                    .HasDefaultValue("flat");
+
+                entity.Property(e => e.CommissionValue)
+                    .HasDefaultValue(0);
+
+                entity.Property(e => e.OtherCost)
+                    .HasDefaultValue(0);
+
+                entity.Property(e => e.HomeServiceAvailable)
+                    .HasDefaultValue(false);
+
+                entity.Property(e => e.AllBranches)
+                    .HasDefaultValue(true);
+
                 entity.ToTable(t =>
                 {
                     t.HasCheckConstraint("CK_Services_IncentivePercentage",
@@ -717,7 +747,7 @@ namespace TheBeautyHubData.Context
                     .OnDelete(DeleteBehavior.Cascade);
 
                 entity.HasOne(e => e.Service)
-                    .WithMany()
+                    .WithMany(s => s.BranchServices)
                     .HasForeignKey(e => e.ServiceId)
                     .OnDelete(DeleteBehavior.Restrict);
             });

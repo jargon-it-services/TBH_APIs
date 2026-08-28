@@ -26,7 +26,7 @@ builder.Services.AddScoped<IFirmRepository, FirmRepository>();
 builder.Services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
 builder.Services.AddScoped<IWalletRepository, WalletRepository>();
 //builder.Services.AddScoped<IExpensesTypeRepository, ExpensesTypeRepository>();
-//builder.Services.AddScoped<IServicesRepository, ServicesRepository>();
+builder.Services.AddScoped<IServicesRepository, ServicesRepository>();
 //builder.Services.AddScoped<ITransactionTypeRepository, TransactionTypeRepository>();
 //builder.Services.AddScoped<ITransactionRulesRepository, TransactionRulesRepository>();
 builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
@@ -48,7 +48,7 @@ builder.Services.AddScoped<IFirmService, FirmService>();
 builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
 builder.Services.AddScoped<IWalletService, WalletService>();
 //builder.Services.AddScoped<IExpensesTypeService, ExpensesTypeService>();
-//builder.Services.AddScoped<IServicesService, ServicesService>();
+builder.Services.AddScoped<IServicesService, ServicesService>();
 //builder.Services.AddScoped<ITransactionTypeService, TransactionTypeService>();
 //builder.Services.AddScoped<ITransactionRulesService, TransactionRulesService>();
 builder.Services.AddScoped<ITransactionService, TransactionService>();
@@ -62,6 +62,7 @@ builder.Services.AddScoped<IBranchService, BranchService>();
 builder.Services.AddScoped<IStaffService, StaffService>();
 builder.Services.AddScoped<TheBeautyHubAPI.Helpers.BranchLogoStorage>();
 builder.Services.AddScoped<TheBeautyHubAPI.Helpers.StaffFileStorage>();
+builder.Services.AddScoped<TheBeautyHubAPI.Helpers.ServicePhotoStorage>();
 builder.Services.AddBeautyHubAuth(builder.Configuration);
 
 // Configure AutoMapper

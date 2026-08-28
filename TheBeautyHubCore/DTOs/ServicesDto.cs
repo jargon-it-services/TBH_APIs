@@ -1,57 +1,82 @@
 using System;
+using System.Collections.Generic;
 
 namespace TheBeautyHubCore.DTOs
 {
-    /// <summary>
-    /// DTO for Services entity.
-    /// Used for retrieving service information.
-    /// </summary>
-    public class ServicesDto
+    public class ServiceCatalogItemDto
     {
-        public Guid ServiceId { get; set; }
-        public string ServiceName { get; set; } = string.Empty;
-        public string? ServiceDescription { get; set; }
-        public decimal ServicePrice { get; set; }
-        public Guid? ServiceTypeId { get; set; }
-        public Guid AccountId { get; set; }
-        public Guid? FirmId { get; set; }
-        public bool IsIncentiveApplicable { get; set; }
-        public decimal? IncentiveAmount { get; set; }
-        public int? IncentivePercentage { get; set; }
-        public Guid? CreatedBy { get; set; }
-        public DateTime? CreatedAt { get; set; }
+        public Guid Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public bool Active { get; set; }
     }
 
-    /// <summary>
-    /// DTO for creating a new service.
-    /// </summary>
-    public class CreateServicesDto
+    public class ServiceListItemDto
     {
-        public string ServiceName { get; set; } = string.Empty;
-        public string? ServiceDescription { get; set; }
-        public decimal ServicePrice { get; set; }
-        public Guid? ServiceTypeId { get; set; }
-        public Guid AccountId { get; set; }
-        public Guid? FirmId { get; set; }
-        public bool IsIncentiveApplicable { get; set; }
-        public decimal? IncentiveAmount { get; set; }
-        public int? IncentivePercentage { get; set; }
-        public Guid? CreatedBy { get; set; }
+        public Guid Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Category { get; set; } = string.Empty;
+        public string ApplicableGender { get; set; } = string.Empty;
+        public int DurationMinutes { get; set; }
+        public decimal CustomerPrice { get; set; }
+        public string Status { get; set; } = string.Empty;
+        public string Type { get; set; } = string.Empty;
+        public string? Photo { get; set; }
     }
 
-    /// <summary>
-    /// DTO for updating an existing service.
-    /// </summary>
-    public class UpdateServicesDto
+    public class ServiceBranchItemDto
     {
-        public Guid ServiceId { get; set; }
-        public string ServiceName { get; set; } = string.Empty;
-        public string? ServiceDescription { get; set; }
-        public decimal ServicePrice { get; set; }
-        public Guid? ServiceTypeId { get; set; }
-        public Guid? FirmId { get; set; }
-        public bool IsIncentiveApplicable { get; set; }
-        public decimal? IncentiveAmount { get; set; }
-        public int? IncentivePercentage { get; set; }
+        public Guid Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+    }
+
+    public class ServiceDetailDto
+    {
+        public Guid Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public string Category { get; set; } = string.Empty;
+        public int DurationMinutes { get; set; }
+        public string ApplicableGender { get; set; } = string.Empty;
+        public string Type { get; set; } = string.Empty;
+        public string Status { get; set; } = string.Empty;
+        public decimal CustomerPrice { get; set; }
+        public decimal MaterialCost { get; set; }
+        public string CommissionType { get; set; } = string.Empty;
+        public decimal CommissionValue { get; set; }
+        public decimal OtherCost { get; set; }
+        public bool HomeServiceAvailable { get; set; }
+        public decimal? HomeVisitCharges { get; set; }
+        public decimal? ServiceRadiusKm { get; set; }
+        public decimal? ExtraChargePerKm { get; set; }
+        public bool AllBranches { get; set; }
+        public List<ServiceBranchItemDto> Branches { get; set; } = new();
+        public string? Photo { get; set; }
+    }
+
+    public class SaveServiceDto
+    {
+        public Guid AccountId { get; set; }
+        public Guid? CreatedBy { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public string Category { get; set; } = string.Empty;
+        public int DurationMinutes { get; set; }
+        public string ApplicableGender { get; set; } = string.Empty;
+        public string Type { get; set; } = string.Empty;
+        public string Status { get; set; } = string.Empty;
+        public decimal CustomerPrice { get; set; }
+        public decimal MaterialCost { get; set; }
+        public string CommissionType { get; set; } = string.Empty;
+        public decimal CommissionValue { get; set; }
+        public decimal OtherCost { get; set; }
+        public bool HomeServiceAvailable { get; set; }
+        public decimal? HomeVisitCharges { get; set; }
+        public decimal? ServiceRadiusKm { get; set; }
+        public decimal? ExtraChargePerKm { get; set; }
+        public bool AllBranches { get; set; }
+        public List<Guid>? Branches { get; set; }
+        public string? Photo { get; set; }
+        public bool RemovePhoto { get; set; }
+        public bool HasNewPhoto { get; set; }
     }
 }

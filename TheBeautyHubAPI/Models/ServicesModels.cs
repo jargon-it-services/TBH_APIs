@@ -1,55 +1,228 @@
 using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Http;
 
 namespace TheBeautyHubAPI.Models
 {
-    /// <summary>
-    /// Request model for creating a new service.
-    /// </summary>
-    public class CreateServicesRequest
+    public class ServiceCatalogItemResponse
     {
-        public string ServiceName { get; set; } = string.Empty;
-        public string? ServiceDescription { get; set; }
-        public decimal ServicePrice { get; set; }
-        public Guid? ServiceTypeId { get; set; }
-        public Guid AccountId { get; set; }
-        public Guid? FirmId { get; set; }
-        public bool IsIncentiveApplicable { get; set; }
-        public decimal? IncentiveAmount { get; set; }
-        public int? IncentivePercentage { get; set; }
-        public Guid? CreatedBy { get; set; }
+        [JsonPropertyName("id")]
+        public Guid Id { get; set; }
+
+        [JsonPropertyName("name")]
+        public string Name { get; set; } = string.Empty;
+
+        [JsonPropertyName("active")]
+        public bool Active { get; set; }
     }
 
-    /// <summary>
-    /// Request model for updating an existing service.
-    /// </summary>
-    public class UpdateServicesRequest
+    public class ServiceCatalogDataResponse
     {
-        public string ServiceName { get; set; } = string.Empty;
-        public string? ServiceDescription { get; set; }
-        public decimal ServicePrice { get; set; }
-        public Guid? ServiceTypeId { get; set; }
-        public Guid? FirmId { get; set; }
-        public bool IsIncentiveApplicable { get; set; }
-        public decimal? IncentiveAmount { get; set; }
-        public int? IncentivePercentage { get; set; }
+        [JsonPropertyName("services")]
+        public IEnumerable<ServiceCatalogItemResponse> Services { get; set; } = Array.Empty<ServiceCatalogItemResponse>();
     }
 
-    /// <summary>
-    /// Response model for service information.
-    /// </summary>
-    public class ServicesResponse
+    public class ServiceListItemResponse
     {
-        public Guid ServiceId { get; set; }
-        public string ServiceName { get; set; } = string.Empty;
-        public string? ServiceDescription { get; set; }
-        public decimal ServicePrice { get; set; }
-        public Guid? ServiceTypeId { get; set; }
-        public Guid AccountId { get; set; }
-        public Guid? FirmId { get; set; }
-        public bool IsIncentiveApplicable { get; set; }
-        public decimal? IncentiveAmount { get; set; }
-        public int? IncentivePercentage { get; set; }
-        public Guid? CreatedBy { get; set; }
-        public DateTime? CreatedAt { get; set; }
+        [JsonPropertyName("id")]
+        public Guid Id { get; set; }
+
+        [JsonPropertyName("name")]
+        public string Name { get; set; } = string.Empty;
+
+        [JsonPropertyName("category")]
+        public string Category { get; set; } = string.Empty;
+
+        [JsonPropertyName("applicable_gender")]
+        public string ApplicableGender { get; set; } = string.Empty;
+
+        [JsonPropertyName("duration_minutes")]
+        public int DurationMinutes { get; set; }
+
+        [JsonPropertyName("customer_price")]
+        public decimal CustomerPrice { get; set; }
+
+        [JsonPropertyName("status")]
+        public string Status { get; set; } = string.Empty;
+
+        [JsonPropertyName("type")]
+        public string Type { get; set; } = string.Empty;
+
+        [JsonPropertyName("photo")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string? Photo { get; set; }
+    }
+
+    public class ServiceListDataResponse
+    {
+        [JsonPropertyName("services")]
+        public IEnumerable<ServiceListItemResponse> Services { get; set; } = Array.Empty<ServiceListItemResponse>();
+    }
+
+    public class ServiceBranchItemResponse
+    {
+        [JsonPropertyName("id")]
+        public Guid Id { get; set; }
+
+        [JsonPropertyName("name")]
+        public string Name { get; set; } = string.Empty;
+    }
+
+    public class ServiceDetailResponse
+    {
+        [JsonPropertyName("id")]
+        public Guid Id { get; set; }
+
+        [JsonPropertyName("name")]
+        public string Name { get; set; } = string.Empty;
+
+        [JsonPropertyName("description")]
+        public string Description { get; set; } = string.Empty;
+
+        [JsonPropertyName("category")]
+        public string Category { get; set; } = string.Empty;
+
+        [JsonPropertyName("duration_minutes")]
+        public int DurationMinutes { get; set; }
+
+        [JsonPropertyName("applicable_gender")]
+        public string ApplicableGender { get; set; } = string.Empty;
+
+        [JsonPropertyName("type")]
+        public string Type { get; set; } = string.Empty;
+
+        [JsonPropertyName("status")]
+        public string Status { get; set; } = string.Empty;
+
+        [JsonPropertyName("customer_price")]
+        public decimal CustomerPrice { get; set; }
+
+        [JsonPropertyName("material_cost")]
+        public decimal MaterialCost { get; set; }
+
+        [JsonPropertyName("commission_type")]
+        public string CommissionType { get; set; } = string.Empty;
+
+        [JsonPropertyName("commission_value")]
+        public decimal CommissionValue { get; set; }
+
+        [JsonPropertyName("other_cost")]
+        public decimal OtherCost { get; set; }
+
+        [JsonPropertyName("home_service_available")]
+        public bool HomeServiceAvailable { get; set; }
+
+        [JsonPropertyName("home_visit_charges")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public decimal? HomeVisitCharges { get; set; }
+
+        [JsonPropertyName("service_radius_km")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public decimal? ServiceRadiusKm { get; set; }
+
+        [JsonPropertyName("extra_charge_per_km")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public decimal? ExtraChargePerKm { get; set; }
+
+        [JsonPropertyName("all_branches")]
+        public bool AllBranches { get; set; }
+
+        [JsonPropertyName("branches")]
+        public List<ServiceBranchItemResponse> Branches { get; set; } = new();
+
+        [JsonPropertyName("photo")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string? Photo { get; set; }
+    }
+
+    public class ServiceSavedDataResponse
+    {
+        [JsonPropertyName("saved")]
+        public bool Saved { get; set; }
+    }
+
+    public class ServiceDeletedDataResponse
+    {
+        [JsonPropertyName("deleted")]
+        public bool Deleted { get; set; }
+    }
+
+    public class SaveServiceRequest
+    {
+        [Required]
+        [JsonPropertyName("name")]
+        public string Name { get; set; } = string.Empty;
+
+        [Required]
+        [JsonPropertyName("description")]
+        public string Description { get; set; } = string.Empty;
+
+        [Required]
+        [JsonPropertyName("category")]
+        public string Category { get; set; } = string.Empty;
+
+        [Required]
+        [JsonPropertyName("duration_minutes")]
+        public int? DurationMinutes { get; set; }
+
+        [Required]
+        [JsonPropertyName("applicable_gender")]
+        public string ApplicableGender { get; set; } = string.Empty;
+
+        [Required]
+        [JsonPropertyName("type")]
+        public string Type { get; set; } = string.Empty;
+
+        [Required]
+        [JsonPropertyName("status")]
+        public string Status { get; set; } = string.Empty;
+
+        [Required]
+        [JsonPropertyName("customer_price")]
+        public decimal? CustomerPrice { get; set; }
+
+        [Required]
+        [JsonPropertyName("material_cost")]
+        public decimal? MaterialCost { get; set; }
+
+        [Required]
+        [JsonPropertyName("commission_type")]
+        public string CommissionType { get; set; } = string.Empty;
+
+        [Required]
+        [JsonPropertyName("commission_value")]
+        public decimal? CommissionValue { get; set; }
+
+        [Required]
+        [JsonPropertyName("other_cost")]
+        public decimal? OtherCost { get; set; }
+
+        [Required]
+        [JsonPropertyName("home_service_available")]
+        public bool? HomeServiceAvailable { get; set; }
+
+        [JsonPropertyName("home_visit_charges")]
+        public decimal? HomeVisitCharges { get; set; }
+
+        [JsonPropertyName("service_radius_km")]
+        public decimal? ServiceRadiusKm { get; set; }
+
+        [JsonPropertyName("extra_charge_per_km")]
+        public decimal? ExtraChargePerKm { get; set; }
+
+        [Required]
+        [JsonPropertyName("all_branches")]
+        public bool? AllBranches { get; set; }
+
+        [JsonPropertyName("branches")]
+        public List<Guid>? Branches { get; set; }
+
+        [JsonPropertyName("remove_photo")]
+        public bool RemovePhoto { get; set; }
+
+        [JsonIgnore]
+        public IFormFile? Photo { get; set; }
     }
 }

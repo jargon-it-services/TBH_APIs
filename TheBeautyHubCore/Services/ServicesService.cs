@@ -2,100 +2,228 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using AutoMapper;
 using TheBeautyHubCore.DTOs;
 using TheBeautyHubCore.Services.Interfaces;
-using TheBeautyHubData.Entities;
-using TheBeautyHubData.Repositories;
 using TheBeautyHubData.Repositories.Interfaces;
+using ServiceEntity = TheBeautyHubData.Entities.Services;
 
 namespace TheBeautyHubCore.Services
 {
-    /// <summary>
-    /// Service implementation for Services business logic.
-    /// Handles validation and business rules for services operations.
-    /// </summary>
     public class ServicesService : IServicesService
     {
         private readonly IServicesRepository _servicesRepository;
-        private readonly IMapper _mapper;
 
-        public ServicesService(IServicesRepository servicesRepository, IMapper mapper)
+        public ServicesService(IServicesRepository servicesRepository)
         {
             _servicesRepository = servicesRepository;
-            _mapper = mapper;
         }
 
-        public async Task<ServicesDto> CreateServicesAsync(CreateServicesDto createServicesDto)
+        public async Task<IReadOnlyList<ServiceCatalogItemDto>> GetCatalogAsync(Guid accountId)
         {
-            if (createServicesDto == null)
-                throw new ArgumentNullException(nameof(createServicesDto));
-
-            if (string.IsNullOrWhiteSpace(createServicesDto.ServiceName))
-                throw new ArgumentException("Service name is required.");
-
-            if (createServicesDto.ServicePrice < 0)
-                throw new ArgumentException("Service price cannot be negative.");
-
-            if (createServicesDto.IncentivePercentage.HasValue && 
-                (createServicesDto.IncentivePercentage.Value < 0 || createServicesDto.IncentivePercentage.Value > 100))
-                throw new ArgumentException("Incentive percentage must be between 0 and 100.");
-
-            var services = _mapper.Map<TheBeautyHubData.Entities.Services>(createServicesDto);
-            var createdServices = await _servicesRepository.InsertServicesAsync(services);
-            return _mapper.Map<ServicesDto>(createdServices);
+            var services = await _servicesRepository.GetByAccountIdAsync(accountId);
+            return services.Select(s => new ServiceCatalogItemDto
+            {
+                Id = s.ServiceId,
+                Name = s.ServiceName,
+                Active = string.Equals(s.Status, "active", StringComparison.OrdinalIgnoreCase)
+            }).ToList();
         }
 
-        public async Task<ServicesDto> UpdateServicesAsync(UpdateServicesDto updateServicesDto)
+        public async Task<IReadOnlyList<ServiceListItemDto>> GetListAsync(Guid accountId)
         {
-            if (updateServicesDto == null)
-                throw new ArgumentNullException(nameof(updateServicesDto));
-
-            if (string.IsNullOrWhiteSpace(updateServicesDto.ServiceName))
-                throw new ArgumentException("Service name is required.");
-
-            if (updateServicesDto.ServicePrice < 0)
-                throw new ArgumentException("Service price cannot be negative.");
-
-            if (updateServicesDto.IncentivePercentage.HasValue && 
-                (updateServicesDto.IncentivePercentage.Value < 0 || updateServicesDto.IncentivePercentage.Value > 100))
-                throw new ArgumentException("Incentive percentage must be between 0 and 100.");
-
-            var existingServices = await _servicesRepository.GetServicesByIdAsync(updateServicesDto.ServiceId);
-            if (existingServices == null)
-                throw new KeyNotFoundException($"Service with ID {updateServicesDto.ServiceId} not found.");
-
-            var services = _mapper.Map<TheBeautyHubData.Entities.Services>(updateServicesDto);
-            var updatedServices = await _servicesRepository.UpdateServicesAsync(services);
-            return _mapper.Map<ServicesDto>(updatedServices);
+            var services = await _servicesRepository.GetByAccountIdAsync(accountId);
+            return services.Select(s => new ServiceListItemDto
+            {
+                Id = s.ServiceId,
+                Name = s.ServiceName,
+                Category = s.Category,
+                ApplicableGender = s.ApplicableGender,
+                DurationMinutes = s.DurationMinutes,
+                CustomerPrice = s.ServicePrice,
+                Status = s.Status,
+                Type = s.OfferingType,
+                Photo = s.Photo
+            }).ToList();
         }
 
-        public async Task<bool> DeleteServicesAsync(Guid serviceId)
+        public async Task<ServiceDetailDto?> GetDetailsAsync(Guid serviceId, Guid accountId)
         {
-            var existingServices = await _servicesRepository.GetServicesByIdAsync(serviceId);
-            if (existingServices == null)
-                throw new KeyNotFoundException($"Service with ID {serviceId} not found.");
-
-            var result = await _servicesRepository.DeleteServicesAsync(serviceId);
-            return result > 0;
+            var service = await _servicesRepository.GetDetailsByIdAsync(serviceId, accountId);
+            return service == null ? null : MapDetail(service);
         }
 
-        public async Task<ServicesDto?> GetServicesByIdAsync(Guid serviceId)
+        public async Task CreateAsync(SaveServiceDto dto)
         {
-            var services = await _servicesRepository.GetServicesByIdAsync(serviceId);
-            return services != null ? _mapper.Map<ServicesDto>(services) : null;
+            ValidateWrite(dto);
+            var branchIds = await ResolveBranchIdsAsync(dto);
+
+            var service = new ServiceEntity
+            {
+                AccountId = dto.AccountId,
+                CreatedBy = dto.CreatedBy,
+                CreatedAt = DateTime.UtcNow,
+                IsDeleted = false
+            };
+            ApplyFields(service, dto);
+
+            var inserted = await _servicesRepository.InsertAsync(service);
+            await _servicesRepository.ReplaceBranchesAsync(inserted.ServiceId, branchIds);
         }
 
-        public async Task<IEnumerable<ServicesDto>> GetServicesByAccountIdAsync(Guid accountId)
+        public async Task UpdateAsync(Guid serviceId, SaveServiceDto dto)
         {
-            var services = await _servicesRepository.GetServicesByAccountIdAsync(accountId);
-            return _mapper.Map<IEnumerable<ServicesDto>>(services);
+            ValidateWrite(dto);
+
+            var existing = await _servicesRepository.GetByIdAsync(serviceId, dto.AccountId);
+            if (existing == null)
+                throw new KeyNotFoundException("Service not found.");
+
+            var branchIds = await ResolveBranchIdsAsync(dto);
+            ApplyFields(existing, dto);
+
+            if (dto.RemovePhoto)
+                existing.Photo = null;
+            else if (dto.HasNewPhoto)
+                existing.Photo = dto.Photo;
+
+            await _servicesRepository.UpdateAsync(existing);
+            await _servicesRepository.ReplaceBranchesAsync(existing.ServiceId, branchIds);
         }
 
-        public async Task<IEnumerable<ServicesDto>> GetAllServicesAsync()
+        public async Task DeleteAsync(Guid serviceId, Guid accountId)
         {
-            var services = await _servicesRepository.GetAllServicesAsync();
-            return _mapper.Map<IEnumerable<ServicesDto>>(services);
+            var existing = await _servicesRepository.GetByIdAsync(serviceId, accountId);
+            if (existing == null)
+                throw new KeyNotFoundException("Service not found.");
+
+            await _servicesRepository.RemoveBranchLinksAsync(serviceId);
+            await _servicesRepository.SoftDeleteAsync(existing);
+        }
+
+        private async Task<List<Guid>> ResolveBranchIdsAsync(SaveServiceDto dto)
+        {
+            if (dto.AllBranches)
+                return new List<Guid>();
+
+            var requested = (dto.Branches ?? new List<Guid>()).Distinct().ToList();
+            if (requested.Count == 0)
+                throw new ArgumentException("branches is required when all_branches is false.");
+
+            var found = await _servicesRepository.GetBranchesByIdsAsync(dto.AccountId, requested);
+            if (found.Count != requested.Count)
+                throw new ArgumentException("One or more branch IDs are invalid.");
+
+            return requested;
+        }
+
+        private static void ApplyFields(ServiceEntity service, SaveServiceDto dto)
+        {
+            var commissionType = dto.CommissionType.Trim().ToLowerInvariant();
+
+            service.ServiceName = dto.Name.Trim();
+            service.ServiceDescription = dto.Description.Trim();
+            service.ServicePrice = dto.CustomerPrice;
+            service.Category = dto.Category.Trim();
+            service.DurationMinutes = dto.DurationMinutes;
+            service.ApplicableGender = dto.ApplicableGender.Trim();
+            service.OfferingType = dto.Type.Trim();
+            service.Status = dto.Status.Trim();
+            service.MaterialCost = dto.MaterialCost;
+            service.CommissionType = commissionType;
+            service.CommissionValue = dto.CommissionValue;
+            service.OtherCost = dto.OtherCost;
+            service.HomeServiceAvailable = dto.HomeServiceAvailable;
+            service.HomeVisitCharges = dto.HomeVisitCharges;
+            service.ServiceRadiusKm = dto.ServiceRadiusKm;
+            service.ExtraChargePerKm = dto.ExtraChargePerKm;
+            service.AllBranches = dto.AllBranches;
+            if (dto.HasNewPhoto)
+                service.Photo = dto.Photo;
+
+            service.IsIncentiveApplicable = dto.CommissionValue > 0;
+            if (commissionType == "percentage")
+            {
+                service.IncentivePercentage = dto.CommissionValue;
+                service.IncentiveAmount = null;
+            }
+            else
+            {
+                service.IncentiveAmount = dto.CommissionValue;
+                service.IncentivePercentage = null;
+            }
+        }
+
+        private static void ValidateWrite(SaveServiceDto dto)
+        {
+            if (string.IsNullOrWhiteSpace(dto.Name))
+                throw new ArgumentException("name is required.");
+            if (string.IsNullOrWhiteSpace(dto.Description))
+                throw new ArgumentException("description is required.");
+            if (string.IsNullOrWhiteSpace(dto.Category))
+                throw new ArgumentException("category is required.");
+            if (dto.DurationMinutes < 0)
+                throw new ArgumentException("duration_minutes must be 0 or greater.");
+            if (string.IsNullOrWhiteSpace(dto.ApplicableGender))
+                throw new ArgumentException("applicable_gender is required.");
+            if (string.IsNullOrWhiteSpace(dto.Type))
+                throw new ArgumentException("type is required.");
+            if (string.IsNullOrWhiteSpace(dto.Status))
+                throw new ArgumentException("status is required.");
+            if (dto.CustomerPrice < 0)
+                throw new ArgumentException("customer_price must be 0 or greater.");
+            if (dto.MaterialCost < 0)
+                throw new ArgumentException("material_cost must be 0 or greater.");
+            if (string.IsNullOrWhiteSpace(dto.CommissionType))
+                throw new ArgumentException("commission_type is required.");
+
+            var commissionType = dto.CommissionType.Trim().ToLowerInvariant();
+            if (commissionType != "percentage" && commissionType != "flat")
+                throw new ArgumentException("commission_type must be percentage or flat.");
+            if (commissionType == "percentage" && (dto.CommissionValue < 0 || dto.CommissionValue > 100))
+                throw new ArgumentException("commission_value must be between 0 and 100 for percentage.");
+            if (dto.CommissionValue < 0)
+                throw new ArgumentException("commission_value must be 0 or greater.");
+            if (dto.OtherCost < 0)
+                throw new ArgumentException("other_cost must be 0 or greater.");
+        }
+
+        private static ServiceDetailDto MapDetail(ServiceEntity service)
+        {
+            var branches = service.AllBranches
+                ? new List<ServiceBranchItemDto>()
+                : service.BranchServices
+                    .Where(bs => bs.Branch != null && !bs.Branch.IsDeleted)
+                    .Select(bs => new ServiceBranchItemDto
+                    {
+                        Id = bs.BranchId,
+                        Name = bs.Branch.Name
+                    })
+                    .OrderBy(b => b.Name)
+                    .ToList();
+
+            return new ServiceDetailDto
+            {
+                Id = service.ServiceId,
+                Name = service.ServiceName,
+                Description = service.ServiceDescription ?? string.Empty,
+                Category = service.Category,
+                DurationMinutes = service.DurationMinutes,
+                ApplicableGender = service.ApplicableGender,
+                Type = service.OfferingType,
+                Status = service.Status,
+                CustomerPrice = service.ServicePrice,
+                MaterialCost = service.MaterialCost,
+                CommissionType = service.CommissionType,
+                CommissionValue = service.CommissionValue,
+                OtherCost = service.OtherCost,
+                HomeServiceAvailable = service.HomeServiceAvailable,
+                HomeVisitCharges = service.HomeVisitCharges,
+                ServiceRadiusKm = service.ServiceRadiusKm,
+                ExtraChargePerKm = service.ExtraChargePerKm,
+                AllBranches = service.AllBranches,
+                Branches = branches,
+                Photo = service.Photo
+            };
         }
     }
 }
