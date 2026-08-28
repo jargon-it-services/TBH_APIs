@@ -1,3 +1,4 @@
+#if false // unused TBH APIs
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -309,3 +310,4 @@ namespace TheBeautyHubAPI.Controllers
         }
     }
 }
+#endif

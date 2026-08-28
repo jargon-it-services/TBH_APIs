@@ -1,3 +1,4 @@
+#if false // unused TBH APIs
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -161,4 +162,4 @@ namespace TheBeautyHubAPI.Controllers
         }
     }
 }
-
+#endif
