@@ -6,8 +6,10 @@ using TheBeautyHubCore.Services.Interfaces;
 
 namespace TheBeautyHubAPI.Controllers
 {
-    [ApiController]
-    [Route("api/[controller]")]
+    /// <summary>
+    /// TBH does not manage AuthCenter sessions. This controller is disabled.
+    /// </summary>
+    [NonController]
     public class UserSessionsController : ControllerBase
     {
         private readonly IUserSessionService _service;

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using TheBeautyHubData.Context;
@@ -11,9 +12,11 @@ using TheBeautyHubData.Context;
 namespace TheBeautyHubData.Migrations
 {
     [DbContext(typeof(BeautyHubDbContext))]
-    partial class BeautyHubDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260827101827_AddBranch")]
+    partial class AddBranch
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

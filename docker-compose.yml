@@ -1,5 +1,7 @@
 version: "3.8"
 
+# Copy .env.example to .env. JWT_SECRET / issuer / audience must match AuthCenter.
+
 services:
   api:
     build:
@@ -8,6 +10,12 @@ services:
     container_name: tbh-api
     environment:
       ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: ${ASPNETCORE_URLS:-http://+:5000}
       ConnectionStrings__DefaultConnection: ${DB_CONNECTION}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_ISSUER: ${JWT_ISSUER:-AuthCenter}
+      JWT_AUDIENCE: ${JWT_AUDIENCE:-AuthCenterClients}
+      AUTHCENTER_BASE_URL: ${AUTHCENTER_BASE_URL:-https://authapi.jargonits.com}
+      AUTHCENTER_APPLICATION_NAME: ${AUTHCENTER_APPLICATION_NAME:-The Beauty Hub}
     restart: unless-stopped
     network_mode: host

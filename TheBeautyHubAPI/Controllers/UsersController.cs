@@ -100,45 +100,6 @@ namespace TheBeautyHubAPI.Controllers
         }
 
         /// <summary>
-        /// Updates user password
-        /// </summary>
-        /// <param name="id">User ID</param>
-        /// <param name="request">Password update request</param>
-        /// <returns>Success status</returns>
-        [HttpPut("{id}/password")]
-        public async Task<ActionResult> UpdateUserPassword(Guid id, [FromBody] UpdateUserPasswordRequest request)
-        {
-            try
-            {
-                if (id != request.UserId)
-                {
-                    return BadRequest(new { error = "User ID in URL does not match request body" });
-                }
-
-                var updateDto = _mapper.Map<UpdateUserPasswordDto>(request);
-                var result = await _userService.UpdateUserPasswordAsync(updateDto);
-                
-                if (result)
-                    return NoContent();
-                
-                return NotFound(new { error = "User not found" });
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(new { error = ex.Message });
-            }
-            catch (InvalidOperationException ex)
-            {
-                return NotFound(new { error = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                await _exceptionLogService.LogExceptionAsync(ex);
-                return StatusCode(500, new { error = "An error occurred while updating the password" });
-            }
-        }
-
-        /// <summary>
         /// Deletes a user (soft delete)
         /// </summary>
         /// <param name="id">User ID</param>

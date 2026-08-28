@@ -154,6 +154,12 @@ namespace TheBeautyHubAPI
             CreateMap<ExceptionLogDto, ExceptionLogResponse>();
             CreateMap<ExceptionLog, ExceptionLogDto>();
             CreateMap<CreateExceptionLogDto, ExceptionLog>();
+
+            // Branch mappings
+            CreateMap<BranchListItemDto, BranchListItemResponse>();
+            CreateMap<BranchDetailDto, BranchDetailResponse>();
+            CreateMap<BranchServiceItemDto, BranchServiceItemResponse>();
+            CreateMap<BranchEmployeeItemDto, BranchEmployeeItemResponse>();
         }
     }
 }

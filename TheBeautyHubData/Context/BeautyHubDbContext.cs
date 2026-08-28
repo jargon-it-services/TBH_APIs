@@ -104,6 +104,21 @@ namespace TheBeautyHubData.Context
         /// </summary>
         public DbSet<ExceptionLog> ExceptionLogs { get; set; }
 
+        /// <summary>
+        /// Branches table
+        /// </summary>
+        public DbSet<Branch> Branches { get; set; }
+
+        /// <summary>
+        /// BranchService junction table
+        /// </summary>
+        public DbSet<BranchService> BranchServices { get; set; }
+
+        /// <summary>
+        /// BranchEmployee junction table
+        /// </summary>
+        public DbSet<BranchEmployee> BranchEmployees { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -656,6 +671,62 @@ namespace TheBeautyHubData.Context
 
                 entity.Property(e => e.CreatedAt)
                     .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                entity.HasOne(e => e.User)
+                    .WithMany()
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // Configure Branch entity
+            modelBuilder.Entity<Branch>(entity =>
+            {
+                entity.HasKey(e => e.BranchId);
+
+                entity.Property(e => e.BranchId)
+                    .HasDefaultValueSql("gen_random_uuid()");
+
+                entity.Property(e => e.CreatedAt)
+                    .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                entity.Property(e => e.IsDeleted)
+                    .HasDefaultValue(false);
+
+                entity.Property(e => e.Status)
+                    .HasDefaultValue("active");
+
+                entity.HasOne(e => e.Account)
+                    .WithMany()
+                    .HasForeignKey(e => e.AccountId)
+                    .IsRequired(false)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // Configure BranchService entity
+            modelBuilder.Entity<BranchService>(entity =>
+            {
+                entity.HasKey(e => new { e.BranchId, e.ServiceId });
+
+                entity.HasOne(e => e.Branch)
+                    .WithMany(b => b.BranchServices)
+                    .HasForeignKey(e => e.BranchId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(e => e.Service)
+                    .WithMany()
+                    .HasForeignKey(e => e.ServiceId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // Configure BranchEmployee entity
+            modelBuilder.Entity<BranchEmployee>(entity =>
+            {
+                entity.HasKey(e => new { e.BranchId, e.UserId });
+
+                entity.HasOne(e => e.Branch)
+                    .WithMany(b => b.BranchEmployees)
+                    .HasForeignKey(e => e.BranchId)
+                    .OnDelete(DeleteBehavior.Cascade);
 
                 entity.HasOne(e => e.User)
                     .WithMany()

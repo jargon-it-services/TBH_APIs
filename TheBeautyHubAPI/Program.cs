@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using TheBeautyHubAPI.Auth;
 using TheBeautyHubData.Context;
 using TheBeautyHubData.Repositories;
 using TheBeautyHubData.Repositories.Interfaces;
@@ -6,6 +7,7 @@ using TheBeautyHubCore.Services.Interfaces;
 using TheBeautyHubCore.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+ConfigureListenUrls(builder);
 
 // Add services to the container
 builder.Services.AddControllers();
@@ -34,6 +36,7 @@ builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
 //builder.Services.AddScoped<IPartnerRepository, PartnerRepository>();
 //builder.Services.AddScoped<IUserSessionRepository, UserSessionRepository>();
 builder.Services.AddScoped<IExceptionLogRepository, ExceptionLogRepository>();
+builder.Services.AddScoped<IBranchRepository, BranchRepository>();
 
 // Register business services
 builder.Services.AddScoped<IAccountService, AccountService>();
@@ -54,6 +57,9 @@ builder.Services.AddScoped<ITransactionService, TransactionService>();
 //builder.Services.AddScoped<IPartnerService, PartnerService>();
 //builder.Services.AddScoped<IUserSessionService, UserSessionService>();
 builder.Services.AddScoped<IExceptionLogService, ExceptionLogService>();
+builder.Services.AddScoped<IBranchService, BranchService>();
+builder.Services.AddScoped<TheBeautyHubAPI.Helpers.BranchLogoStorage>();
+builder.Services.AddBeautyHubAuth(builder.Configuration);
 
 // Configure AutoMapper
 builder.Services.AddAutoMapper(typeof(Program));
@@ -66,8 +72,9 @@ builder.Services.AddSwaggerGen(c =>
     {
         Title = "The Beauty Hub API",
         Version = "v1",
-        Description = "API for managing Beauty Hub accounts, users, firms, plans, subscriptions, wallets, expenses, services, transactions, reports, partners, sessions, and logs"
+        Description = "API for managing Beauty Hub accounts, users, firms, branches, plans, subscriptions, wallets, expenses, services, transactions, reports, partners, sessions, and logs. Protected endpoints require an AuthCenter Bearer token."
     });
+    c.AddBeautyHubSwaggerSecurity();
 });
 
 // Configure CORS
@@ -110,11 +117,30 @@ if (!app.Environment.IsProduction())
 }
 
 app.UseCors("AllowAll");
+app.UseStaticFiles();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
 
-// Listen on all interfaces
-var port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
-app.Run($"http://0.0.0.0:{port}");
+app.Run();
+
+static void ConfigureListenUrls(WebApplicationBuilder builder)
+{
+    // Never call app.Run(url): Kestrel addresses are read-only after the host is built.
+    // ASPNETCORE_URLS (Docker/Kestrel) wins. Otherwise PORT (PaaS). Production defaults to all interfaces.
+    var aspNetUrls = Environment.GetEnvironmentVariable("ASPNETCORE_URLS");
+    if (!string.IsNullOrWhiteSpace(aspNetUrls))
+        return;
+
+    var port = Environment.GetEnvironmentVariable("PORT");
+    if (!string.IsNullOrWhiteSpace(port))
+    {
+        builder.WebHost.UseUrls($"http://0.0.0.0:{port.Trim()}");
+        return;
+    }
+
+    if (!builder.Environment.IsDevelopment())
+        builder.WebHost.UseUrls("http://0.0.0.0:5000");
+}

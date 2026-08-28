@@ -47,11 +47,7 @@ namespace TheBeautyHubCore.Services
             if (!IsValidUserRole(createUserDto.UserRole))
                 throw new ArgumentException("User role must be 'Admin', 'Manager', or 'Employee'.");
 
-            if (string.IsNullOrWhiteSpace(createUserDto.Password))
-                throw new ArgumentException("Password is required.");
-
-            if (createUserDto.Password.Length < 8)
-                throw new ArgumentException("Password must be at least 8 characters long.");
+            // Passwords and login are owned by AuthCenter; TBH stores no login credentials.
 
             // Validate email uniqueness if provided
             if (!string.IsNullOrWhiteSpace(createUserDto.UserEmail))
@@ -82,8 +78,8 @@ namespace TheBeautyHubCore.Services
                     throw new InvalidOperationException("Manager not found.");
             }
 
-            // Hash password
-            var passwordHash = HashPassword(createUserDto.Password);
+            // AuthCenter owns credentials; persist an empty hash so the required column is satisfied.
+            var passwordHash = Array.Empty<byte>();
 
             // Map DTO to Entity
             var user = new User

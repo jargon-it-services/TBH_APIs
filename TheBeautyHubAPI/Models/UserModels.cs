@@ -27,10 +27,6 @@ namespace TheBeautyHubAPI.Models
         [StringLength(20, ErrorMessage = "Mobile number cannot exceed 20 characters")]
         public string? UserMobile { get; set; }
 
-        [Required(ErrorMessage = "Password is required")]
-        [StringLength(100, MinimumLength = 8, ErrorMessage = "Password must be at least 8 characters")]
-        public string Password { get; set; } = string.Empty;
-
         public bool EmailVerified { get; set; }
         
         public bool MobileVerified { get; set; }
