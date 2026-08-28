@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using TheBeautyHubCore.Constants;
 
 namespace TheBeautyHubAPI.Auth
 {
@@ -52,7 +53,7 @@ namespace TheBeautyHubAPI.Auth
             var principal = context.Principal;
             if (principal == null)
             {
-                context.Fail("Invalid token.");
+                context.Fail(ApiMessages.Common.InvalidToken);
                 return;
             }
 
@@ -62,7 +63,7 @@ namespace TheBeautyHubAPI.Auth
 
             if (!Guid.TryParse(userId, out _) || !Guid.TryParse(accountId, out _) || !Guid.TryParse(sessionId, out _))
             {
-                context.Fail("Invalid token.");
+                context.Fail(ApiMessages.Common.InvalidToken);
                 return;
             }
 
@@ -73,7 +74,7 @@ namespace TheBeautyHubAPI.Auth
             var rawToken = context.HttpContext.Items[AuthCenterClaimTypes.RawTokenItemKey] as string;
             if (string.IsNullOrWhiteSpace(rawToken))
             {
-                context.Fail("Invalid token.");
+                context.Fail(ApiMessages.Common.InvalidToken);
                 return;
             }
 
@@ -81,7 +82,7 @@ namespace TheBeautyHubAPI.Auth
             var result = await validator.ValidateAsync(rawToken, context.HttpContext.RequestAborted);
             if (!result.IsValid)
             {
-                context.Fail(result.Error ?? "Token is not valid for The Beauty Hub.");
+                context.Fail(result.Error ?? ApiMessages.Common.TokenNotValidForApp);
                 return;
             }
 
@@ -112,8 +113,8 @@ namespace TheBeautyHubAPI.Auth
             {
                 var hasAuthorization = context.Request.Headers.ContainsKey("Authorization");
                 message = hasAuthorization
-                    ? "Invalid token."
-                    : "Missing Authorization header. Send the AuthCenter access token as Bearer.";
+                    ? ApiMessages.Common.InvalidToken
+                    : ApiMessages.Common.MissingToken;
             }
 
             var payload = JsonSerializer.Serialize(new
@@ -132,7 +133,7 @@ namespace TheBeautyHubAPI.Auth
             var payload = JsonSerializer.Serialize(new
             {
                 status = false,
-                message = "You are not authorized to access this resource."
+                message = ApiMessages.Common.Forbidden
             });
             await context.Response.WriteAsync(payload);
         }

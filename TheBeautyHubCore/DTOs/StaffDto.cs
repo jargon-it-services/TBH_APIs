@@ -88,4 +88,48 @@ namespace TheBeautyHubCore.DTOs
         public bool HasNewPhoto { get; set; }
         public bool HasNewAadhaarCard { get; set; }
     }
+
+    public class SalaryRuleCatalogItemDto
+    {
+        public Guid Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public bool Active { get; set; }
+    }
+
+    public class SalaryRuleListItemDto
+    {
+        public Guid Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string SalaryType { get; set; } = string.Empty;
+        public decimal? FixedSalary { get; set; }
+        public string Status { get; set; } = string.Empty;
+    }
+
+    public class SalaryRuleDetailDto
+    {
+        public Guid Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public string SalaryType { get; set; } = string.Empty;
+        public decimal? FixedSalary { get; set; }
+        public decimal? MonthlyTarget { get; set; }
+        public decimal? TargetBonus { get; set; }
+        public bool AllowAdvanceRecovery { get; set; }
+        public decimal? MaxRecoveryPerMonth { get; set; }
+        public string Status { get; set; } = string.Empty;
+    }
+
+    public class SaveSalaryRuleDto
+    {
+        public Guid AccountId { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public string SalaryType { get; set; } = string.Empty;
+        public decimal? FixedSalary { get; set; }
+        public decimal? MonthlyTarget { get; set; }
+        public decimal? TargetBonus { get; set; }
+        public bool AllowAdvanceRecovery { get; set; }
+        public decimal? MaxRecoveryPerMonth { get; set; }
+        public string Status { get; set; } = string.Empty;
+    }
 }

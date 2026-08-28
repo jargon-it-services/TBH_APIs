@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using TheBeautyHubCore.Constants;
 
 namespace TheBeautyHubAPI.Helpers
 {
@@ -24,10 +25,10 @@ namespace TheBeautyHubAPI.Helpers
         {
             var extension = Path.GetExtension(file.FileName)?.ToLowerInvariant() ?? string.Empty;
             if (!AllowedExtensions.Contains(extension))
-                throw new ArgumentException("Photo must be a jpg, jpeg, png, webp, or gif file.");
+                throw new ArgumentException(ApiMessages.Common.InvalidImageType("photo"));
 
             if (file.Length <= 0 || file.Length > MaxFileBytes)
-                throw new ArgumentException("Photo file size must be greater than 0 and at most 5 MB.");
+                throw new ArgumentException(ApiMessages.Common.FileTooLargeFor("photo"));
 
             var webRoot = string.IsNullOrWhiteSpace(_environment.WebRootPath)
                 ? Path.Combine(_environment.ContentRootPath, "wwwroot")

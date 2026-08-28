@@ -69,13 +69,9 @@ namespace TheBeautyHubAPI
             CreateMap<CreateWalletDto, Wallet>();
             CreateMap<UpdateWalletDto, Wallet>();
 
-            // ExpensesType mappings
-            CreateMap<CreateExpensesTypeRequest, CreateExpensesTypeDto>();
-            CreateMap<UpdateExpensesTypeRequest, UpdateExpensesTypeDto>();
-            CreateMap<ExpensesTypeDto, ExpensesTypeResponse>();
-            CreateMap<ExpensesType, ExpensesTypeDto>();
-            CreateMap<CreateExpensesTypeDto, ExpensesType>();
-            CreateMap<UpdateExpensesTypeDto, ExpensesType>();
+            CreateMap<ExpenseListItemDto, ExpenseListItemResponse>();
+            CreateMap<ExpenseDetailDto, ExpenseDetailResponse>();
+            CreateMap<ExpenseBranchItemDto, ExpenseBranchItemResponse>();
 
             CreateMap<ServiceCatalogItemDto, ServiceCatalogItemResponse>();
             CreateMap<ServiceListItemDto, ServiceListItemResponse>();
@@ -99,12 +95,19 @@ namespace TheBeautyHubAPI
             CreateMap<UpdateTransactionRulesDto, TransactionRules>();
 
             // Transaction mappings
-            CreateMap<CreateTransactionRequest, CreateTransactionDto>();
-            CreateMap<UpdateTransactionRequest, UpdateTransactionDto>();
-            CreateMap<TransactionDto, TransactionResponse>();
-            CreateMap<Transaction, TransactionDto>();
-            CreateMap<CreateTransactionDto, Transaction>();
-            CreateMap<UpdateTransactionDto, Transaction>();
+            CreateMap<TransactionBootstrapDto, TransactionBootstrapResponse>();
+            CreateMap<TransactionBootstrapServiceDto, TransactionBootstrapServiceResponse>();
+            CreateMap<TransactionNamedItemDto, TransactionNamedItemResponse>();
+            CreateMap<TransactionSavedDto, TransactionSavedResponse>();
+            CreateMap<TransactionListItemDto, TransactionListItemResponse>();
+            CreateMap<TransactionListFiltersDto, TransactionListFiltersResponse>();
+            CreateMap<TransactionRecordDto, TransactionRecordResponse>();
+            CreateMap<TransactionLineBreakdownDto, TransactionLineBreakdownResponse>();
+            CreateMap<TransactionCouponDto, TransactionCouponResponse>();
+            CreateMap<TransactionSummaryDto, TransactionSummaryResponse>();
+            CreateMap<TransactionPriceBreakdownDto, TransactionPriceBreakdownResponse>();
+            CreateMap<TransactionDateTimeDto, TransactionDateTimeResponse>();
+            CreateMap<TransactionBranchInfoDto, TransactionBranchInfoResponse>();
 
             // TransactionDetail mappings
             CreateMap<CreateTransactionDetailRequest, CreateTransactionDetailDto>();
@@ -163,6 +166,23 @@ namespace TheBeautyHubAPI
             CreateMap<StaffFormSalaryRuleDto, StaffFormSalaryRuleResponse>();
             CreateMap<StaffListItemDto, StaffListItemResponse>();
             CreateMap<StaffDetailDto, StaffDetailResponse>();
+            CreateMap<SalaryRuleCatalogItemDto, SalaryRuleCatalogItemResponse>();
+            CreateMap<SalaryRuleListItemDto, SalaryRuleListItemResponse>();
+            CreateMap<SalaryRuleDetailDto, SalaryRuleDetailResponse>();
+
+            CreateMap<TransactionNamedItemDto, TransactionNamedItemResponse>();
+            CreateMap<TransactionBootstrapServiceDto, TransactionBootstrapServiceResponse>();
+            CreateMap<TransactionBootstrapDto, TransactionBootstrapResponse>();
+            CreateMap<TransactionSavedDto, TransactionSavedResponse>();
+            CreateMap<TransactionListItemDto, TransactionListItemResponse>();
+            CreateMap<TransactionListFiltersDto, TransactionListFiltersResponse>();
+            CreateMap<TransactionLineBreakdownDto, TransactionLineBreakdownResponse>();
+            CreateMap<TransactionCouponDto, TransactionCouponResponse>();
+            CreateMap<TransactionSummaryDto, TransactionSummaryResponse>();
+            CreateMap<TransactionPriceBreakdownDto, TransactionPriceBreakdownResponse>();
+            CreateMap<TransactionDateTimeDto, TransactionDateTimeResponse>();
+            CreateMap<TransactionBranchInfoDto, TransactionBranchInfoResponse>();
+            CreateMap<TransactionRecordDto, TransactionRecordResponse>();
         }
     }
 }

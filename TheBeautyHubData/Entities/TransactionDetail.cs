@@ -27,8 +27,7 @@ namespace TheBeautyHubData.Entities
         /// <summary>
         /// Foreign key to TransactionType
         /// </summary>
-        [Required]
-        public Guid TransactionTypeId { get; set; }
+        public Guid? TransactionTypeId { get; set; }
 
         /// <summary>
         /// Foreign key to ExpensesType (optional)
@@ -90,6 +89,34 @@ namespace TheBeautyHubData.Entities
         [Required]
         public bool IsDeleted { get; set; } = false;
 
+        public int Quantity { get; set; } = 1;
+
+        public Guid? StaffId { get; set; }
+
+        [StringLength(200)]
+        public string? Title { get; set; }
+
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal BaseAmount { get; set; }
+
+        [Column(TypeName = "decimal(5,2)")]
+        public decimal TaxPercentage { get; set; }
+
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal TaxAmount { get; set; }
+
+        [Column(TypeName = "decimal(5,2)")]
+        public decimal DiscountPercentage { get; set; }
+
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal DiscountAmount { get; set; }
+
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal GrossAmount { get; set; }
+
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal NetAmount { get; set; }
+
         // Navigation properties
         /// <summary>
         /// The parent transaction
@@ -132,5 +159,8 @@ namespace TheBeautyHubData.Entities
         /// </summary>
         [ForeignKey("FirmId")]
         public virtual Firm? Firm { get; set; }
+
+        [ForeignKey("StaffId")]
+        public virtual Staff? Staff { get; set; }
     }
 }

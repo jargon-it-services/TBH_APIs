@@ -24,7 +24,7 @@ namespace TheBeautyHubData.Entities
         /// </summary>
         [Required]
         [StringLength(20)]
-        public string Status { get; set; } = "Draft";
+        public string Status { get; set; } = "pending";
 
         /// <summary>
         /// Total amount of the transaction
@@ -86,6 +86,60 @@ namespace TheBeautyHubData.Entities
         /// </summary>
         public DateTime? CheckOutTime { get; set; }
 
+        [StringLength(20)]
+        public string? Code { get; set; }
+
+        [StringLength(20)]
+        public string? Type { get; set; }
+
+        public Guid? BranchId { get; set; }
+
+        [StringLength(30)]
+        public string? PaymentMode { get; set; }
+
+        [StringLength(150)]
+        public string? CustomerName { get; set; }
+
+        [StringLength(20)]
+        public string? CustomerMobile { get; set; }
+
+        [StringLength(1000)]
+        public string? Remark { get; set; }
+
+        public Guid? StaffId { get; set; }
+
+        [StringLength(50)]
+        public string? CouponCode { get; set; }
+
+        [StringLength(20)]
+        public string? CouponType { get; set; }
+
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal? CouponValue { get; set; }
+
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal CouponDiscount { get; set; }
+
+        [StringLength(80)]
+        public string? IdempotencyKey { get; set; }
+
+        public int EditCount { get; set; }
+
+        public DateTime? EditableUntil { get; set; }
+
+        [StringLength(150)]
+        public string? LastEditedBy { get; set; }
+
+        public DateTime? LastEditedAt { get; set; }
+
+        public DateTime? PaidAt { get; set; }
+
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal TaxAmount { get; set; }
+
+        [Column(TypeName = "decimal(5,2)")]
+        public decimal TaxPercentage { get; set; }
+
         // Navigation properties
         /// <summary>
         /// The account associated with this transaction
@@ -103,5 +157,11 @@ namespace TheBeautyHubData.Entities
         /// Collection of transaction details
         /// </summary>
         public virtual ICollection<TransactionDetail> TransactionDetails { get; set; } = new List<TransactionDetail>();
+
+        [ForeignKey("BranchId")]
+        public virtual Branch? Branch { get; set; }
+
+        [ForeignKey("StaffId")]
+        public virtual Staff? Staff { get; set; }
     }
 }

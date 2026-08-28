@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Mvc;
 using TheBeautyHubAPI.Auth;
 using TheBeautyHubAPI.Helpers;
 using TheBeautyHubAPI.Models;
+using TheBeautyHubCore.Constants;
 using TheBeautyHubCore.DTOs;
 using TheBeautyHubCore.Services.Interfaces;
 
@@ -63,13 +64,14 @@ namespace TheBeautyHubAPI.Controllers
                 return Ok(new ApiStatusResponse<ServiceCatalogDataResponse>
                 {
                     Status = true,
+                    Message = ApiMessages.Service.CatalogFetched,
                     Data = new ServiceCatalogDataResponse { Services = items }
                 });
             }
             catch (Exception ex)
             {
                 await _exceptionLogService.LogExceptionAsync(ex, _currentUser.UserId);
-                return StatusCode(500, Fail("An error occurred while fetching the services catalog."));
+                return StatusCode(500, Fail(ApiMessages.Service.CatalogFailed));
             }
         }
 
@@ -87,13 +89,14 @@ namespace TheBeautyHubAPI.Controllers
                 return Ok(new ApiStatusResponse<ServiceListDataResponse>
                 {
                     Status = true,
+                    Message = ApiMessages.Service.ListFetched,
                     Data = new ServiceListDataResponse { Services = items }
                 });
             }
             catch (Exception ex)
             {
                 await _exceptionLogService.LogExceptionAsync(ex, _currentUser.UserId);
-                return StatusCode(500, Fail("An error occurred while fetching services."));
+                return StatusCode(500, Fail(ApiMessages.Service.ListFailed));
             }
         }
 
@@ -105,7 +108,7 @@ namespace TheBeautyHubAPI.Controllers
             {
                 var detail = await _servicesService.GetDetailsAsync(serviceId, _currentUser.AccountId);
                 if (detail == null)
-                    return NotFound(Fail("Service not found."));
+                    return NotFound(Fail(ApiMessages.Service.NotFound));
 
                 var response = _mapper.Map<ServiceDetailResponse>(detail);
                 response.Photo = ToAbsoluteUrl(response.Photo);
@@ -113,13 +116,14 @@ namespace TheBeautyHubAPI.Controllers
                 return Ok(new ApiStatusResponse<ServiceDetailResponse>
                 {
                     Status = true,
+                    Message = ApiMessages.Service.DetailsFetched,
                     Data = response
                 });
             }
             catch (Exception ex)
             {
                 await _exceptionLogService.LogExceptionAsync(ex, _currentUser.UserId);
-                return StatusCode(500, Fail("An error occurred while fetching service details."));
+                return StatusCode(500, Fail(ApiMessages.Service.DetailsFailed));
             }
         }
 
@@ -144,6 +148,7 @@ namespace TheBeautyHubAPI.Controllers
                 return Ok(new ApiStatusResponse<ServiceSavedDataResponse>
                 {
                     Status = true,
+                    Message = ApiMessages.Service.Created,
                     Data = new ServiceSavedDataResponse { Saved = true }
                 });
             }
@@ -151,14 +156,14 @@ namespace TheBeautyHubAPI.Controllers
             {
                 return BadRequest(Fail(ex.Message));
             }
-            catch (JsonException ex)
+            catch (JsonException)
             {
-                return BadRequest(Fail(ex.Message));
+                return BadRequest(Fail(ApiMessages.Common.InvalidRequestBody));
             }
             catch (Exception ex)
             {
                 await _exceptionLogService.LogExceptionAsync(ex, _currentUser.UserId);
-                return StatusCode(500, Fail("An error occurred while creating the service."));
+                return StatusCode(500, Fail(ApiMessages.Service.CreateFailed));
             }
         }
 
@@ -170,7 +175,7 @@ namespace TheBeautyHubAPI.Controllers
             {
                 var existing = await _servicesService.GetDetailsAsync(serviceId, _currentUser.AccountId);
                 if (existing == null)
-                    return NotFound(Fail("Service not found."));
+                    return NotFound(Fail(ApiMessages.Service.NotFound));
 
                 var request = await BindSaveRequestAsync();
                 TryValidateModel(request);
@@ -190,6 +195,7 @@ namespace TheBeautyHubAPI.Controllers
                 return Ok(new ApiStatusResponse<ServiceSavedDataResponse>
                 {
                     Status = true,
+                    Message = ApiMessages.Service.Updated,
                     Data = new ServiceSavedDataResponse { Saved = true }
                 });
             }
@@ -201,14 +207,14 @@ namespace TheBeautyHubAPI.Controllers
             {
                 return BadRequest(Fail(ex.Message));
             }
-            catch (JsonException ex)
+            catch (JsonException)
             {
-                return BadRequest(Fail(ex.Message));
+                return BadRequest(Fail(ApiMessages.Common.InvalidRequestBody));
             }
             catch (Exception ex)
             {
                 await _exceptionLogService.LogExceptionAsync(ex, _currentUser.UserId);
-                return StatusCode(500, Fail("An error occurred while updating the service."));
+                return StatusCode(500, Fail(ApiMessages.Service.UpdateFailed));
             }
         }
 
@@ -220,7 +226,7 @@ namespace TheBeautyHubAPI.Controllers
             {
                 var existing = await _servicesService.GetDetailsAsync(serviceId, _currentUser.AccountId);
                 if (existing == null)
-                    return NotFound(Fail("Service not found."));
+                    return NotFound(Fail(ApiMessages.Service.NotFound));
 
                 await _servicesService.DeleteAsync(serviceId, _currentUser.AccountId);
                 _photoStorage.DeleteIfLocal(existing.Photo);
@@ -228,6 +234,7 @@ namespace TheBeautyHubAPI.Controllers
                 return Ok(new ApiStatusResponse<ServiceDeletedDataResponse>
                 {
                     Status = true,
+                    Message = ApiMessages.Service.Deleted,
                     Data = new ServiceDeletedDataResponse { Deleted = true }
                 });
             }
@@ -238,7 +245,7 @@ namespace TheBeautyHubAPI.Controllers
             catch (Exception ex)
             {
                 await _exceptionLogService.LogExceptionAsync(ex, _currentUser.UserId);
-                return StatusCode(500, Fail("An error occurred while deleting the service."));
+                return StatusCode(500, Fail(ApiMessages.Service.DeleteFailed));
             }
         }
 
@@ -305,11 +312,11 @@ namespace TheBeautyHubAPI.Controllers
             using var reader = new StreamReader(Request.Body);
             var json = await reader.ReadToEndAsync();
             if (string.IsNullOrWhiteSpace(json))
-                throw new ArgumentException("Request body is required.");
+                throw new ArgumentException(ApiMessages.Common.RequestBodyRequired);
 
             var request = JsonSerializer.Deserialize<SaveServiceRequest>(json, JsonOptions);
             if (request == null)
-                throw new ArgumentException("Invalid request body.");
+                throw new ArgumentException(ApiMessages.Common.InvalidRequestBody);
 
             return request;
         }
@@ -331,7 +338,7 @@ namespace TheBeautyHubAPI.Controllers
                 .SelectMany(v => v.Errors)
                 .Select(e => e.ErrorMessage)
                 .FirstOrDefault(m => !string.IsNullOrWhiteSpace(m))
-                ?? "Invalid request.";
+                ?? ApiMessages.Common.ValidationOccurred;
         }
 
         private static ApiStatusResponse<object> Fail(string message)

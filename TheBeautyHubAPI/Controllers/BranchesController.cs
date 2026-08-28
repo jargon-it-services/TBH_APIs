@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Mvc;
 using TheBeautyHubAPI.Auth;
 using TheBeautyHubAPI.Helpers;
 using TheBeautyHubAPI.Models;
+using TheBeautyHubCore.Constants;
 using TheBeautyHubCore.DTOs;
 using TheBeautyHubCore.Services.Interfaces;
 
@@ -68,13 +69,14 @@ namespace TheBeautyHubAPI.Controllers
                 return Ok(new ApiStatusResponse<BranchListDataResponse>
                 {
                     Status = true,
+                    Message = ApiMessages.Branch.ListFetched,
                     Data = new BranchListDataResponse { Branches = items }
                 });
             }
             catch (Exception ex)
             {
                 await _exceptionLogService.LogExceptionAsync(ex, _currentUser.UserId);
-                return StatusCode(500, Fail("An error occurred while fetching branches."));
+                return StatusCode(500, Fail(ApiMessages.Branch.ListFailed));
             }
         }
 
@@ -88,7 +90,7 @@ namespace TheBeautyHubAPI.Controllers
             {
                 var detail = await _branchService.GetBranchDetailsAsync(branchId, _currentUser.AccountId);
                 if (detail == null)
-                    return NotFound(Fail("Branch not found."));
+                    return NotFound(Fail(ApiMessages.Branch.NotFound));
 
                 var response = _mapper.Map<BranchDetailResponse>(detail);
                 response.Logo = ToAbsoluteUrl(response.Logo);
@@ -105,13 +107,14 @@ namespace TheBeautyHubAPI.Controllers
                 return Ok(new ApiStatusResponse<BranchDetailResponse>
                 {
                     Status = true,
+                    Message = ApiMessages.Branch.DetailsFetched,
                     Data = response
                 });
             }
             catch (Exception ex)
             {
                 await _exceptionLogService.LogExceptionAsync(ex, _currentUser.UserId);
-                return StatusCode(500, Fail("An error occurred while fetching branch details."));
+                return StatusCode(500, Fail(ApiMessages.Branch.DetailsFailed));
             }
         }
 
@@ -138,6 +141,7 @@ namespace TheBeautyHubAPI.Controllers
                 return Ok(new ApiStatusResponse<BranchSavedDataResponse>
                 {
                     Status = true,
+                    Message = ApiMessages.Branch.Created,
                     Data = new BranchSavedDataResponse { Saved = true }
                 });
             }
@@ -145,14 +149,14 @@ namespace TheBeautyHubAPI.Controllers
             {
                 return BadRequest(Fail(ex.Message));
             }
-            catch (JsonException ex)
+            catch (JsonException)
             {
-                return BadRequest(Fail(ex.Message));
+                return BadRequest(Fail(ApiMessages.Common.InvalidRequestBody));
             }
             catch (Exception ex)
             {
                 await _exceptionLogService.LogExceptionAsync(ex, _currentUser.UserId);
-                return StatusCode(500, Fail("An error occurred while creating the branch."));
+                return StatusCode(500, Fail(ApiMessages.Branch.CreateFailed));
             }
         }
 
@@ -166,7 +170,7 @@ namespace TheBeautyHubAPI.Controllers
             {
                 var existing = await _branchService.GetBranchDetailsAsync(branchId, _currentUser.AccountId);
                 if (existing == null)
-                    return NotFound(Fail("Branch not found."));
+                    return NotFound(Fail(ApiMessages.Branch.NotFound));
 
                 var request = await BindSaveRequestAsync();
                 TryValidateModel(request);
@@ -186,6 +190,7 @@ namespace TheBeautyHubAPI.Controllers
                 return Ok(new ApiStatusResponse<BranchSavedDataResponse>
                 {
                     Status = true,
+                    Message = ApiMessages.Branch.Updated,
                     Data = new BranchSavedDataResponse { Saved = true }
                 });
             }
@@ -197,14 +202,14 @@ namespace TheBeautyHubAPI.Controllers
             {
                 return BadRequest(Fail(ex.Message));
             }
-            catch (JsonException ex)
+            catch (JsonException)
             {
-                return BadRequest(Fail(ex.Message));
+                return BadRequest(Fail(ApiMessages.Common.InvalidRequestBody));
             }
             catch (Exception ex)
             {
                 await _exceptionLogService.LogExceptionAsync(ex, _currentUser.UserId);
-                return StatusCode(500, Fail("An error occurred while updating the branch."));
+                return StatusCode(500, Fail(ApiMessages.Branch.UpdateFailed));
             }
         }
 
@@ -272,11 +277,11 @@ namespace TheBeautyHubAPI.Controllers
             using var reader = new StreamReader(Request.Body);
             var json = await reader.ReadToEndAsync();
             if (string.IsNullOrWhiteSpace(json))
-                throw new ArgumentException("Request body is required.");
+                throw new ArgumentException(ApiMessages.Common.RequestBodyRequired);
 
             var request = JsonSerializer.Deserialize<SaveBranchRequest>(json, JsonOptions);
             if (request == null)
-                throw new ArgumentException("Invalid request body.");
+                throw new ArgumentException(ApiMessages.Common.InvalidRequestBody);
 
             return request;
         }
@@ -298,7 +303,7 @@ namespace TheBeautyHubAPI.Controllers
                 .SelectMany(v => v.Errors)
                 .Select(e => e.ErrorMessage)
                 .FirstOrDefault(m => !string.IsNullOrWhiteSpace(m))
-                ?? "Invalid request.";
+                ?? ApiMessages.Common.ValidationOccurred;
         }
 
         private static ApiStatusResponse<object> Fail(string message)

@@ -31,6 +31,17 @@ namespace TheBeautyHubData.Entities
         [StringLength(200)]
         public string ExpensesTypeName { get; set; } = string.Empty;
 
+        [Required]
+        [StringLength(1000)]
+        public string Description { get; set; } = string.Empty;
+
+        [Required]
+        public bool AllBranches { get; set; } = true;
+
+        [Required]
+        [StringLength(20)]
+        public string Status { get; set; } = "active";
+
         /// <summary>
         /// User ID who created this expense type
         /// </summary>
@@ -70,5 +81,7 @@ namespace TheBeautyHubData.Entities
         /// </summary>
         [ForeignKey("FirmId")]
         public virtual Firm? Firm { get; set; }
+
+        public virtual ICollection<ExpensesTypeBranch> ExpenseBranches { get; set; } = new List<ExpensesTypeBranch>();
     }
 }

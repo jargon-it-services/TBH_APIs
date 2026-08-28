@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using TheBeautyHubCore.Constants;
 using TheBeautyHubCore.DTOs;
 using TheBeautyHubCore.Services.Interfaces;
 using TheBeautyHubData.Repositories.Interfaces;
@@ -76,7 +77,7 @@ namespace TheBeautyHubCore.Services
 
             var existing = await _servicesRepository.GetByIdAsync(serviceId, dto.AccountId);
             if (existing == null)
-                throw new KeyNotFoundException("Service not found.");
+                throw new KeyNotFoundException(ApiMessages.Service.NotFound);
 
             var branchIds = await ResolveBranchIdsAsync(dto);
             ApplyFields(existing, dto);
@@ -94,7 +95,7 @@ namespace TheBeautyHubCore.Services
         {
             var existing = await _servicesRepository.GetByIdAsync(serviceId, accountId);
             if (existing == null)
-                throw new KeyNotFoundException("Service not found.");
+                throw new KeyNotFoundException(ApiMessages.Service.NotFound);
 
             await _servicesRepository.RemoveBranchLinksAsync(serviceId);
             await _servicesRepository.SoftDeleteAsync(existing);
@@ -107,11 +108,11 @@ namespace TheBeautyHubCore.Services
 
             var requested = (dto.Branches ?? new List<Guid>()).Distinct().ToList();
             if (requested.Count == 0)
-                throw new ArgumentException("branches is required when all_branches is false.");
+                throw new ArgumentException(ApiMessages.Common.BranchesRequiredWhenNotAll);
 
             var found = await _servicesRepository.GetBranchesByIdsAsync(dto.AccountId, requested);
             if (found.Count != requested.Count)
-                throw new ArgumentException("One or more branch IDs are invalid.");
+                throw new ArgumentException(ApiMessages.Common.InvalidBranchIds);
 
             return requested;
         }
@@ -156,35 +157,35 @@ namespace TheBeautyHubCore.Services
         private static void ValidateWrite(SaveServiceDto dto)
         {
             if (string.IsNullOrWhiteSpace(dto.Name))
-                throw new ArgumentException("name is required.");
+                throw new ArgumentException(ApiMessages.Service.NameRequired);
             if (string.IsNullOrWhiteSpace(dto.Description))
-                throw new ArgumentException("description is required.");
+                throw new ArgumentException(ApiMessages.Service.DescriptionRequired);
             if (string.IsNullOrWhiteSpace(dto.Category))
-                throw new ArgumentException("category is required.");
+                throw new ArgumentException(ApiMessages.Service.CategoryRequired);
             if (dto.DurationMinutes < 0)
-                throw new ArgumentException("duration_minutes must be 0 or greater.");
+                throw new ArgumentException(ApiMessages.Service.DurationInvalid);
             if (string.IsNullOrWhiteSpace(dto.ApplicableGender))
-                throw new ArgumentException("applicable_gender is required.");
+                throw new ArgumentException(ApiMessages.Service.GenderRequired);
             if (string.IsNullOrWhiteSpace(dto.Type))
-                throw new ArgumentException("type is required.");
+                throw new ArgumentException(ApiMessages.Service.TypeRequired);
             if (string.IsNullOrWhiteSpace(dto.Status))
-                throw new ArgumentException("status is required.");
+                throw new ArgumentException(ApiMessages.Service.StatusRequired);
             if (dto.CustomerPrice < 0)
-                throw new ArgumentException("customer_price must be 0 or greater.");
+                throw new ArgumentException(ApiMessages.Service.CustomerPriceInvalid);
             if (dto.MaterialCost < 0)
-                throw new ArgumentException("material_cost must be 0 or greater.");
+                throw new ArgumentException(ApiMessages.Service.MaterialCostInvalid);
             if (string.IsNullOrWhiteSpace(dto.CommissionType))
-                throw new ArgumentException("commission_type is required.");
+                throw new ArgumentException(ApiMessages.Service.CommissionTypeRequired);
 
             var commissionType = dto.CommissionType.Trim().ToLowerInvariant();
             if (commissionType != "percentage" && commissionType != "flat")
-                throw new ArgumentException("commission_type must be percentage or flat.");
+                throw new ArgumentException(ApiMessages.Service.CommissionTypeInvalid);
             if (commissionType == "percentage" && (dto.CommissionValue < 0 || dto.CommissionValue > 100))
-                throw new ArgumentException("commission_value must be between 0 and 100 for percentage.");
+                throw new ArgumentException(ApiMessages.Service.CommissionPercentageInvalid);
             if (dto.CommissionValue < 0)
-                throw new ArgumentException("commission_value must be 0 or greater.");
+                throw new ArgumentException(ApiMessages.Service.CommissionValueInvalid);
             if (dto.OtherCost < 0)
-                throw new ArgumentException("other_cost must be 0 or greater.");
+                throw new ArgumentException(ApiMessages.Service.OtherCostInvalid);
         }
 
         private static ServiceDetailDto MapDetail(ServiceEntity service)

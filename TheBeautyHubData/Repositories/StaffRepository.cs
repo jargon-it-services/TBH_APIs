@@ -11,11 +11,11 @@ namespace TheBeautyHubData.Repositories
 {
     public class StaffRepository : IStaffRepository
     {
-        private static readonly string[] DefaultSalaryRuleNames =
+        private static readonly (string Name, string SalaryType)[] DefaultSalaryRules =
         {
-            "Fixed Pay",
-            "Fixed + Target Bonus",
-            "Incentive"
+            ("Fixed Pay", "fixed"),
+            ("Fixed + Target Bonus", "fixed_plus_target"),
+            ("Incentive", "commission")
         };
 
         private readonly BeautyHubDbContext _context;
@@ -80,13 +80,17 @@ namespace TheBeautyHubData.Repositories
             if (exists)
                 return;
 
-            foreach (var name in DefaultSalaryRuleNames)
+            foreach (var seed in DefaultSalaryRules)
             {
                 _context.SalaryRules.Add(new SalaryRule
                 {
                     AccountId = accountId,
-                    Name = name,
+                    Name = seed.Name,
+                    Description = seed.Name,
+                    SalaryType = seed.SalaryType,
+                    Status = "active",
                     IsActive = true,
+                    AllowAdvanceRecovery = false,
                     CreatedAt = DateTime.UtcNow,
                     IsDeleted = false
                 });
@@ -99,6 +103,28 @@ namespace TheBeautyHubData.Repositories
         {
             return await _context.SalaryRules
                 .FirstOrDefaultAsync(r => r.SalaryRuleId == salaryRuleId && r.AccountId == accountId && !r.IsDeleted);
+        }
+
+        public async Task<SalaryRule> InsertSalaryRuleAsync(SalaryRule rule)
+        {
+            _context.SalaryRules.Add(rule);
+            await _context.SaveChangesAsync();
+            return rule;
+        }
+
+        public async Task UpdateSalaryRuleAsync(SalaryRule rule)
+        {
+            rule.LastUpdated = DateTime.UtcNow;
+            _context.SalaryRules.Update(rule);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task SoftDeleteSalaryRuleAsync(SalaryRule rule)
+        {
+            rule.IsDeleted = true;
+            rule.LastUpdated = DateTime.UtcNow;
+            _context.SalaryRules.Update(rule);
+            await _context.SaveChangesAsync();
         }
 
         public async Task<bool> EmployeeCodeExistsAsync(Guid accountId, string employeeCode, Guid? excludeStaffId = null)
@@ -153,6 +179,13 @@ namespace TheBeautyHubData.Repositories
 
             _context.BranchEmployees.RemoveRange(existing);
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<Staff?> GetByUserIdAsync(Guid userId, Guid accountId)
+        {
+            return await _context.StaffMembers
+                .AsNoTracking()
+                .FirstOrDefaultAsync(s => s.UserId == userId && s.AccountId == accountId && !s.IsDeleted);
         }
     }
 }

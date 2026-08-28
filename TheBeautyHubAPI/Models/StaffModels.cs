@@ -236,4 +236,131 @@ namespace TheBeautyHubAPI.Models
         [JsonIgnore]
         public IFormFile? AadhaarCard { get; set; }
     }
+
+    public class SalaryRuleCatalogItemResponse
+    {
+        [JsonPropertyName("id")]
+        public Guid Id { get; set; }
+
+        [JsonPropertyName("name")]
+        public string Name { get; set; } = string.Empty;
+
+        [JsonPropertyName("active")]
+        public bool Active { get; set; }
+    }
+
+    public class SalaryRuleCatalogDataResponse
+    {
+        [JsonPropertyName("salary_rules")]
+        public IEnumerable<SalaryRuleCatalogItemResponse> SalaryRules { get; set; } = Array.Empty<SalaryRuleCatalogItemResponse>();
+    }
+
+    public class SalaryRuleListItemResponse
+    {
+        [JsonPropertyName("id")]
+        public Guid Id { get; set; }
+
+        [JsonPropertyName("name")]
+        public string Name { get; set; } = string.Empty;
+
+        [JsonPropertyName("salary_type")]
+        public string SalaryType { get; set; } = string.Empty;
+
+        [JsonPropertyName("fixed_salary")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public decimal? FixedSalary { get; set; }
+
+        [JsonPropertyName("status")]
+        public string Status { get; set; } = string.Empty;
+    }
+
+    public class SalaryRuleListDataResponse
+    {
+        [JsonPropertyName("salary_rules")]
+        public IEnumerable<SalaryRuleListItemResponse> SalaryRules { get; set; } = Array.Empty<SalaryRuleListItemResponse>();
+    }
+
+    public class SalaryRuleDetailResponse
+    {
+        [JsonPropertyName("id")]
+        public Guid Id { get; set; }
+
+        [JsonPropertyName("name")]
+        public string Name { get; set; } = string.Empty;
+
+        [JsonPropertyName("description")]
+        public string Description { get; set; } = string.Empty;
+
+        [JsonPropertyName("salary_type")]
+        public string SalaryType { get; set; } = string.Empty;
+
+        [JsonPropertyName("fixed_salary")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public decimal? FixedSalary { get; set; }
+
+        [JsonPropertyName("monthly_target")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public decimal? MonthlyTarget { get; set; }
+
+        [JsonPropertyName("target_bonus")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public decimal? TargetBonus { get; set; }
+
+        [JsonPropertyName("allow_advance_recovery")]
+        public bool AllowAdvanceRecovery { get; set; }
+
+        [JsonPropertyName("max_recovery_per_month")]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public decimal? MaxRecoveryPerMonth { get; set; }
+
+        [JsonPropertyName("status")]
+        public string Status { get; set; } = string.Empty;
+    }
+
+    public class SalaryRuleSavedDataResponse
+    {
+        [JsonPropertyName("saved")]
+        public bool Saved { get; set; }
+    }
+
+    public class SalaryRuleDeletedDataResponse
+    {
+        [JsonPropertyName("deleted")]
+        public bool Deleted { get; set; }
+    }
+
+    public class SaveSalaryRuleRequest
+    {
+        [Required]
+        [JsonPropertyName("name")]
+        public string Name { get; set; } = string.Empty;
+
+        [Required]
+        [JsonPropertyName("description")]
+        public string Description { get; set; } = string.Empty;
+
+        [Required]
+        [JsonPropertyName("salary_type")]
+        public string SalaryType { get; set; } = string.Empty;
+
+        [JsonPropertyName("fixed_salary")]
+        public decimal? FixedSalary { get; set; }
+
+        [JsonPropertyName("monthly_target")]
+        public decimal? MonthlyTarget { get; set; }
+
+        [JsonPropertyName("target_bonus")]
+        public decimal? TargetBonus { get; set; }
+
+        [Required]
+        [JsonPropertyName("allow_advance_recovery")]
+        public bool? AllowAdvanceRecovery { get; set; }
+
+        [JsonPropertyName("max_recovery_per_month")]
+        public decimal? MaxRecoveryPerMonth { get; set; }
+
+        [Required]
+        [JsonPropertyName("status")]
+        public string Status { get; set; } = string.Empty;
+    }
 }

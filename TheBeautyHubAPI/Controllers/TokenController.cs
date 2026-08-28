@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TheBeautyHubAPI.Auth;
 using TheBeautyHubAPI.Models;
+using TheBeautyHubCore.Constants;
 
 namespace TheBeautyHubAPI.Controllers
 {
@@ -33,7 +34,7 @@ namespace TheBeautyHubAPI.Controllers
 
             return Ok(new ApiStatusResponse<TokenValidateDataResponse>
             {
-                Status = true,
+                Status = result.IsValid,
                 Data = new TokenValidateDataResponse
                 {
                     IsValid = result.IsValid,
@@ -46,7 +47,9 @@ namespace TheBeautyHubAPI.Controllers
                     Roles = result.Roles,
                     Permissions = result.Permissions
                 },
-                Message = result.IsValid ? null : result.Message
+                Message = result.IsValid
+                    ? ApiMessages.Auth.TokenValid
+                    : (result.Message ?? ApiMessages.Auth.TokenInvalid)
             });
         }
     }

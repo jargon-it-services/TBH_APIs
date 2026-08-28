@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using TheBeautyHubCore.Constants;
 using TheBeautyHubCore.DTOs;
 using TheBeautyHubCore.Services.Interfaces;
 using TheBeautyHubData.Entities;
@@ -37,7 +38,7 @@ namespace TheBeautyHubCore.Services
         {
             ValidateWrite(dto);
             if (!dto.AccountId.HasValue || dto.AccountId == Guid.Empty)
-                throw new ArgumentException("Authenticated account is required.");
+                throw new ArgumentException(ApiMessages.Common.AccountRequired);
 
             var serviceIds = await ResolveServiceIdsAsync(dto.Services);
 
@@ -78,7 +79,7 @@ namespace TheBeautyHubCore.Services
 
             var existing = await _branchRepository.GetByIdAsync(branchId);
             if (existing == null || !BelongsToAccount(existing, accountId))
-                throw new KeyNotFoundException($"Branch with ID {branchId} not found.");
+                throw new KeyNotFoundException(ApiMessages.Branch.NotFound);
 
             var serviceIds = await ResolveServiceIdsAsync(dto.Services);
 
@@ -124,7 +125,7 @@ namespace TheBeautyHubCore.Services
 
             var found = await _branchRepository.GetServicesByIdsAsync(requested);
             if (found.Count != requested.Count)
-                throw new ArgumentException("One or more service IDs are invalid.");
+                throw new ArgumentException(ApiMessages.Common.InvalidServiceIds);
 
             return requested;
         }
@@ -132,29 +133,29 @@ namespace TheBeautyHubCore.Services
         private static void ValidateWrite(SaveBranchDto dto)
         {
             if (string.IsNullOrWhiteSpace(dto.Name))
-                throw new ArgumentException("name is required.");
+                throw new ArgumentException(ApiMessages.Branch.NameRequired);
             if (string.IsNullOrWhiteSpace(dto.AddressLine1))
-                throw new ArgumentException("address_line1 is required.");
+                throw new ArgumentException(ApiMessages.Branch.AddressRequired);
             if (string.IsNullOrWhiteSpace(dto.City))
-                throw new ArgumentException("city is required.");
+                throw new ArgumentException(ApiMessages.Branch.CityRequired);
             if (string.IsNullOrWhiteSpace(dto.State))
-                throw new ArgumentException("state is required.");
+                throw new ArgumentException(ApiMessages.Branch.StateRequired);
             if (string.IsNullOrWhiteSpace(dto.Pincode))
-                throw new ArgumentException("pincode is required.");
+                throw new ArgumentException(ApiMessages.Branch.PincodeRequired);
             if (string.IsNullOrWhiteSpace(dto.Mobile))
-                throw new ArgumentException("mobile is required.");
+                throw new ArgumentException(ApiMessages.Branch.MobileRequired);
             if (string.IsNullOrWhiteSpace(dto.Email))
-                throw new ArgumentException("email is required.");
+                throw new ArgumentException(ApiMessages.Branch.EmailRequired);
             if (string.IsNullOrWhiteSpace(dto.BranchType))
-                throw new ArgumentException("branch_type is required.");
+                throw new ArgumentException(ApiMessages.Branch.TypeRequired);
             if (string.IsNullOrWhiteSpace(dto.OpeningTime))
-                throw new ArgumentException("opening_time is required.");
+                throw new ArgumentException(ApiMessages.Branch.OpeningTimeRequired);
             if (string.IsNullOrWhiteSpace(dto.ClosingTime))
-                throw new ArgumentException("closing_time is required.");
+                throw new ArgumentException(ApiMessages.Branch.ClosingTimeRequired);
             if (string.IsNullOrWhiteSpace(dto.WeeklyOff))
-                throw new ArgumentException("weekly_off is required.");
+                throw new ArgumentException(ApiMessages.Branch.WeeklyOffRequired);
             if (string.IsNullOrWhiteSpace(dto.Status))
-                throw new ArgumentException("status is required.");
+                throw new ArgumentException(ApiMessages.Branch.StatusRequired);
         }
 
         private static bool BelongsToAccount(Branch branch, Guid accountId)

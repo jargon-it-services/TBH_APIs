@@ -54,6 +54,8 @@ namespace TheBeautyHubData.Context
         /// </summary>
         public DbSet<ExpensesType> ExpensesTypes { get; set; }
 
+        public DbSet<ExpensesTypeBranch> ExpensesTypeBranches { get; set; }
+
         /// <summary>
         /// Services table
         /// </summary>
@@ -391,6 +393,12 @@ namespace TheBeautyHubData.Context
                 entity.Property(e => e.IsDeleted)
                     .HasDefaultValue(false);
 
+                entity.Property(e => e.AllBranches)
+                    .HasDefaultValue(true);
+
+                entity.Property(e => e.Status)
+                    .HasDefaultValue("active");
+
                 entity.HasOne(e => e.Account)
                     .WithMany()
                     .HasForeignKey(e => e.AccountId)
@@ -399,6 +407,21 @@ namespace TheBeautyHubData.Context
                 entity.HasOne(e => e.Firm)
                     .WithMany()
                     .HasForeignKey(e => e.FirmId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<ExpensesTypeBranch>(entity =>
+            {
+                entity.HasKey(e => new { e.ExpensesTypeId, e.BranchId });
+
+                entity.HasOne(e => e.ExpensesType)
+                    .WithMany(t => t.ExpenseBranches)
+                    .HasForeignKey(e => e.ExpensesTypeId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(e => e.Branch)
+                    .WithMany()
+                    .HasForeignKey(e => e.BranchId)
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
@@ -538,13 +561,22 @@ namespace TheBeautyHubData.Context
                     .HasDefaultValue(0);
 
                 entity.Property(e => e.Status)
-                    .HasDefaultValue("Draft");
+                    .HasDefaultValue("pending");
+
+                entity.Property(e => e.EditCount)
+                    .HasDefaultValue(0);
+
+                entity.Property(e => e.CouponDiscount)
+                    .HasDefaultValue(0);
 
                 entity.ToTable(t =>
                 {
                     t.HasCheckConstraint("CK_Transaction_Status",
-                        "\"Status\" IN ('Draft', 'Posted', 'Cancelled')");
+                        "\"Status\" IN ('Draft', 'Posted', 'Cancelled', 'paid', 'pending')");
                 });
+
+                entity.HasIndex(e => new { e.AccountId, e.Code }).IsUnique();
+                entity.HasIndex(e => new { e.AccountId, e.IdempotencyKey });
 
                 entity.HasOne(e => e.Account)
                     .WithMany()
@@ -554,6 +586,18 @@ namespace TheBeautyHubData.Context
                 entity.HasOne(e => e.Firm)
                     .WithMany()
                     .HasForeignKey(e => e.FirmId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.Branch)
+                    .WithMany()
+                    .HasForeignKey(e => e.BranchId)
+                    .IsRequired(false)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.Staff)
+                    .WithMany()
+                    .HasForeignKey(e => e.StaffId)
+                    .IsRequired(false)
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
@@ -571,6 +615,9 @@ namespace TheBeautyHubData.Context
                 entity.Property(e => e.IsDeleted)
                     .HasDefaultValue(false);
 
+                entity.Property(e => e.Quantity)
+                    .HasDefaultValue(1);
+
                 entity.HasOne(e => e.Transaction)
                     .WithMany(t => t.TransactionDetails)
                     .HasForeignKey(e => e.TransactionId)
@@ -579,6 +626,7 @@ namespace TheBeautyHubData.Context
                 entity.HasOne(e => e.TransactionType)
                     .WithMany()
                     .HasForeignKey(e => e.TransactionTypeId)
+                    .IsRequired(false)
                     .OnDelete(DeleteBehavior.Restrict);
 
                 entity.HasOne(e => e.ExpensesType)
@@ -604,6 +652,12 @@ namespace TheBeautyHubData.Context
                 entity.HasOne(e => e.Firm)
                     .WithMany()
                     .HasForeignKey(e => e.FirmId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.Staff)
+                    .WithMany()
+                    .HasForeignKey(e => e.StaffId)
+                    .IsRequired(false)
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
@@ -783,6 +837,15 @@ namespace TheBeautyHubData.Context
 
                 entity.Property(e => e.IsActive)
                     .HasDefaultValue(true);
+
+                entity.Property(e => e.AllowAdvanceRecovery)
+                    .HasDefaultValue(false);
+
+                entity.Property(e => e.Status)
+                    .HasDefaultValue("active");
+
+                entity.Property(e => e.SalaryType)
+                    .HasDefaultValue("fixed");
 
                 entity.HasOne(e => e.Account)
                     .WithMany()

@@ -5,17 +5,16 @@ using TheBeautyHubData.Entities;
 
 namespace TheBeautyHubData.Repositories.Interfaces
 {
-    /// <summary>
-    /// Interface for ExpensesType repository operations.
-    /// Defines contracts for CRUD operations using stored procedures.
-    /// </summary>
     public interface IExpensesTypeRepository
     {
-        Task<ExpensesType> InsertExpensesTypeAsync(ExpensesType expensesType);
-        Task<ExpensesType> UpdateExpensesTypeAsync(ExpensesType expensesType);
-        Task<int> DeleteExpensesTypeAsync(Guid expensesTypeId);
-        Task<ExpensesType?> GetExpensesTypeByIdAsync(Guid expensesTypeId);
-        Task<IEnumerable<ExpensesType>> GetExpensesTypesByAccountIdAsync(Guid accountId);
-        Task<IEnumerable<ExpensesType>> GetAllExpensesTypesAsync();
+        Task<IReadOnlyList<ExpensesType>> GetByAccountIdAsync(Guid accountId);
+        Task<ExpensesType?> GetByIdAsync(Guid expensesTypeId, Guid accountId);
+        Task<ExpensesType?> GetDetailsByIdAsync(Guid expensesTypeId, Guid accountId);
+        Task<ExpensesType> InsertAsync(ExpensesType expensesType);
+        Task UpdateAsync(ExpensesType expensesType);
+        Task SoftDeleteAsync(ExpensesType expensesType);
+        Task ReplaceBranchesAsync(Guid expensesTypeId, IEnumerable<Guid> branchIds);
+        Task<IReadOnlyList<Branch>> GetBranchesByIdsAsync(Guid accountId, IEnumerable<Guid> branchIds);
+        Task RemoveBranchLinksAsync(Guid expensesTypeId);
     }
 }

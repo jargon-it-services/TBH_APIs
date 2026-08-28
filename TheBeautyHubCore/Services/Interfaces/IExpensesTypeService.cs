@@ -5,17 +5,12 @@ using TheBeautyHubCore.DTOs;
 
 namespace TheBeautyHubCore.Services.Interfaces
 {
-    /// <summary>
-    /// Service interface for ExpensesType operations.
-    /// Defines business logic layer contract for expenses type management.
-    /// </summary>
     public interface IExpensesTypeService
     {
-        Task<ExpensesTypeDto> CreateExpensesTypeAsync(CreateExpensesTypeDto createExpensesTypeDto);
-        Task<ExpensesTypeDto> UpdateExpensesTypeAsync(UpdateExpensesTypeDto updateExpensesTypeDto);
-        Task<bool> DeleteExpensesTypeAsync(Guid expensesTypeId);
-        Task<ExpensesTypeDto?> GetExpensesTypeByIdAsync(Guid expensesTypeId);
-        Task<IEnumerable<ExpensesTypeDto>> GetExpensesTypesByAccountIdAsync(Guid accountId);
-        Task<IEnumerable<ExpensesTypeDto>> GetAllExpensesTypesAsync();
+        Task<IReadOnlyList<ExpenseListItemDto>> GetListAsync(Guid accountId);
+        Task<ExpenseDetailDto?> GetDetailsAsync(Guid expenseId, Guid accountId);
+        Task CreateAsync(SaveExpenseDto dto);
+        Task UpdateAsync(Guid expenseId, SaveExpenseDto dto);
+        Task DeleteAsync(Guid expenseId, Guid accountId);
     }
 }

@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using TheBeautyHubCore.Constants;
 using TheBeautyHubCore.DTOs;
 using TheBeautyHubCore.Services.Interfaces;
 using TheBeautyHubData.Entities;
@@ -56,7 +57,7 @@ namespace TheBeautyHubCore.Services
                 {
                     Id = r.SalaryRuleId,
                     Name = r.Name,
-                    Active = r.IsActive
+                    Active = string.Equals(r.Status, "active", StringComparison.OrdinalIgnoreCase) || r.IsActive
                 }).ToList(),
                 Specialists = specialists
             };
@@ -133,7 +134,7 @@ namespace TheBeautyHubCore.Services
             if (!string.IsNullOrWhiteSpace(dto.EmployeeCode) &&
                 await _staffRepository.EmployeeCodeExistsAsync(dto.AccountId, dto.EmployeeCode.Trim()))
             {
-                throw new ArgumentException("employee_code already exists.");
+                throw new ArgumentException(ApiMessages.Staff.EmployeeCodeExists);
             }
 
             var staff = new Staff
@@ -165,14 +166,14 @@ namespace TheBeautyHubCore.Services
 
             var existing = await _staffRepository.GetByIdAsync(staffId, dto.AccountId);
             if (existing == null)
-                throw new KeyNotFoundException("Staff not found.");
+                throw new KeyNotFoundException(ApiMessages.Staff.NotFound);
 
             await EnsureBranchAndRuleAsync(dto);
 
             if (!string.IsNullOrWhiteSpace(dto.EmployeeCode) &&
                 await _staffRepository.EmployeeCodeExistsAsync(dto.AccountId, dto.EmployeeCode.Trim(), staffId))
             {
-                throw new ArgumentException("employee_code already exists.");
+                throw new ArgumentException(ApiMessages.Staff.EmployeeCodeExists);
             }
 
             ApplyFields(existing, dto);
@@ -207,7 +208,7 @@ namespace TheBeautyHubCore.Services
         {
             var existing = await _staffRepository.GetByIdAsync(staffId, accountId);
             if (existing == null)
-                throw new KeyNotFoundException("Staff not found.");
+                throw new KeyNotFoundException(ApiMessages.Staff.NotFound);
 
             if (existing.UserId.HasValue)
             {
@@ -222,11 +223,11 @@ namespace TheBeautyHubCore.Services
         {
             var branch = await _branchRepository.GetByIdAsync(dto.BranchId);
             if (branch == null || branch.AccountId != dto.AccountId)
-                throw new ArgumentException("branch_id is invalid.");
+                throw new ArgumentException(ApiMessages.Staff.BranchInvalid);
 
             var rule = await _staffRepository.GetSalaryRuleAsync(dto.SalaryRuleId, dto.AccountId);
             if (rule == null)
-                throw new ArgumentException("salary_rule_id is invalid.");
+                throw new ArgumentException(ApiMessages.Staff.SalaryRuleInvalid);
         }
 
         private static void ApplyFields(Staff staff, SaveStaffDto dto)
@@ -285,34 +286,34 @@ namespace TheBeautyHubCore.Services
         private static void ValidateWrite(SaveStaffDto dto, bool isUpdate)
         {
             if (dto.AccountId == Guid.Empty)
-                throw new ArgumentException("Authenticated account is required.");
+                throw new ArgumentException(ApiMessages.Common.AccountRequired);
             if (string.IsNullOrWhiteSpace(dto.FullName))
-                throw new ArgumentException("full_name is required.");
+                throw new ArgumentException(ApiMessages.Staff.FullNameRequired);
             if (string.IsNullOrWhiteSpace(dto.Mobile))
-                throw new ArgumentException("mobile is required.");
+                throw new ArgumentException(ApiMessages.Staff.MobileRequired);
             if (string.IsNullOrWhiteSpace(dto.Email))
-                throw new ArgumentException("email is required.");
+                throw new ArgumentException(ApiMessages.Staff.EmailRequired);
             if (string.IsNullOrWhiteSpace(dto.Gender))
-                throw new ArgumentException("gender is required.");
+                throw new ArgumentException(ApiMessages.Staff.GenderRequired);
             if (string.IsNullOrWhiteSpace(dto.AadhaarNumber))
-                throw new ArgumentException("aadhaar_number is required.");
+                throw new ArgumentException(ApiMessages.Staff.AadhaarRequired);
             if (string.IsNullOrWhiteSpace(dto.Designation))
-                throw new ArgumentException("designation is required.");
+                throw new ArgumentException(ApiMessages.Staff.DesignationRequired);
             if (string.IsNullOrWhiteSpace(dto.Specialist))
-                throw new ArgumentException("specialist is required.");
+                throw new ArgumentException(ApiMessages.Staff.SpecialistRequired);
             if (dto.BranchId == Guid.Empty)
-                throw new ArgumentException("branch_id is required.");
+                throw new ArgumentException(ApiMessages.Staff.BranchRequired);
             if (dto.SalaryRuleId == Guid.Empty)
-                throw new ArgumentException("salary_rule_id is required.");
+                throw new ArgumentException(ApiMessages.Staff.SalaryRuleRequired);
             if (string.IsNullOrWhiteSpace(dto.Status))
-                throw new ArgumentException("status is required.");
+                throw new ArgumentException(ApiMessages.Staff.StatusRequired);
 
             if (dto.AllowAppLogin)
             {
                 if (string.IsNullOrWhiteSpace(dto.AppRole))
-                    throw new ArgumentException("app_role is required when allow_app_login is true.");
+                    throw new ArgumentException(ApiMessages.Staff.AppRoleRequired);
                 if (!isUpdate && string.IsNullOrWhiteSpace(dto.Username))
-                    throw new ArgumentException("username is required when allow_app_login is true.");
+                    throw new ArgumentException(ApiMessages.Staff.UsernameRequired);
             }
         }
 
@@ -322,7 +323,7 @@ namespace TheBeautyHubCore.Services
                 return null;
             if (DateTime.TryParse(value, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out var parsed))
                 return DateTime.SpecifyKind(parsed.Date, DateTimeKind.Utc);
-            throw new ArgumentException("joining_date must be a valid date.");
+            throw new ArgumentException(ApiMessages.Staff.JoiningDateInvalid);
         }
 
         private static string MapUserRole(string? appRole)

@@ -19,6 +19,33 @@ namespace TheBeautyHubData.Entities
         public string Name { get; set; } = string.Empty;
 
         [Required]
+        [StringLength(1000)]
+        public string Description { get; set; } = string.Empty;
+
+        [Required]
+        [StringLength(50)]
+        public string SalaryType { get; set; } = string.Empty;
+
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal? FixedSalary { get; set; }
+
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal? MonthlyTarget { get; set; }
+
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal? TargetBonus { get; set; }
+
+        [Required]
+        public bool AllowAdvanceRecovery { get; set; }
+
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal? MaxRecoveryPerMonth { get; set; }
+
+        [Required]
+        [StringLength(20)]
+        public string Status { get; set; } = "active";
+
+        [Required]
         public bool IsActive { get; set; } = true;
 
         [Required]

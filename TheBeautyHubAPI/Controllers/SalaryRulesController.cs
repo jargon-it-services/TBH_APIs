@@ -16,85 +16,109 @@ using TheBeautyHubCore.Services.Interfaces;
 namespace TheBeautyHubAPI.Controllers
 {
     /// <summary>
-    /// Expense type list and management endpoints (API_044–API_048).
+    /// Salary rule catalog and management endpoints (API_038–API_043).
     /// </summary>
     [Authorize]
     [ApiController]
-    [Route("api/expenses")]
+    [Route("api/salary-rules")]
     [Produces("application/json")]
-    public class ExpensesTypesController : ControllerBase
+    public class SalaryRulesController : ControllerBase
     {
         private static readonly JsonSerializerOptions JsonOptions = new()
         {
             PropertyNameCaseInsensitive = true
         };
 
-        private readonly IExpensesTypeService _expensesTypeService;
+        private readonly ISalaryRuleService _salaryRuleService;
         private readonly IExceptionLogService _exceptionLogService;
         private readonly IMapper _mapper;
         private readonly ICurrentUser _currentUser;
 
-        public ExpensesTypesController(
-            IExpensesTypeService expensesTypeService,
+        public SalaryRulesController(
+            ISalaryRuleService salaryRuleService,
             IExceptionLogService exceptionLogService,
             IMapper mapper,
             ICurrentUser currentUser)
         {
-            _expensesTypeService = expensesTypeService;
+            _salaryRuleService = salaryRuleService;
             _exceptionLogService = exceptionLogService;
             _mapper = mapper;
             _currentUser = currentUser;
         }
 
-        /// <summary>API_044 Fetch Expense List</summary>
-        [HttpGet("list")]
-        public async Task<IActionResult> GetList()
+        /// <summary>API_038 Fetch Salary Rules Catalog</summary>
+        [HttpGet]
+        public async Task<IActionResult> GetCatalog()
         {
             try
             {
-                var list = await _expensesTypeService.GetListAsync(_currentUser.AccountId);
-                return Ok(new ApiStatusResponse<ExpenseListDataResponse>
+                var catalog = await _salaryRuleService.GetCatalogAsync(_currentUser.AccountId);
+                return Ok(new ApiStatusResponse<SalaryRuleCatalogDataResponse>
                 {
                     Status = true,
-                    Message = ApiMessages.Expense.ListFetched,
-                    Data = new ExpenseListDataResponse
+                    Message = ApiMessages.SalaryRule.CatalogFetched,
+                    Data = new SalaryRuleCatalogDataResponse
                     {
-                        Expenses = _mapper.Map<List<ExpenseListItemResponse>>(list)
+                        SalaryRules = _mapper.Map<List<SalaryRuleCatalogItemResponse>>(catalog)
                     }
                 });
             }
             catch (Exception ex)
             {
                 await _exceptionLogService.LogExceptionAsync(ex, _currentUser.UserId);
-                return StatusCode(500, Fail(ApiMessages.Expense.ListFailed));
+                return StatusCode(500, Fail(ApiMessages.SalaryRule.CatalogFailed));
             }
         }
 
-        /// <summary>API_045 Fetch Expense Detail</summary>
-        [HttpGet("{expenseId:guid}/details")]
-        public async Task<IActionResult> GetDetails(Guid expenseId)
+        /// <summary>API_039 Fetch Salary Rule List</summary>
+        [HttpGet("list")]
+        public async Task<IActionResult> GetList()
         {
             try
             {
-                var detail = await _expensesTypeService.GetDetailsAsync(expenseId, _currentUser.AccountId);
-                if (detail == null)
-                    return NotFound(Fail(ApiMessages.Expense.NotFound));
-
-                return Ok(new ApiStatusResponse<ExpenseDetailResponse>
+                var list = await _salaryRuleService.GetListAsync(_currentUser.AccountId);
+                return Ok(new ApiStatusResponse<SalaryRuleListDataResponse>
                 {
                     Status = true,
-                    Message = ApiMessages.Expense.DetailsFetched,
-                    Data = _mapper.Map<ExpenseDetailResponse>(detail)
+                    Message = ApiMessages.SalaryRule.ListFetched,
+                    Data = new SalaryRuleListDataResponse
+                    {
+                        SalaryRules = _mapper.Map<List<SalaryRuleListItemResponse>>(list)
+                    }
                 });
             }
             catch (Exception ex)
             {
                 await _exceptionLogService.LogExceptionAsync(ex, _currentUser.UserId);
-                return StatusCode(500, Fail(ApiMessages.Expense.DetailsFailed));
+                return StatusCode(500, Fail(ApiMessages.SalaryRule.ListFailed));
             }
         }
 
-        /// <summary>API_046 Create Expense</summary>
+        /// <summary>API_040 Fetch Salary Rule Detail</summary>
+        [HttpGet("{ruleId:guid}/details")]
+        public async Task<IActionResult> GetDetails(Guid ruleId)
+        {
+            try
+            {
+                var detail = await _salaryRuleService.GetDetailsAsync(ruleId, _currentUser.AccountId);
+                if (detail == null)
+                    return NotFound(Fail(ApiMessages.SalaryRule.NotFound));
+
+                return Ok(new ApiStatusResponse<SalaryRuleDetailResponse>
+                {
+                    Status = true,
+                    Message = ApiMessages.SalaryRule.DetailsFetched,
+                    Data = _mapper.Map<SalaryRuleDetailResponse>(detail)
+                });
+            }
+            catch (Exception ex)
+            {
+                await _exceptionLogService.LogExceptionAsync(ex, _currentUser.UserId);
+                return StatusCode(500, Fail(ApiMessages.SalaryRule.DetailsFailed));
+            }
+        }
+
+        /// <summary>API_041 Create Salary Rule</summary>
         [HttpPost]
         public async Task<IActionResult> Create()
         {
@@ -105,12 +129,12 @@ namespace TheBeautyHubAPI.Controllers
                 if (!ModelState.IsValid)
                     return BadRequest(Fail(GetModelStateError()));
 
-                await _expensesTypeService.CreateAsync(MapSaveDto(request));
-                return Ok(new ApiStatusResponse<ExpenseSavedDataResponse>
+                await _salaryRuleService.CreateAsync(MapSaveDto(request));
+                return Ok(new ApiStatusResponse<SalaryRuleSavedDataResponse>
                 {
                     Status = true,
-                    Message = ApiMessages.Expense.Created,
-                    Data = new ExpenseSavedDataResponse { Saved = true }
+                    Message = ApiMessages.SalaryRule.Created,
+                    Data = new SalaryRuleSavedDataResponse { Saved = true }
                 });
             }
             catch (ArgumentException ex)
@@ -124,31 +148,31 @@ namespace TheBeautyHubAPI.Controllers
             catch (Exception ex)
             {
                 await _exceptionLogService.LogExceptionAsync(ex, _currentUser.UserId);
-                return StatusCode(500, Fail(ApiMessages.Expense.CreateFailed));
+                return StatusCode(500, Fail(ApiMessages.SalaryRule.CreateFailed));
             }
         }
 
-        /// <summary>API_047 Update Expense</summary>
-        [HttpPost("{expenseId:guid}")]
-        public async Task<IActionResult> Update(Guid expenseId)
+        /// <summary>API_042 Update Salary Rule</summary>
+        [HttpPost("{ruleId:guid}")]
+        public async Task<IActionResult> Update(Guid ruleId)
         {
             try
             {
-                var existing = await _expensesTypeService.GetDetailsAsync(expenseId, _currentUser.AccountId);
+                var existing = await _salaryRuleService.GetDetailsAsync(ruleId, _currentUser.AccountId);
                 if (existing == null)
-                    return NotFound(Fail(ApiMessages.Expense.NotFound));
+                    return NotFound(Fail(ApiMessages.SalaryRule.NotFound));
 
                 var request = await BindSaveRequestAsync();
                 TryValidateModel(request);
                 if (!ModelState.IsValid)
                     return BadRequest(Fail(GetModelStateError()));
 
-                await _expensesTypeService.UpdateAsync(expenseId, MapSaveDto(request));
-                return Ok(new ApiStatusResponse<ExpenseSavedDataResponse>
+                await _salaryRuleService.UpdateAsync(ruleId, MapSaveDto(request));
+                return Ok(new ApiStatusResponse<SalaryRuleSavedDataResponse>
                 {
                     Status = true,
-                    Message = ApiMessages.Expense.Updated,
-                    Data = new ExpenseSavedDataResponse { Saved = true }
+                    Message = ApiMessages.SalaryRule.Updated,
+                    Data = new SalaryRuleSavedDataResponse { Saved = true }
                 });
             }
             catch (KeyNotFoundException ex)
@@ -166,26 +190,26 @@ namespace TheBeautyHubAPI.Controllers
             catch (Exception ex)
             {
                 await _exceptionLogService.LogExceptionAsync(ex, _currentUser.UserId);
-                return StatusCode(500, Fail(ApiMessages.Expense.UpdateFailed));
+                return StatusCode(500, Fail(ApiMessages.SalaryRule.UpdateFailed));
             }
         }
 
-        /// <summary>API_048 Delete Expense</summary>
-        [HttpPost("{expenseId:guid}/delete")]
-        public async Task<IActionResult> Delete(Guid expenseId)
+        /// <summary>API_043 Delete Salary Rule</summary>
+        [HttpPost("{ruleId:guid}/delete")]
+        public async Task<IActionResult> Delete(Guid ruleId)
         {
             try
             {
-                var existing = await _expensesTypeService.GetDetailsAsync(expenseId, _currentUser.AccountId);
+                var existing = await _salaryRuleService.GetDetailsAsync(ruleId, _currentUser.AccountId);
                 if (existing == null)
-                    return NotFound(Fail(ApiMessages.Expense.NotFound));
+                    return NotFound(Fail(ApiMessages.SalaryRule.NotFound));
 
-                await _expensesTypeService.DeleteAsync(expenseId, _currentUser.AccountId);
-                return Ok(new ApiStatusResponse<ExpenseDeletedDataResponse>
+                await _salaryRuleService.DeleteAsync(ruleId, _currentUser.AccountId);
+                return Ok(new ApiStatusResponse<SalaryRuleDeletedDataResponse>
                 {
                     Status = true,
-                    Message = ApiMessages.Expense.Deleted,
-                    Data = new ExpenseDeletedDataResponse { Deleted = true }
+                    Message = ApiMessages.SalaryRule.Deleted,
+                    Data = new SalaryRuleDeletedDataResponse { Deleted = true }
                 });
             }
             catch (KeyNotFoundException ex)
@@ -195,32 +219,35 @@ namespace TheBeautyHubAPI.Controllers
             catch (Exception ex)
             {
                 await _exceptionLogService.LogExceptionAsync(ex, _currentUser.UserId);
-                return StatusCode(500, Fail(ApiMessages.Expense.DeleteFailed));
+                return StatusCode(500, Fail(ApiMessages.SalaryRule.DeleteFailed));
             }
         }
 
-        private SaveExpenseDto MapSaveDto(SaveExpenseRequest request)
+        private SaveSalaryRuleDto MapSaveDto(SaveSalaryRuleRequest request)
         {
-            return new SaveExpenseDto
+            return new SaveSalaryRuleDto
             {
                 AccountId = _currentUser.AccountId,
-                CreatedBy = _currentUser.UserId,
                 Name = request.Name,
                 Description = request.Description,
-                AllBranches = request.AllBranches ?? false,
-                Branches = request.Branches,
+                SalaryType = request.SalaryType,
+                FixedSalary = request.FixedSalary,
+                MonthlyTarget = request.MonthlyTarget,
+                TargetBonus = request.TargetBonus,
+                AllowAdvanceRecovery = request.AllowAdvanceRecovery ?? false,
+                MaxRecoveryPerMonth = request.MaxRecoveryPerMonth,
                 Status = request.Status
             };
         }
 
-        private async Task<SaveExpenseRequest> BindSaveRequestAsync()
+        private async Task<SaveSalaryRuleRequest> BindSaveRequestAsync()
         {
             using var reader = new StreamReader(Request.Body);
             var json = await reader.ReadToEndAsync();
             if (string.IsNullOrWhiteSpace(json))
                 throw new ArgumentException(ApiMessages.Common.RequestBodyRequired);
 
-            return JsonSerializer.Deserialize<SaveExpenseRequest>(json, JsonOptions)
+            return JsonSerializer.Deserialize<SaveSalaryRuleRequest>(json, JsonOptions)
                 ?? throw new ArgumentException(ApiMessages.Common.InvalidRequestBody);
         }
 

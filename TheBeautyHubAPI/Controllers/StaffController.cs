@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using TheBeautyHubAPI.Auth;
 using TheBeautyHubAPI.Helpers;
 using TheBeautyHubAPI.Models;
+using TheBeautyHubCore.Constants;
 using TheBeautyHubCore.DTOs;
 using TheBeautyHubCore.Services.Interfaces;
 
@@ -56,13 +57,14 @@ namespace TheBeautyHubAPI.Controllers
                 return Ok(new ApiStatusResponse<StaffFormConfigDataResponse>
                 {
                     Status = true,
+                    Message = ApiMessages.Staff.FormConfigFetched,
                     Data = _mapper.Map<StaffFormConfigDataResponse>(config)
                 });
             }
             catch (Exception ex)
             {
                 await _exceptionLogService.LogExceptionAsync(ex, _currentUser.UserId);
-                return StatusCode(500, Fail("An error occurred while fetching staff form config."));
+                return StatusCode(500, Fail(ApiMessages.Staff.FormConfigFailed));
             }
         }
 
@@ -80,13 +82,14 @@ namespace TheBeautyHubAPI.Controllers
                 return Ok(new ApiStatusResponse<StaffListDataResponse>
                 {
                     Status = true,
+                    Message = ApiMessages.Staff.ListFetched,
                     Data = new StaffListDataResponse { Staff = items }
                 });
             }
             catch (Exception ex)
             {
                 await _exceptionLogService.LogExceptionAsync(ex, _currentUser.UserId);
-                return StatusCode(500, Fail("An error occurred while fetching staff."));
+                return StatusCode(500, Fail(ApiMessages.Staff.ListFailed));
             }
         }
 
@@ -100,6 +103,7 @@ namespace TheBeautyHubAPI.Controllers
                 return Ok(new ApiStatusResponse<NextEmployeeCodeDataResponse>
                 {
                     Status = true,
+                    Message = ApiMessages.Staff.NextCodeFetched,
                     Data = new NextEmployeeCodeDataResponse { EmployeeCode = code }
                 });
             }
@@ -122,7 +126,7 @@ namespace TheBeautyHubAPI.Controllers
             {
                 var detail = await _staffService.GetDetailsAsync(userId, _currentUser.AccountId);
                 if (detail == null)
-                    return NotFound(Fail("Staff not found."));
+                    return NotFound(Fail(ApiMessages.Staff.NotFound));
 
                 var response = _mapper.Map<StaffDetailResponse>(detail);
                 response.Photo = ToAbsoluteUrl(response.Photo);
@@ -131,13 +135,14 @@ namespace TheBeautyHubAPI.Controllers
                 return Ok(new ApiStatusResponse<StaffDetailResponse>
                 {
                     Status = true,
+                    Message = ApiMessages.Staff.DetailsFetched,
                     Data = response
                 });
             }
             catch (Exception ex)
             {
                 await _exceptionLogService.LogExceptionAsync(ex, _currentUser.UserId);
-                return StatusCode(500, Fail("An error occurred while fetching staff details."));
+                return StatusCode(500, Fail(ApiMessages.Staff.DetailsFailed));
             }
         }
 
@@ -164,6 +169,7 @@ namespace TheBeautyHubAPI.Controllers
                 return Ok(new ApiStatusResponse<StaffSavedDataResponse>
                 {
                     Status = true,
+                    Message = ApiMessages.Staff.Created,
                     Data = new StaffSavedDataResponse { Saved = true }
                 });
             }
@@ -171,14 +177,14 @@ namespace TheBeautyHubAPI.Controllers
             {
                 return BadRequest(Fail(ex.Message));
             }
-            catch (JsonException ex)
+            catch (JsonException)
             {
-                return BadRequest(Fail(ex.Message));
+                return BadRequest(Fail(ApiMessages.Common.InvalidRequestBody));
             }
             catch (Exception ex)
             {
                 await _exceptionLogService.LogExceptionAsync(ex, _currentUser.UserId);
-                return StatusCode(500, Fail("An error occurred while creating staff."));
+                return StatusCode(500, Fail(ApiMessages.Staff.CreateFailed));
             }
         }
 
@@ -190,7 +196,7 @@ namespace TheBeautyHubAPI.Controllers
             {
                 var existing = await _staffService.GetDetailsAsync(userId, _currentUser.AccountId);
                 if (existing == null)
-                    return NotFound(Fail("Staff not found."));
+                    return NotFound(Fail(ApiMessages.Staff.NotFound));
 
                 var request = await BindSaveRequestAsync();
                 TryValidateModel(request);
@@ -214,6 +220,7 @@ namespace TheBeautyHubAPI.Controllers
                 return Ok(new ApiStatusResponse<StaffSavedDataResponse>
                 {
                     Status = true,
+                    Message = ApiMessages.Staff.Updated,
                     Data = new StaffSavedDataResponse { Saved = true }
                 });
             }
@@ -225,14 +232,14 @@ namespace TheBeautyHubAPI.Controllers
             {
                 return BadRequest(Fail(ex.Message));
             }
-            catch (JsonException ex)
+            catch (JsonException)
             {
-                return BadRequest(Fail(ex.Message));
+                return BadRequest(Fail(ApiMessages.Common.InvalidRequestBody));
             }
             catch (Exception ex)
             {
                 await _exceptionLogService.LogExceptionAsync(ex, _currentUser.UserId);
-                return StatusCode(500, Fail("An error occurred while updating staff."));
+                return StatusCode(500, Fail(ApiMessages.Staff.UpdateFailed));
             }
         }
 
@@ -244,7 +251,7 @@ namespace TheBeautyHubAPI.Controllers
             {
                 var existing = await _staffService.GetDetailsAsync(userId, _currentUser.AccountId);
                 if (existing == null)
-                    return NotFound(Fail("Staff not found."));
+                    return NotFound(Fail(ApiMessages.Staff.NotFound));
 
                 await _staffService.DeleteAsync(userId, _currentUser.AccountId);
                 _fileStorage.DeleteIfLocal(existing.Photo);
@@ -253,6 +260,7 @@ namespace TheBeautyHubAPI.Controllers
                 return Ok(new ApiStatusResponse<StaffDeletedDataResponse>
                 {
                     Status = true,
+                    Message = ApiMessages.Staff.Deleted,
                     Data = new StaffDeletedDataResponse { Deleted = true }
                 });
             }
@@ -263,7 +271,7 @@ namespace TheBeautyHubAPI.Controllers
             catch (Exception ex)
             {
                 await _exceptionLogService.LogExceptionAsync(ex, _currentUser.UserId);
-                return StatusCode(500, Fail("An error occurred while deleting staff."));
+                return StatusCode(500, Fail(ApiMessages.Staff.DeleteFailed));
             }
         }
 
@@ -329,10 +337,10 @@ namespace TheBeautyHubAPI.Controllers
             using var reader = new StreamReader(Request.Body);
             var json = await reader.ReadToEndAsync();
             if (string.IsNullOrWhiteSpace(json))
-                throw new ArgumentException("Request body is required.");
+                throw new ArgumentException(ApiMessages.Common.RequestBodyRequired);
 
             return JsonSerializer.Deserialize<SaveStaffRequest>(json, JsonOptions)
-                ?? throw new ArgumentException("Invalid request body.");
+                ?? throw new ArgumentException(ApiMessages.Common.InvalidRequestBody);
         }
 
         private string? ToAbsoluteUrl(string? path)
@@ -352,7 +360,7 @@ namespace TheBeautyHubAPI.Controllers
                 .SelectMany(v => v.Errors)
                 .Select(e => e.ErrorMessage)
                 .FirstOrDefault(m => !string.IsNullOrWhiteSpace(m))
-                ?? "Invalid request.";
+                ?? ApiMessages.Common.ValidationOccurred;
         }
 
         private static ApiStatusResponse<object> Fail(string message)

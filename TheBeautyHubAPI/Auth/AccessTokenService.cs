@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using TheBeautyHubCore.Constants;
 
 namespace TheBeautyHubAPI.Auth
 {
@@ -70,7 +71,7 @@ namespace TheBeautyHubAPI.Auth
         {
             if (string.IsNullOrWhiteSpace(accessToken))
             {
-                return Invalid("Missing Authorization header. Send the AuthCenter access token as Bearer.");
+                return Invalid(ApiMessages.Common.MissingToken);
             }
 
             ClaimsPrincipal principal;
@@ -80,14 +81,14 @@ namespace TheBeautyHubAPI.Auth
             }
             catch (Exception)
             {
-                return Invalid("Invalid token.");
+                return Invalid(ApiMessages.Common.InvalidToken);
             }
 
             var userId = ParseGuid(principal, AuthCenterClaimTypes.UserId);
             var accountId = ParseGuid(principal, AuthCenterClaimTypes.AccountId);
             var sessionId = ParseGuid(principal, AuthCenterClaimTypes.SessionId);
             if (!userId.HasValue || !accountId.HasValue || !sessionId.HasValue)
-                return Invalid("Invalid token.");
+                return Invalid(ApiMessages.Common.InvalidToken);
 
             var roles = principal.FindAll(AuthCenterClaimTypes.Role).Select(c => c.Value).ToList();
             var permissions = principal.FindAll(AuthCenterClaimTypes.Permission).Select(c => c.Value).ToList();
@@ -96,7 +97,7 @@ namespace TheBeautyHubAPI.Auth
             {
                 var authCenter = await _authCenterTokenValidator.ValidateAsync(accessToken, cancellationToken);
                 if (!authCenter.IsValid)
-                    return Invalid(authCenter.Error ?? "Token is not valid for The Beauty Hub.");
+                    return Invalid(authCenter.Error ?? ApiMessages.Common.TokenNotValidForApp);
 
                 if (authCenter.Roles.Count > 0)
                     roles = authCenter.Roles;
