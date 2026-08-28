@@ -227,7 +227,7 @@ namespace TheBeautyHubAPI.Controllers
                 ClosingTime = request.ClosingTime,
                 WeeklyOff = request.WeeklyOff,
                 Status = request.Status,
-                Services = request.Services ?? new List<Guid>(),
+                Services = MergeServiceIds(request),
                 Latitude = request.Latitude,
                 Longitude = request.Longitude,
                 MapsLink = request.MapsLink,
@@ -258,7 +258,9 @@ namespace TheBeautyHubAPI.Controllers
                     ClosingTime = form["closing_time"].ToString(),
                     WeeklyOff = form["weekly_off"].ToString(),
                     Status = form["status"].ToString(),
-                    Services = ParseServiceIds(form["services"]),
+                    Services = FormHas(form, "services") ? ParseServiceIds(form["services"]) : null,
+                    ServiceId = ParseGuid(form["service_id"]),
+                    ServiceIds = FormHas(form, "service_ids") ? ParseServiceIds(form["service_ids"]) : null,
                     Latitude = ParseDecimal(form["latitude"]),
                     Longitude = ParseDecimal(form["longitude"]),
                     MapsLink = NullIfEmpty(form["maps_link"]),
@@ -335,6 +337,30 @@ namespace TheBeautyHubAPI.Controllers
             return value.Equals("true", StringComparison.OrdinalIgnoreCase)
                 || value.Equals("1")
                 || value.Equals("on", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static List<Guid>? MergeServiceIds(SaveBranchRequest request)
+        {
+            var any = request.Services != null
+                || request.ServiceIds != null
+                || request.ServiceId.HasValue;
+            if (!any)
+                return null;
+
+            var ids = new List<Guid>();
+            if (request.Services != null)
+                ids.AddRange(request.Services);
+            if (request.ServiceIds != null)
+                ids.AddRange(request.ServiceIds);
+            if (request.ServiceId.HasValue)
+                ids.Add(request.ServiceId.Value);
+
+            return ids.Distinct().ToList();
+        }
+
+        private static bool FormHas(IFormCollection form, string key)
+        {
+            return form.ContainsKey(key);
         }
 
         private static List<Guid> ParseServiceIds(Microsoft.Extensions.Primitives.StringValues values)

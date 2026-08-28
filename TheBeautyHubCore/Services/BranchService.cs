@@ -110,16 +110,17 @@ namespace TheBeautyHubCore.Services
                 existing.Logo = dto.Logo;
 
             await _branchRepository.UpdateAsync(existing);
-            await _branchRepository.ReplaceServicesAsync(existing.BranchId, serviceIds);
+            if (dto.Services != null)
+                await _branchRepository.ReplaceServicesAsync(existing.BranchId, serviceIds);
 
             return new BranchSavedDto { Saved = true };
         }
 
-        private async Task<List<Guid>> ResolveServiceIdsAsync(IEnumerable<Guid> serviceIds)
+        private async Task<List<Guid>> ResolveServiceIdsAsync(IEnumerable<Guid>? serviceIds)
         {
-            var requested = serviceIds.Distinct().ToList();
+            var requested = (serviceIds ?? Enumerable.Empty<Guid>()).Distinct().ToList();
             if (requested.Count == 0)
-                throw new ArgumentException("At least one service is required.");
+                return requested;
 
             var found = await _branchRepository.GetServicesByIdsAsync(requested);
             if (found.Count != requested.Count)

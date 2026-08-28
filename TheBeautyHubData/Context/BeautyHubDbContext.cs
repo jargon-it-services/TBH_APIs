@@ -119,6 +119,10 @@ namespace TheBeautyHubData.Context
         /// </summary>
         public DbSet<BranchEmployee> BranchEmployees { get; set; }
 
+        public DbSet<SalaryRule> SalaryRules { get; set; }
+
+        public DbSet<Staff> StaffMembers { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -731,6 +735,67 @@ namespace TheBeautyHubData.Context
                 entity.HasOne(e => e.User)
                     .WithMany()
                     .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<SalaryRule>(entity =>
+            {
+                entity.HasKey(e => e.SalaryRuleId);
+
+                entity.Property(e => e.SalaryRuleId)
+                    .HasDefaultValueSql("gen_random_uuid()");
+
+                entity.Property(e => e.CreatedAt)
+                    .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                entity.Property(e => e.IsDeleted)
+                    .HasDefaultValue(false);
+
+                entity.Property(e => e.IsActive)
+                    .HasDefaultValue(true);
+
+                entity.HasOne(e => e.Account)
+                    .WithMany()
+                    .HasForeignKey(e => e.AccountId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<Staff>(entity =>
+            {
+                entity.ToTable("Staff");
+                entity.HasKey(e => e.StaffId);
+
+                entity.Property(e => e.StaffId)
+                    .HasDefaultValueSql("gen_random_uuid()");
+
+                entity.Property(e => e.CreatedAt)
+                    .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                entity.Property(e => e.IsDeleted)
+                    .HasDefaultValue(false);
+
+                entity.Property(e => e.AllowAppLogin)
+                    .HasDefaultValue(false);
+
+                entity.HasOne(e => e.Account)
+                    .WithMany()
+                    .HasForeignKey(e => e.AccountId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.User)
+                    .WithMany()
+                    .HasForeignKey(e => e.UserId)
+                    .IsRequired(false)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.Branch)
+                    .WithMany()
+                    .HasForeignKey(e => e.BranchId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(e => e.SalaryRule)
+                    .WithMany()
+                    .HasForeignKey(e => e.SalaryRuleId)
                     .OnDelete(DeleteBehavior.Restrict);
             });
         }

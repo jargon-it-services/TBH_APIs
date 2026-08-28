@@ -37,6 +37,7 @@ builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
 //builder.Services.AddScoped<IUserSessionRepository, UserSessionRepository>();
 builder.Services.AddScoped<IExceptionLogRepository, ExceptionLogRepository>();
 builder.Services.AddScoped<IBranchRepository, BranchRepository>();
+builder.Services.AddScoped<IStaffRepository, StaffRepository>();
 
 // Register business services
 builder.Services.AddScoped<IAccountService, AccountService>();
@@ -58,7 +59,9 @@ builder.Services.AddScoped<ITransactionService, TransactionService>();
 //builder.Services.AddScoped<IUserSessionService, UserSessionService>();
 builder.Services.AddScoped<IExceptionLogService, ExceptionLogService>();
 builder.Services.AddScoped<IBranchService, BranchService>();
+builder.Services.AddScoped<IStaffService, StaffService>();
 builder.Services.AddScoped<TheBeautyHubAPI.Helpers.BranchLogoStorage>();
+builder.Services.AddScoped<TheBeautyHubAPI.Helpers.StaffFileStorage>();
 builder.Services.AddBeautyHubAuth(builder.Configuration);
 
 // Configure AutoMapper

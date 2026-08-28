@@ -70,7 +70,7 @@ namespace TheBeautyHubCore.DTOs
         public string ClosingTime { get; set; } = string.Empty;
         public string WeeklyOff { get; set; } = string.Empty;
         public string Status { get; set; } = string.Empty;
-        public List<Guid> Services { get; set; } = new();
+        public List<Guid>? Services { get; set; }
         public decimal? Latitude { get; set; }
         public decimal? Longitude { get; set; }
         public string? MapsLink { get; set; }

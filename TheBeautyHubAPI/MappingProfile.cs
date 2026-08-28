@@ -160,6 +160,12 @@ namespace TheBeautyHubAPI
             CreateMap<BranchDetailDto, BranchDetailResponse>();
             CreateMap<BranchServiceItemDto, BranchServiceItemResponse>();
             CreateMap<BranchEmployeeItemDto, BranchEmployeeItemResponse>();
+
+            CreateMap<StaffFormConfigDto, StaffFormConfigDataResponse>();
+            CreateMap<StaffFormBranchDto, StaffFormBranchResponse>();
+            CreateMap<StaffFormSalaryRuleDto, StaffFormSalaryRuleResponse>();
+            CreateMap<StaffListItemDto, StaffListItemResponse>();
+            CreateMap<StaffDetailDto, StaffDetailResponse>();
         }
     }
 }

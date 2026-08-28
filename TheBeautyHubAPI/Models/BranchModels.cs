@@ -199,9 +199,14 @@ namespace TheBeautyHubAPI.Models
         [JsonPropertyName("status")]
         public string Status { get; set; } = string.Empty;
 
-        [Required]
         [JsonPropertyName("services")]
-        public List<Guid> Services { get; set; } = new();
+        public List<Guid>? Services { get; set; }
+
+        [JsonPropertyName("service_id")]
+        public Guid? ServiceId { get; set; }
+
+        [JsonPropertyName("service_ids")]
+        public List<Guid>? ServiceIds { get; set; }
 
         [JsonPropertyName("latitude")]
         public decimal? Latitude { get; set; }
