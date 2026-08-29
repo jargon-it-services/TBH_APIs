@@ -66,6 +66,7 @@ namespace TheBeautyHubCore.DTOs
     {
         public Guid AccountId { get; set; }
         public Guid? CreatedBy { get; set; }
+        public Guid? UserId { get; set; }
         public string FullName { get; set; } = string.Empty;
         public string Mobile { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;

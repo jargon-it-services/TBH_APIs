@@ -11,6 +11,8 @@ namespace TheBeautyHubAPI.Auth
 
         public string ValidatePath { get; set; } = "/api/auth/validate";
 
+        public string ProfilePath { get; set; } = "/api/user/profile";
+
         /// <summary>
         /// Application name registered in AuthCenter for TBH logins.
         /// </summary>

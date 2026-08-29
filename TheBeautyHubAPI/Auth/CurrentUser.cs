@@ -14,7 +14,9 @@ namespace TheBeautyHubAPI.Auth
             if (principal?.Identity?.IsAuthenticated != true)
                 return;
 
-            UserId = GetGuid(principal, AuthCenterClaimTypes.UserId) ?? Guid.Empty;
+            UserId = GetGuid(principal, AuthCenterClaimTypes.UserId)
+                ?? GetGuid(principal, ClaimTypes.NameIdentifier)
+                ?? Guid.Empty;
             AccountId = GetGuid(principal, AuthCenterClaimTypes.AccountId) ?? Guid.Empty;
             SessionId = GetGuid(principal, AuthCenterClaimTypes.SessionId) ?? Guid.Empty;
             ApplicationId = GetGuid(principal, AuthCenterClaimTypes.ApplicationId);

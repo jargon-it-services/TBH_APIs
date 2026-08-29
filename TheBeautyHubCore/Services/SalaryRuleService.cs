@@ -67,7 +67,7 @@ namespace TheBeautyHubCore.Services
             ValidateWrite(dto);
             var existing = await _staffRepository.GetSalaryRuleAsync(ruleId, dto.AccountId);
             if (existing == null)
-                throw new KeyNotFoundException(ApiMessages.SalaryRule.NotFound);
+                throw new KeyNotFoundException(ApiMessages.SalaryRuleNotFound);
 
             ApplyFields(existing, dto);
             await _staffRepository.UpdateSalaryRuleAsync(existing);
@@ -77,7 +77,7 @@ namespace TheBeautyHubCore.Services
         {
             var existing = await _staffRepository.GetSalaryRuleAsync(ruleId, accountId);
             if (existing == null)
-                throw new KeyNotFoundException(ApiMessages.SalaryRule.NotFound);
+                throw new KeyNotFoundException(ApiMessages.SalaryRuleNotFound);
 
             await _staffRepository.SoftDeleteSalaryRuleAsync(existing);
         }
@@ -100,13 +100,13 @@ namespace TheBeautyHubCore.Services
         private static void ValidateWrite(SaveSalaryRuleDto dto)
         {
             if (string.IsNullOrWhiteSpace(dto.Name))
-                throw new ArgumentException(ApiMessages.SalaryRule.NameRequired);
+                throw new ArgumentException(ApiMessages.SalaryRuleNameRequired);
             if (string.IsNullOrWhiteSpace(dto.Description))
-                throw new ArgumentException(ApiMessages.SalaryRule.DescriptionRequired);
+                throw new ArgumentException(ApiMessages.SalaryRuleDescriptionRequired);
             if (string.IsNullOrWhiteSpace(dto.SalaryType))
-                throw new ArgumentException(ApiMessages.SalaryRule.TypeRequired);
+                throw new ArgumentException(ApiMessages.SalaryRuleTypeRequired);
             if (string.IsNullOrWhiteSpace(dto.Status))
-                throw new ArgumentException(ApiMessages.SalaryRule.StatusRequired);
+                throw new ArgumentException(ApiMessages.SalaryRuleStatusRequired);
         }
 
         private static SalaryRuleDetailDto MapDetail(SalaryRule rule)

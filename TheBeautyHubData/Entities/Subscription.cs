@@ -84,8 +84,6 @@ namespace TheBeautyHubData.Entities
         /// <summary>
         /// The account this subscription belongs to
         /// </summary>
-        [ForeignKey("AccountId")]
-        public virtual Account Account { get; set; } = null!;
 
         /// <summary>
         /// The plan this subscription is for

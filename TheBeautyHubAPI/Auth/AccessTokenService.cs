@@ -71,7 +71,7 @@ namespace TheBeautyHubAPI.Auth
         {
             if (string.IsNullOrWhiteSpace(accessToken))
             {
-                return Invalid(ApiMessages.Common.MissingToken);
+                return Invalid(ApiMessages.MissingToken);
             }
 
             ClaimsPrincipal principal;
@@ -81,29 +81,36 @@ namespace TheBeautyHubAPI.Auth
             }
             catch (Exception)
             {
-                return Invalid(ApiMessages.Common.InvalidToken);
+                return Invalid(ApiMessages.InvalidToken);
             }
 
-            var userId = ParseGuid(principal, AuthCenterClaimTypes.UserId);
+            var userId = ParseGuid(principal, AuthCenterClaimTypes.UserId)
+                ?? ParseGuid(principal, ClaimTypes.NameIdentifier);
             var accountId = ParseGuid(principal, AuthCenterClaimTypes.AccountId);
             var sessionId = ParseGuid(principal, AuthCenterClaimTypes.SessionId);
-            if (!userId.HasValue || !accountId.HasValue || !sessionId.HasValue)
-                return Invalid(ApiMessages.Common.InvalidToken);
 
             var roles = principal.FindAll(AuthCenterClaimTypes.Role).Select(c => c.Value).ToList();
             var permissions = principal.FindAll(AuthCenterClaimTypes.Permission).Select(c => c.Value).ToList();
+            var email = principal.FindFirst(AuthCenterClaimTypes.Email)?.Value
+                ?? principal.FindFirst(ClaimTypes.Email)?.Value;
 
             if (_authCenterOptions.ValidateWithAuthCenter)
             {
                 var authCenter = await _authCenterTokenValidator.ValidateAsync(accessToken, cancellationToken);
                 if (!authCenter.IsValid)
-                    return Invalid(authCenter.Error ?? ApiMessages.Common.TokenNotValidForApp);
+                    return Invalid(authCenter.Error ?? ApiMessages.TokenNotValidForApp);
 
+                userId ??= authCenter.UserId;
+                if (!string.IsNullOrWhiteSpace(authCenter.Email))
+                    email = authCenter.Email;
                 if (authCenter.Roles.Count > 0)
                     roles = authCenter.Roles;
                 if (authCenter.Permissions.Count > 0)
                     permissions = authCenter.Permissions;
             }
+
+            if (!userId.HasValue || !accountId.HasValue || !sessionId.HasValue)
+                return Invalid(ApiMessages.InvalidToken);
 
             return new AccessTokenValidationResult
             {
@@ -112,8 +119,7 @@ namespace TheBeautyHubAPI.Auth
                 AccountId = accountId,
                 SessionId = sessionId,
                 ApplicationId = ParseGuid(principal, AuthCenterClaimTypes.ApplicationId),
-                Email = principal.FindFirst(AuthCenterClaimTypes.Email)?.Value
-                    ?? principal.FindFirst(ClaimTypes.Email)?.Value,
+                Email = email,
                 Name = principal.FindFirst(AuthCenterClaimTypes.Name)?.Value,
                 Roles = roles.Distinct(StringComparer.OrdinalIgnoreCase).ToList(),
                 Permissions = permissions.Distinct(StringComparer.OrdinalIgnoreCase).ToList()

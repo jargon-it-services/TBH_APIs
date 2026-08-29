@@ -73,8 +73,6 @@ namespace TheBeautyHubData.Entities
         /// <summary>
         /// The account this expense type belongs to
         /// </summary>
-        [ForeignKey("AccountId")]
-        public virtual Account Account { get; set; } = null!;
 
         /// <summary>
         /// The firm this expense type belongs to (optional)

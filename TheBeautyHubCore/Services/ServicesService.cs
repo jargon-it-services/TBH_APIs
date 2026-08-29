@@ -77,7 +77,7 @@ namespace TheBeautyHubCore.Services
 
             var existing = await _servicesRepository.GetByIdAsync(serviceId, dto.AccountId);
             if (existing == null)
-                throw new KeyNotFoundException(ApiMessages.Service.NotFound);
+                throw new KeyNotFoundException(ApiMessages.ServiceNotFound);
 
             var branchIds = await ResolveBranchIdsAsync(dto);
             ApplyFields(existing, dto);
@@ -95,7 +95,7 @@ namespace TheBeautyHubCore.Services
         {
             var existing = await _servicesRepository.GetByIdAsync(serviceId, accountId);
             if (existing == null)
-                throw new KeyNotFoundException(ApiMessages.Service.NotFound);
+                throw new KeyNotFoundException(ApiMessages.ServiceNotFound);
 
             await _servicesRepository.RemoveBranchLinksAsync(serviceId);
             await _servicesRepository.SoftDeleteAsync(existing);
@@ -108,11 +108,11 @@ namespace TheBeautyHubCore.Services
 
             var requested = (dto.Branches ?? new List<Guid>()).Distinct().ToList();
             if (requested.Count == 0)
-                throw new ArgumentException(ApiMessages.Common.BranchesRequiredWhenNotAll);
+                throw new ArgumentException(ApiMessages.BranchesRequiredWhenNotAll);
 
             var found = await _servicesRepository.GetBranchesByIdsAsync(dto.AccountId, requested);
             if (found.Count != requested.Count)
-                throw new ArgumentException(ApiMessages.Common.InvalidBranchIds);
+                throw new ArgumentException(ApiMessages.InvalidBranchIds);
 
             return requested;
         }
@@ -157,35 +157,35 @@ namespace TheBeautyHubCore.Services
         private static void ValidateWrite(SaveServiceDto dto)
         {
             if (string.IsNullOrWhiteSpace(dto.Name))
-                throw new ArgumentException(ApiMessages.Service.NameRequired);
+                throw new ArgumentException(ApiMessages.ServiceNameRequired);
             if (string.IsNullOrWhiteSpace(dto.Description))
-                throw new ArgumentException(ApiMessages.Service.DescriptionRequired);
+                throw new ArgumentException(ApiMessages.ServiceDescriptionRequired);
             if (string.IsNullOrWhiteSpace(dto.Category))
-                throw new ArgumentException(ApiMessages.Service.CategoryRequired);
+                throw new ArgumentException(ApiMessages.ServiceCategoryRequired);
             if (dto.DurationMinutes < 0)
-                throw new ArgumentException(ApiMessages.Service.DurationInvalid);
+                throw new ArgumentException(ApiMessages.ServiceDurationInvalid);
             if (string.IsNullOrWhiteSpace(dto.ApplicableGender))
-                throw new ArgumentException(ApiMessages.Service.GenderRequired);
+                throw new ArgumentException(ApiMessages.ServiceGenderRequired);
             if (string.IsNullOrWhiteSpace(dto.Type))
-                throw new ArgumentException(ApiMessages.Service.TypeRequired);
+                throw new ArgumentException(ApiMessages.ServiceTypeRequired);
             if (string.IsNullOrWhiteSpace(dto.Status))
-                throw new ArgumentException(ApiMessages.Service.StatusRequired);
+                throw new ArgumentException(ApiMessages.ServiceStatusRequired);
             if (dto.CustomerPrice < 0)
-                throw new ArgumentException(ApiMessages.Service.CustomerPriceInvalid);
+                throw new ArgumentException(ApiMessages.ServiceCustomerPriceInvalid);
             if (dto.MaterialCost < 0)
-                throw new ArgumentException(ApiMessages.Service.MaterialCostInvalid);
+                throw new ArgumentException(ApiMessages.ServiceMaterialCostInvalid);
             if (string.IsNullOrWhiteSpace(dto.CommissionType))
-                throw new ArgumentException(ApiMessages.Service.CommissionTypeRequired);
+                throw new ArgumentException(ApiMessages.ServiceCommissionTypeRequired);
 
             var commissionType = dto.CommissionType.Trim().ToLowerInvariant();
             if (commissionType != "percentage" && commissionType != "flat")
-                throw new ArgumentException(ApiMessages.Service.CommissionTypeInvalid);
+                throw new ArgumentException(ApiMessages.ServiceCommissionTypeInvalid);
             if (commissionType == "percentage" && (dto.CommissionValue < 0 || dto.CommissionValue > 100))
-                throw new ArgumentException(ApiMessages.Service.CommissionPercentageInvalid);
+                throw new ArgumentException(ApiMessages.ServiceCommissionPercentageInvalid);
             if (dto.CommissionValue < 0)
-                throw new ArgumentException(ApiMessages.Service.CommissionValueInvalid);
+                throw new ArgumentException(ApiMessages.ServiceCommissionValueInvalid);
             if (dto.OtherCost < 0)
-                throw new ArgumentException(ApiMessages.Service.OtherCostInvalid);
+                throw new ArgumentException(ApiMessages.ServiceOtherCostInvalid);
         }
 
         private static ServiceDetailDto MapDetail(ServiceEntity service)

@@ -19,16 +19,13 @@ namespace TheBeautyHubCore.Services
 
         private readonly IStaffRepository _staffRepository;
         private readonly IBranchRepository _branchRepository;
-        private readonly IUserRepository _userRepository;
 
         public StaffService(
             IStaffRepository staffRepository,
-            IBranchRepository branchRepository,
-            IUserRepository userRepository)
+            IBranchRepository branchRepository)
         {
             _staffRepository = staffRepository;
             _branchRepository = branchRepository;
-            _userRepository = userRepository;
         }
 
         public async Task<StaffFormConfigDto> GetFormConfigAsync(Guid accountId)
@@ -134,7 +131,7 @@ namespace TheBeautyHubCore.Services
             if (!string.IsNullOrWhiteSpace(dto.EmployeeCode) &&
                 await _staffRepository.EmployeeCodeExistsAsync(dto.AccountId, dto.EmployeeCode.Trim()))
             {
-                throw new ArgumentException(ApiMessages.Staff.EmployeeCodeExists);
+                throw new ArgumentException(ApiMessages.StaffEmployeeCodeExists);
             }
 
             var staff = new Staff
@@ -151,11 +148,10 @@ namespace TheBeautyHubCore.Services
             if (dto.HasNewAadhaarCard)
                 staff.AadhaarCardUrl = dto.AadhaarCardUrl;
 
-            if (dto.AllowAppLogin)
-                staff.UserId = await CreateLinkedUserAsync(dto);
+            if (dto.AllowAppLogin && dto.UserId.HasValue && dto.UserId.Value != Guid.Empty)
+                staff.UserId = dto.UserId;
 
             var inserted = await _staffRepository.InsertAsync(staff);
-
             if (inserted.UserId.HasValue)
                 await _staffRepository.AssignBranchEmployeeAsync(inserted.UserId.Value, inserted.BranchId, inserted.Photo);
         }
@@ -166,14 +162,14 @@ namespace TheBeautyHubCore.Services
 
             var existing = await _staffRepository.GetByIdAsync(staffId, dto.AccountId);
             if (existing == null)
-                throw new KeyNotFoundException(ApiMessages.Staff.NotFound);
+                throw new KeyNotFoundException(ApiMessages.StaffNotFound);
 
             await EnsureBranchAndRuleAsync(dto);
 
             if (!string.IsNullOrWhiteSpace(dto.EmployeeCode) &&
                 await _staffRepository.EmployeeCodeExistsAsync(dto.AccountId, dto.EmployeeCode.Trim(), staffId))
             {
-                throw new ArgumentException(ApiMessages.Staff.EmployeeCodeExists);
+                throw new ArgumentException(ApiMessages.StaffEmployeeCodeExists);
             }
 
             ApplyFields(existing, dto);
@@ -188,34 +184,24 @@ namespace TheBeautyHubCore.Services
             else if (dto.HasNewAadhaarCard)
                 existing.AadhaarCardUrl = dto.AadhaarCardUrl;
 
-            if (dto.AllowAppLogin && !existing.UserId.HasValue)
-                existing.UserId = await CreateLinkedUserAsync(dto);
-            else if (dto.AllowAppLogin && existing.UserId.HasValue)
-                await UpdateLinkedUserAsync(existing.UserId.Value, dto);
+            if (dto.AllowAppLogin && dto.UserId.HasValue && dto.UserId.Value != Guid.Empty)
+                existing.UserId = dto.UserId;
 
             await _staffRepository.UpdateAsync(existing);
-
             if (existing.UserId.HasValue)
-            {
-                if (dto.AllowAppLogin)
-                    await _staffRepository.AssignBranchEmployeeAsync(existing.UserId.Value, existing.BranchId, existing.Photo);
-                else
-                    await _staffRepository.RemoveBranchEmployeesForUserAsync(existing.UserId.Value);
-            }
+                await _staffRepository.AssignBranchEmployeeAsync(existing.UserId.Value, existing.BranchId, existing.Photo);
         }
 
         public async Task DeleteAsync(Guid staffId, Guid accountId)
         {
             var existing = await _staffRepository.GetByIdAsync(staffId, accountId);
             if (existing == null)
-                throw new KeyNotFoundException(ApiMessages.Staff.NotFound);
+                throw new KeyNotFoundException(ApiMessages.StaffNotFound);
 
-            if (existing.UserId.HasValue)
-            {
+            if (existing.UserId.HasValue && existing.UserId.Value != existing.StaffId)
                 await _staffRepository.RemoveBranchEmployeesForUserAsync(existing.UserId.Value);
-                await _userRepository.DeleteUserAsync(existing.UserId.Value);
-            }
 
+            await _staffRepository.RemoveBranchEmployeesForUserAsync(existing.StaffId);
             await _staffRepository.SoftDeleteAsync(existing);
         }
 
@@ -223,11 +209,11 @@ namespace TheBeautyHubCore.Services
         {
             var branch = await _branchRepository.GetByIdAsync(dto.BranchId);
             if (branch == null || branch.AccountId != dto.AccountId)
-                throw new ArgumentException(ApiMessages.Staff.BranchInvalid);
+                throw new ArgumentException(ApiMessages.StaffBranchInvalid);
 
             var rule = await _staffRepository.GetSalaryRuleAsync(dto.SalaryRuleId, dto.AccountId);
             if (rule == null)
-                throw new ArgumentException(ApiMessages.Staff.SalaryRuleInvalid);
+                throw new ArgumentException(ApiMessages.StaffSalaryRuleInvalid);
         }
 
         private static void ApplyFields(Staff staff, SaveStaffDto dto)
@@ -249,71 +235,37 @@ namespace TheBeautyHubCore.Services
             staff.Username = dto.AllowAppLogin ? dto.Username?.Trim() : dto.Username?.Trim();
         }
 
-        private async Task<Guid> CreateLinkedUserAsync(SaveStaffDto dto)
-        {
-            var user = new User
-            {
-                AccountId = dto.AccountId,
-                UserRole = MapUserRole(dto.AppRole),
-                UserName = dto.FullName.Trim(),
-                UserEmail = dto.Email.Trim(),
-                UserMobile = dto.Mobile.Trim(),
-                UserPasswordHash = Array.Empty<byte>(),
-                Status = MapUserStatus(dto.Status),
-                CreatedBy = dto.CreatedBy,
-                CreatedAt = DateTime.UtcNow,
-                IsDeleted = false
-            };
-
-            var inserted = await _userRepository.InsertUserAsync(user);
-            return inserted.UserId;
-        }
-
-        private async Task UpdateLinkedUserAsync(Guid userId, SaveStaffDto dto)
-        {
-            var user = await _userRepository.GetUserByIdAsync(userId);
-            if (user == null)
-                return;
-
-            user.UserRole = MapUserRole(dto.AppRole);
-            user.UserName = dto.FullName.Trim();
-            user.UserEmail = dto.Email.Trim();
-            user.UserMobile = dto.Mobile.Trim();
-            user.Status = MapUserStatus(dto.Status);
-            await _userRepository.UpdateUserAsync(user);
-        }
-
         private static void ValidateWrite(SaveStaffDto dto, bool isUpdate)
         {
             if (dto.AccountId == Guid.Empty)
-                throw new ArgumentException(ApiMessages.Common.AccountRequired);
+                throw new ArgumentException(ApiMessages.AccountRequired);
             if (string.IsNullOrWhiteSpace(dto.FullName))
-                throw new ArgumentException(ApiMessages.Staff.FullNameRequired);
+                throw new ArgumentException(ApiMessages.StaffFullNameRequired);
             if (string.IsNullOrWhiteSpace(dto.Mobile))
-                throw new ArgumentException(ApiMessages.Staff.MobileRequired);
+                throw new ArgumentException(ApiMessages.StaffMobileRequired);
             if (string.IsNullOrWhiteSpace(dto.Email))
-                throw new ArgumentException(ApiMessages.Staff.EmailRequired);
+                throw new ArgumentException(ApiMessages.StaffEmailRequired);
             if (string.IsNullOrWhiteSpace(dto.Gender))
-                throw new ArgumentException(ApiMessages.Staff.GenderRequired);
+                throw new ArgumentException(ApiMessages.StaffGenderRequired);
             if (string.IsNullOrWhiteSpace(dto.AadhaarNumber))
-                throw new ArgumentException(ApiMessages.Staff.AadhaarRequired);
+                throw new ArgumentException(ApiMessages.StaffAadhaarRequired);
             if (string.IsNullOrWhiteSpace(dto.Designation))
-                throw new ArgumentException(ApiMessages.Staff.DesignationRequired);
+                throw new ArgumentException(ApiMessages.StaffDesignationRequired);
             if (string.IsNullOrWhiteSpace(dto.Specialist))
-                throw new ArgumentException(ApiMessages.Staff.SpecialistRequired);
+                throw new ArgumentException(ApiMessages.StaffSpecialistRequired);
             if (dto.BranchId == Guid.Empty)
-                throw new ArgumentException(ApiMessages.Staff.BranchRequired);
+                throw new ArgumentException(ApiMessages.StaffBranchRequired);
             if (dto.SalaryRuleId == Guid.Empty)
-                throw new ArgumentException(ApiMessages.Staff.SalaryRuleRequired);
+                throw new ArgumentException(ApiMessages.StaffSalaryRuleRequired);
             if (string.IsNullOrWhiteSpace(dto.Status))
-                throw new ArgumentException(ApiMessages.Staff.StatusRequired);
+                throw new ArgumentException(ApiMessages.StaffStatusRequired);
 
             if (dto.AllowAppLogin)
             {
                 if (string.IsNullOrWhiteSpace(dto.AppRole))
-                    throw new ArgumentException(ApiMessages.Staff.AppRoleRequired);
+                    throw new ArgumentException(ApiMessages.StaffAppRoleRequired);
                 if (!isUpdate && string.IsNullOrWhiteSpace(dto.Username))
-                    throw new ArgumentException(ApiMessages.Staff.UsernameRequired);
+                    throw new ArgumentException(ApiMessages.StaffUsernameRequired);
             }
         }
 
@@ -323,25 +275,7 @@ namespace TheBeautyHubCore.Services
                 return null;
             if (DateTime.TryParse(value, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out var parsed))
                 return DateTime.SpecifyKind(parsed.Date, DateTimeKind.Utc);
-            throw new ArgumentException(ApiMessages.Staff.JoiningDateInvalid);
-        }
-
-        private static string MapUserRole(string? appRole)
-        {
-            var role = (appRole ?? "employee").Trim();
-            return role.ToLowerInvariant() switch
-            {
-                "admin" => "Admin",
-                "manager" => "Manager",
-                _ => "Employee"
-            };
-        }
-
-        private static string MapUserStatus(string status)
-        {
-            return string.Equals(status.Trim(), "active", StringComparison.OrdinalIgnoreCase)
-                ? "Active"
-                : status.Trim();
+            throw new ArgumentException(ApiMessages.StaffJoiningDateInvalid);
         }
 
         private static string DeriveBranchCode(string name)

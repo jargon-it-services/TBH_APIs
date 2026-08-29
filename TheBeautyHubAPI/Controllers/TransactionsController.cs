@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -25,29 +24,21 @@ namespace TheBeautyHubAPI.Controllers
     [Produces("application/json")]
     public class TransactionsController : ControllerBase
     {
-        private static readonly JsonSerializerOptions JsonOptions = new()
-        {
-            PropertyNameCaseInsensitive = true
-        };
-
         private readonly ITransactionService _transactionService;
         private readonly IExceptionLogService _exceptionLogService;
         private readonly IMapper _mapper;
         private readonly ICurrentUser _currentUser;
-        private readonly IUserService _userService;
 
         public TransactionsController(
             ITransactionService transactionService,
             IExceptionLogService exceptionLogService,
             IMapper mapper,
-            ICurrentUser currentUser,
-            IUserService userService)
+            ICurrentUser currentUser)
         {
             _transactionService = transactionService;
             _exceptionLogService = exceptionLogService;
             _mapper = mapper;
             _currentUser = currentUser;
-            _userService = userService;
         }
 
         /// <summary>API_049 Fetch Transaction Bootstrap</summary>
@@ -63,14 +54,14 @@ namespace TheBeautyHubAPI.Controllers
                 return Ok(new ApiStatusResponse<TransactionBootstrapResponse>
                 {
                     Status = true,
-                    Message = ApiMessages.Transaction.BootstrapFetched,
+                    Message = ApiMessages.TransactionBootstrapFetched,
                     Data = _mapper.Map<TransactionBootstrapResponse>(data)
                 });
             }
             catch (Exception ex)
             {
                 await _exceptionLogService.LogExceptionAsync(ex, _currentUser.UserId);
-                return StatusCode(500, Fail(ApiMessages.Transaction.BootstrapFailed));
+                return StatusCode(500, Fail(ApiMessages.TransactionBootstrapFailed));
             }
         }
 
@@ -84,7 +75,7 @@ namespace TheBeautyHubAPI.Controllers
                 return Ok(new ApiStatusResponse<TransactionListDataResponse>
                 {
                     Status = true,
-                    Message = ApiMessages.Transaction.ListFetched,
+                    Message = ApiMessages.TransactionListFetched,
                     Data = new TransactionListDataResponse
                     {
                         Meta = new TransactionListMetaResponse { FeatureLock = list.FeatureLock },
@@ -96,7 +87,7 @@ namespace TheBeautyHubAPI.Controllers
             catch (Exception ex)
             {
                 await _exceptionLogService.LogExceptionAsync(ex, _currentUser.UserId);
-                return StatusCode(500, Fail(ApiMessages.Transaction.ListFailed));
+                return StatusCode(500, Fail(ApiMessages.TransactionListFailed));
             }
         }
 
@@ -108,29 +99,32 @@ namespace TheBeautyHubAPI.Controllers
             {
                 var detail = await _transactionService.GetDetailsAsync(id, _currentUser.AccountId);
                 if (detail == null)
-                    return NotFound(Fail(ApiMessages.Transaction.NotFound));
+                    return NotFound(Fail(ApiMessages.TransactionNotFound));
 
                 return Ok(new ApiStatusResponse<TransactionRecordResponse>
                 {
                     Status = true,
-                    Message = ApiMessages.Transaction.DetailsFetched,
+                    Message = ApiMessages.TransactionDetailsFetched,
                     Data = _mapper.Map<TransactionRecordResponse>(detail)
                 });
             }
             catch (Exception ex)
             {
                 await _exceptionLogService.LogExceptionAsync(ex, _currentUser.UserId);
-                return StatusCode(500, Fail(ApiMessages.Transaction.DetailsFailed));
+                return StatusCode(500, Fail(ApiMessages.TransactionDetailsFailed));
             }
         }
 
         /// <summary>API_050 Create Transaction</summary>
         [HttpPost]
-        public async Task<IActionResult> Create()
+        [Consumes("application/json")]
+        public async Task<IActionResult> Create([FromBody] SaveTransactionRequest request)
         {
             try
             {
-                var request = await BindSaveRequestAsync(requireIdempotency: true);
+                if (string.IsNullOrWhiteSpace(request.IdempotencyKey))
+                    return BadRequest(Fail(ApiMessages.TransactionIdempotencyRequired));
+
                 TryValidateModel(request);
                 if (!ModelState.IsValid)
                     return BadRequest(Fail(GetModelStateError()));
@@ -139,7 +133,7 @@ namespace TheBeautyHubAPI.Controllers
                 return Ok(new ApiStatusResponse<TransactionSavedResponse>
                 {
                     Status = true,
-                    Message = ApiMessages.Transaction.Created,
+                    Message = ApiMessages.TransactionCreated,
                     Data = _mapper.Map<TransactionSavedResponse>(saved)
                 });
             }
@@ -149,22 +143,22 @@ namespace TheBeautyHubAPI.Controllers
             }
             catch (JsonException)
             {
-                return BadRequest(Fail(ApiMessages.Common.InvalidRequestBody));
+                return BadRequest(Fail(ApiMessages.InvalidRequestBody));
             }
             catch (Exception ex)
             {
                 await _exceptionLogService.LogExceptionAsync(ex, _currentUser.UserId);
-                return StatusCode(500, Fail(ApiMessages.Transaction.CreateFailed));
+                return StatusCode(500, Fail(ApiMessages.TransactionCreateFailed));
             }
         }
 
         /// <summary>API_051 Update Transaction</summary>
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(string id)
+        [Consumes("application/json")]
+        public async Task<IActionResult> Update(string id, [FromBody] SaveTransactionRequest request)
         {
             try
             {
-                var request = await BindSaveRequestAsync(requireIdempotency: false);
                 TryValidateModel(request);
                 if (!ModelState.IsValid)
                     return BadRequest(Fail(GetModelStateError()));
@@ -173,7 +167,7 @@ namespace TheBeautyHubAPI.Controllers
                 return Ok(new ApiStatusResponse<TransactionSavedResponse>
                 {
                     Status = true,
-                    Message = ApiMessages.Transaction.Updated,
+                    Message = ApiMessages.TransactionUpdated,
                     Data = _mapper.Map<TransactionSavedResponse>(saved)
                 });
             }
@@ -183,7 +177,7 @@ namespace TheBeautyHubAPI.Controllers
             }
             catch (InvalidOperationException ex) when (ex.Message == TransactionService.EditWindowClosedCode)
             {
-                return Conflict(Fail(ApiMessages.Transaction.EditWindowClosed));
+                return Conflict(Fail(ApiMessages.TransactionEditWindowClosed));
             }
             catch (ArgumentException ex)
             {
@@ -191,12 +185,12 @@ namespace TheBeautyHubAPI.Controllers
             }
             catch (JsonException)
             {
-                return BadRequest(Fail(ApiMessages.Common.InvalidRequestBody));
+                return BadRequest(Fail(ApiMessages.InvalidRequestBody));
             }
             catch (Exception ex)
             {
                 await _exceptionLogService.LogExceptionAsync(ex, _currentUser.UserId);
-                return StatusCode(500, Fail(ApiMessages.Transaction.UpdateFailed));
+                return StatusCode(500, Fail(ApiMessages.TransactionUpdateFailed));
             }
         }
 
@@ -210,7 +204,7 @@ namespace TheBeautyHubAPI.Controllers
                 return Ok(new ApiStatusResponse<TransactionMarkPaidResponse>
                 {
                     Status = true,
-                    Message = ApiMessages.Transaction.MarkedPaid,
+                    Message = ApiMessages.TransactionMarkedPaid,
                     Data = new TransactionMarkPaidResponse
                     {
                         Id = saved.Id,
@@ -226,13 +220,13 @@ namespace TheBeautyHubAPI.Controllers
             catch (Exception ex)
             {
                 await _exceptionLogService.LogExceptionAsync(ex, _currentUser.UserId);
-                return StatusCode(500, Fail(ApiMessages.Transaction.MarkPaidFailed));
+                return StatusCode(500, Fail(ApiMessages.TransactionMarkPaidFailed));
             }
         }
 
         private async Task<SaveTransactionDto> MapSaveDto(SaveTransactionRequest request)
         {
-            var editorName = await ResolveEditorNameAsync();
+            var editorName = ResolveEditorName();
             return new SaveTransactionDto
             {
                 AccountId = _currentUser.AccountId,
@@ -258,33 +252,9 @@ namespace TheBeautyHubAPI.Controllers
             };
         }
 
-        private async Task<string?> ResolveEditorNameAsync()
+        private string? ResolveEditorName()
         {
-            try
-            {
-                var user = await _userService.GetUserByIdAsync(_currentUser.UserId);
-                return user?.UserName;
-            }
-            catch
-            {
-                return null;
-            }
-        }
-
-        private async Task<SaveTransactionRequest> BindSaveRequestAsync(bool requireIdempotency)
-        {
-            using var reader = new StreamReader(Request.Body);
-            var json = await reader.ReadToEndAsync();
-            if (string.IsNullOrWhiteSpace(json))
-                throw new ArgumentException(ApiMessages.Common.RequestBodyRequired);
-
-            var request = JsonSerializer.Deserialize<SaveTransactionRequest>(json, JsonOptions)
-                ?? throw new ArgumentException(ApiMessages.Common.InvalidRequestBody);
-
-            if (requireIdempotency && string.IsNullOrWhiteSpace(request.IdempotencyKey))
-                throw new ArgumentException(ApiMessages.Transaction.IdempotencyRequired);
-
-            return request;
+            return string.IsNullOrWhiteSpace(_currentUser.Email) ? null : _currentUser.Email;
         }
 
         private string GetModelStateError()
@@ -293,7 +263,7 @@ namespace TheBeautyHubAPI.Controllers
                 .SelectMany(v => v.Errors)
                 .Select(e => e.ErrorMessage)
                 .FirstOrDefault(m => !string.IsNullOrWhiteSpace(m))
-                ?? ApiMessages.Common.ValidationOccurred;
+                ?? ApiMessages.ValidationOccurred;
         }
 
         private static ApiStatusResponse<object> Fail(string message)

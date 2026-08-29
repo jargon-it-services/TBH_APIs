@@ -13,10 +13,12 @@ namespace TheBeautyHubCore.Services
     public class BranchService : IBranchService
     {
         private readonly IBranchRepository _branchRepository;
+        private readonly IStaffRepository _staffRepository;
 
-        public BranchService(IBranchRepository branchRepository)
+        public BranchService(IBranchRepository branchRepository, IStaffRepository staffRepository)
         {
             _branchRepository = branchRepository;
+            _staffRepository = staffRepository;
         }
 
         public async Task<IEnumerable<BranchListItemDto>> GetBranchesAsync(Guid accountId)
@@ -31,14 +33,14 @@ namespace TheBeautyHubCore.Services
             if (branch == null || !BelongsToAccount(branch, accountId))
                 return null;
 
-            return MapDetail(branch);
+            return MapDetail(branch, await _staffRepository.GetAllAsync(accountId));
         }
 
         public async Task<BranchSavedDto> CreateBranchAsync(SaveBranchDto dto)
         {
             ValidateWrite(dto);
             if (!dto.AccountId.HasValue || dto.AccountId == Guid.Empty)
-                throw new ArgumentException(ApiMessages.Common.AccountRequired);
+                throw new ArgumentException(ApiMessages.AccountRequired);
 
             var serviceIds = await ResolveServiceIdsAsync(dto.Services);
 
@@ -79,7 +81,7 @@ namespace TheBeautyHubCore.Services
 
             var existing = await _branchRepository.GetByIdAsync(branchId);
             if (existing == null || !BelongsToAccount(existing, accountId))
-                throw new KeyNotFoundException(ApiMessages.Branch.NotFound);
+                throw new KeyNotFoundException(ApiMessages.BranchNotFound);
 
             var serviceIds = await ResolveServiceIdsAsync(dto.Services);
 
@@ -99,11 +101,7 @@ namespace TheBeautyHubCore.Services
             existing.Latitude = dto.Latitude;
             existing.Longitude = dto.Longitude;
             existing.MapsLink = string.IsNullOrWhiteSpace(dto.MapsLink) ? null : dto.MapsLink.Trim();
-
-            if (dto.AccountId.HasValue)
-                existing.AccountId = dto.AccountId;
-            else
-                existing.AccountId = accountId;
+            existing.AccountId = accountId;
 
             if (dto.RemoveLogo)
                 existing.Logo = null;
@@ -119,13 +117,16 @@ namespace TheBeautyHubCore.Services
 
         private async Task<List<Guid>> ResolveServiceIdsAsync(IEnumerable<Guid>? serviceIds)
         {
-            var requested = (serviceIds ?? Enumerable.Empty<Guid>()).Distinct().ToList();
+            var requested = (serviceIds ?? Enumerable.Empty<Guid>())
+                .Where(id => id != Guid.Empty)
+                .Distinct()
+                .ToList();
             if (requested.Count == 0)
                 return requested;
 
             var found = await _branchRepository.GetServicesByIdsAsync(requested);
             if (found.Count != requested.Count)
-                throw new ArgumentException(ApiMessages.Common.InvalidServiceIds);
+                throw new ArgumentException(ApiMessages.InvalidServiceIds);
 
             return requested;
         }
@@ -133,29 +134,31 @@ namespace TheBeautyHubCore.Services
         private static void ValidateWrite(SaveBranchDto dto)
         {
             if (string.IsNullOrWhiteSpace(dto.Name))
-                throw new ArgumentException(ApiMessages.Branch.NameRequired);
+                throw new ArgumentException(ApiMessages.BranchNameRequired);
             if (string.IsNullOrWhiteSpace(dto.AddressLine1))
-                throw new ArgumentException(ApiMessages.Branch.AddressRequired);
+                throw new ArgumentException(ApiMessages.BranchAddressRequired);
             if (string.IsNullOrWhiteSpace(dto.City))
-                throw new ArgumentException(ApiMessages.Branch.CityRequired);
+                throw new ArgumentException(ApiMessages.BranchCityRequired);
             if (string.IsNullOrWhiteSpace(dto.State))
-                throw new ArgumentException(ApiMessages.Branch.StateRequired);
+                throw new ArgumentException(ApiMessages.BranchStateRequired);
             if (string.IsNullOrWhiteSpace(dto.Pincode))
-                throw new ArgumentException(ApiMessages.Branch.PincodeRequired);
+                throw new ArgumentException(ApiMessages.BranchPincodeRequired);
             if (string.IsNullOrWhiteSpace(dto.Mobile))
-                throw new ArgumentException(ApiMessages.Branch.MobileRequired);
+                throw new ArgumentException(ApiMessages.BranchMobileRequired);
             if (string.IsNullOrWhiteSpace(dto.Email))
-                throw new ArgumentException(ApiMessages.Branch.EmailRequired);
+                throw new ArgumentException(ApiMessages.BranchEmailRequired);
             if (string.IsNullOrWhiteSpace(dto.BranchType))
-                throw new ArgumentException(ApiMessages.Branch.TypeRequired);
+                throw new ArgumentException(ApiMessages.BranchTypeRequired);
             if (string.IsNullOrWhiteSpace(dto.OpeningTime))
-                throw new ArgumentException(ApiMessages.Branch.OpeningTimeRequired);
+                throw new ArgumentException(ApiMessages.BranchOpeningTimeRequired);
+            if (dto.OpeningTime.Trim().Length > 10 || dto.ClosingTime.Trim().Length > 10)
+                throw new ArgumentException(ApiMessages.BranchTimeTooLong);
             if (string.IsNullOrWhiteSpace(dto.ClosingTime))
-                throw new ArgumentException(ApiMessages.Branch.ClosingTimeRequired);
+                throw new ArgumentException(ApiMessages.BranchClosingTimeRequired);
             if (string.IsNullOrWhiteSpace(dto.WeeklyOff))
-                throw new ArgumentException(ApiMessages.Branch.WeeklyOffRequired);
+                throw new ArgumentException(ApiMessages.BranchWeeklyOffRequired);
             if (string.IsNullOrWhiteSpace(dto.Status))
-                throw new ArgumentException(ApiMessages.Branch.StatusRequired);
+                throw new ArgumentException(ApiMessages.BranchStatusRequired);
         }
 
         private static bool BelongsToAccount(Branch branch, Guid accountId)
@@ -183,8 +186,14 @@ namespace TheBeautyHubCore.Services
             };
         }
 
-        private static BranchDetailDto MapDetail(Branch branch)
+        private static BranchDetailDto MapDetail(Branch branch, IReadOnlyList<Staff> staff)
         {
+            var byStaffId = staff.ToDictionary(s => s.StaffId);
+            var byUserId = staff
+                .Where(s => s.UserId.HasValue)
+                .GroupBy(s => s.UserId!.Value)
+                .ToDictionary(g => g.Key, g => g.First());
+
             return new BranchDetailDto
             {
                 Id = branch.BranchId,
@@ -214,13 +223,19 @@ namespace TheBeautyHubCore.Services
                     })
                     .ToList(),
                 Employees = branch.BranchEmployees
-                    .Where(be => be.User != null && !be.User.IsDeleted)
-                    .Select(be => new BranchEmployeeItemDto
+                    .Select(be =>
                     {
-                        Id = be.UserId,
-                        Name = be.User.UserName,
-                        Role = be.User.UserRole,
-                        Photo = be.Photo
+                        byStaffId.TryGetValue(be.UserId, out var match);
+                        if (match == null)
+                            byUserId.TryGetValue(be.UserId, out match);
+
+                        return new BranchEmployeeItemDto
+                        {
+                            Id = match?.StaffId ?? be.UserId,
+                            Name = match?.FullName ?? string.Empty,
+                            Role = match?.AppRole ?? string.Empty,
+                            Photo = be.Photo ?? match?.Photo
+                        };
                     })
                     .ToList()
             };

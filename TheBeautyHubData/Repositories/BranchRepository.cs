@@ -39,7 +39,6 @@ namespace TheBeautyHubData.Repositories
                 .Include(b => b.BranchServices)
                     .ThenInclude(bs => bs.Service)
                 .Include(b => b.BranchEmployees)
-                    .ThenInclude(be => be.User)
                 .AsSplitQuery()
                 .FirstOrDefaultAsync(b => b.BranchId == branchId && !b.IsDeleted);
         }

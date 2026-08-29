@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -24,11 +23,6 @@ namespace TheBeautyHubAPI.Controllers
     [Produces("application/json")]
     public class SalaryRulesController : ControllerBase
     {
-        private static readonly JsonSerializerOptions JsonOptions = new()
-        {
-            PropertyNameCaseInsensitive = true
-        };
-
         private readonly ISalaryRuleService _salaryRuleService;
         private readonly IExceptionLogService _exceptionLogService;
         private readonly IMapper _mapper;
@@ -56,7 +50,7 @@ namespace TheBeautyHubAPI.Controllers
                 return Ok(new ApiStatusResponse<SalaryRuleCatalogDataResponse>
                 {
                     Status = true,
-                    Message = ApiMessages.SalaryRule.CatalogFetched,
+                    Message = ApiMessages.SalaryRuleCatalogFetched,
                     Data = new SalaryRuleCatalogDataResponse
                     {
                         SalaryRules = _mapper.Map<List<SalaryRuleCatalogItemResponse>>(catalog)
@@ -66,7 +60,7 @@ namespace TheBeautyHubAPI.Controllers
             catch (Exception ex)
             {
                 await _exceptionLogService.LogExceptionAsync(ex, _currentUser.UserId);
-                return StatusCode(500, Fail(ApiMessages.SalaryRule.CatalogFailed));
+                return StatusCode(500, Fail(ApiMessages.SalaryRuleCatalogFailed));
             }
         }
 
@@ -80,7 +74,7 @@ namespace TheBeautyHubAPI.Controllers
                 return Ok(new ApiStatusResponse<SalaryRuleListDataResponse>
                 {
                     Status = true,
-                    Message = ApiMessages.SalaryRule.ListFetched,
+                    Message = ApiMessages.SalaryRuleListFetched,
                     Data = new SalaryRuleListDataResponse
                     {
                         SalaryRules = _mapper.Map<List<SalaryRuleListItemResponse>>(list)
@@ -90,7 +84,7 @@ namespace TheBeautyHubAPI.Controllers
             catch (Exception ex)
             {
                 await _exceptionLogService.LogExceptionAsync(ex, _currentUser.UserId);
-                return StatusCode(500, Fail(ApiMessages.SalaryRule.ListFailed));
+                return StatusCode(500, Fail(ApiMessages.SalaryRuleListFailed));
             }
         }
 
@@ -102,29 +96,29 @@ namespace TheBeautyHubAPI.Controllers
             {
                 var detail = await _salaryRuleService.GetDetailsAsync(ruleId, _currentUser.AccountId);
                 if (detail == null)
-                    return NotFound(Fail(ApiMessages.SalaryRule.NotFound));
+                    return NotFound(Fail(ApiMessages.SalaryRuleNotFound));
 
                 return Ok(new ApiStatusResponse<SalaryRuleDetailResponse>
                 {
                     Status = true,
-                    Message = ApiMessages.SalaryRule.DetailsFetched,
+                    Message = ApiMessages.SalaryRuleDetailsFetched,
                     Data = _mapper.Map<SalaryRuleDetailResponse>(detail)
                 });
             }
             catch (Exception ex)
             {
                 await _exceptionLogService.LogExceptionAsync(ex, _currentUser.UserId);
-                return StatusCode(500, Fail(ApiMessages.SalaryRule.DetailsFailed));
+                return StatusCode(500, Fail(ApiMessages.SalaryRuleDetailsFailed));
             }
         }
 
         /// <summary>API_041 Create Salary Rule</summary>
         [HttpPost]
-        public async Task<IActionResult> Create()
+        [Consumes("application/json")]
+        public async Task<IActionResult> Create([FromBody] SaveSalaryRuleRequest request)
         {
             try
             {
-                var request = await BindSaveRequestAsync();
                 TryValidateModel(request);
                 if (!ModelState.IsValid)
                     return BadRequest(Fail(GetModelStateError()));
@@ -133,7 +127,7 @@ namespace TheBeautyHubAPI.Controllers
                 return Ok(new ApiStatusResponse<SalaryRuleSavedDataResponse>
                 {
                     Status = true,
-                    Message = ApiMessages.SalaryRule.Created,
+                    Message = ApiMessages.SalaryRuleCreated,
                     Data = new SalaryRuleSavedDataResponse { Saved = true }
                 });
             }
@@ -143,26 +137,26 @@ namespace TheBeautyHubAPI.Controllers
             }
             catch (JsonException)
             {
-                return BadRequest(Fail(ApiMessages.Common.InvalidRequestBody));
+                return BadRequest(Fail(ApiMessages.InvalidRequestBody));
             }
             catch (Exception ex)
             {
                 await _exceptionLogService.LogExceptionAsync(ex, _currentUser.UserId);
-                return StatusCode(500, Fail(ApiMessages.SalaryRule.CreateFailed));
+                return StatusCode(500, Fail(ApiMessages.SalaryRuleCreateFailed));
             }
         }
 
         /// <summary>API_042 Update Salary Rule</summary>
         [HttpPost("{ruleId:guid}")]
-        public async Task<IActionResult> Update(Guid ruleId)
+        [Consumes("application/json")]
+        public async Task<IActionResult> Update(Guid ruleId, [FromBody] SaveSalaryRuleRequest request)
         {
             try
             {
                 var existing = await _salaryRuleService.GetDetailsAsync(ruleId, _currentUser.AccountId);
                 if (existing == null)
-                    return NotFound(Fail(ApiMessages.SalaryRule.NotFound));
+                    return NotFound(Fail(ApiMessages.SalaryRuleNotFound));
 
-                var request = await BindSaveRequestAsync();
                 TryValidateModel(request);
                 if (!ModelState.IsValid)
                     return BadRequest(Fail(GetModelStateError()));
@@ -171,7 +165,7 @@ namespace TheBeautyHubAPI.Controllers
                 return Ok(new ApiStatusResponse<SalaryRuleSavedDataResponse>
                 {
                     Status = true,
-                    Message = ApiMessages.SalaryRule.Updated,
+                    Message = ApiMessages.SalaryRuleUpdated,
                     Data = new SalaryRuleSavedDataResponse { Saved = true }
                 });
             }
@@ -185,12 +179,12 @@ namespace TheBeautyHubAPI.Controllers
             }
             catch (JsonException)
             {
-                return BadRequest(Fail(ApiMessages.Common.InvalidRequestBody));
+                return BadRequest(Fail(ApiMessages.InvalidRequestBody));
             }
             catch (Exception ex)
             {
                 await _exceptionLogService.LogExceptionAsync(ex, _currentUser.UserId);
-                return StatusCode(500, Fail(ApiMessages.SalaryRule.UpdateFailed));
+                return StatusCode(500, Fail(ApiMessages.SalaryRuleUpdateFailed));
             }
         }
 
@@ -202,13 +196,13 @@ namespace TheBeautyHubAPI.Controllers
             {
                 var existing = await _salaryRuleService.GetDetailsAsync(ruleId, _currentUser.AccountId);
                 if (existing == null)
-                    return NotFound(Fail(ApiMessages.SalaryRule.NotFound));
+                    return NotFound(Fail(ApiMessages.SalaryRuleNotFound));
 
                 await _salaryRuleService.DeleteAsync(ruleId, _currentUser.AccountId);
                 return Ok(new ApiStatusResponse<SalaryRuleDeletedDataResponse>
                 {
                     Status = true,
-                    Message = ApiMessages.SalaryRule.Deleted,
+                    Message = ApiMessages.SalaryRuleDeleted,
                     Data = new SalaryRuleDeletedDataResponse { Deleted = true }
                 });
             }
@@ -219,7 +213,7 @@ namespace TheBeautyHubAPI.Controllers
             catch (Exception ex)
             {
                 await _exceptionLogService.LogExceptionAsync(ex, _currentUser.UserId);
-                return StatusCode(500, Fail(ApiMessages.SalaryRule.DeleteFailed));
+                return StatusCode(500, Fail(ApiMessages.SalaryRuleDeleteFailed));
             }
         }
 
@@ -240,24 +234,13 @@ namespace TheBeautyHubAPI.Controllers
             };
         }
 
-        private async Task<SaveSalaryRuleRequest> BindSaveRequestAsync()
-        {
-            using var reader = new StreamReader(Request.Body);
-            var json = await reader.ReadToEndAsync();
-            if (string.IsNullOrWhiteSpace(json))
-                throw new ArgumentException(ApiMessages.Common.RequestBodyRequired);
-
-            return JsonSerializer.Deserialize<SaveSalaryRuleRequest>(json, JsonOptions)
-                ?? throw new ArgumentException(ApiMessages.Common.InvalidRequestBody);
-        }
-
         private string GetModelStateError()
         {
             return ModelState.Values
                 .SelectMany(v => v.Errors)
                 .Select(e => e.ErrorMessage)
                 .FirstOrDefault(m => !string.IsNullOrWhiteSpace(m))
-                ?? ApiMessages.Common.ValidationOccurred;
+                ?? ApiMessages.ValidationOccurred;
         }
 
         private static ApiStatusResponse<object> Fail(string message)

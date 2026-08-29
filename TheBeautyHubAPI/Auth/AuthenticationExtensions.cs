@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using TheBeautyHubCore.Services.Interfaces;
 
 namespace TheBeautyHubAPI.Auth
 {
@@ -35,6 +36,10 @@ namespace TheBeautyHubAPI.Auth
             services.AddScoped<ICurrentUser, CurrentUser>();
             services.AddScoped<IAccessTokenService, AccessTokenService>();
             services.AddHttpClient<IAuthCenterTokenValidator, AuthCenterTokenValidator>(client =>
+            {
+                client.Timeout = TimeSpan.FromSeconds(8);
+            });
+            services.AddHttpClient<IAuthCenterUserLookup, AuthCenterUserLookup>(client =>
             {
                 client.Timeout = TimeSpan.FromSeconds(8);
             });
@@ -100,8 +105,17 @@ namespace TheBeautyHubAPI.Auth
             SetIfPresent(configuration, "JWT_SECRET", "JwtSettings:SecretKey");
             SetIfPresent(configuration, "JWT_ISSUER", "JwtSettings:Issuer");
             SetIfPresent(configuration, "JWT_AUDIENCE", "JwtSettings:Audience");
-            SetIfPresent(configuration, "AUTHCENTER_BASE_URL", "AuthCenter:BaseUrl");
-            SetIfPresent(configuration, "AUTHCENTER_APPLICATION_NAME", "AuthCenter:ApplicationName");
+
+            // Do not let a machine/Docker AUTHCENTER_BASE_URL override local AuthCenter
+            // (appsettings.Development.json). That sent Dev tokens to production and 401'd.
+            var environment = configuration["ASPNETCORE_ENVIRONMENT"]
+                ?? Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+            var isDevelopment = string.Equals(environment, "Development", StringComparison.OrdinalIgnoreCase);
+            if (!isDevelopment)
+            {
+                SetIfPresent(configuration, "AUTHCENTER_BASE_URL", "AuthCenter:BaseUrl");
+                SetIfPresent(configuration, "AUTHCENTER_APPLICATION_NAME", "AuthCenter:ApplicationName");
+            }
         }
 
         private static void SetIfPresent(IConfiguration configuration, string envName, string configKey)

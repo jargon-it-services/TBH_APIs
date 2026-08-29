@@ -71,12 +71,5 @@ namespace TheBeautyHubData.Entities
         /// </summary>
         [Required]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
-        // Navigation properties
-        /// <summary>
-        /// The account this partner belongs to (optional)
-        /// </summary>
-        [ForeignKey("AccountId")]
-        public virtual Account? Account { get; set; }
     }
 }

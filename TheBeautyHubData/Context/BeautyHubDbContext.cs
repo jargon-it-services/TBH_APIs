@@ -15,16 +15,6 @@ namespace TheBeautyHubData.Context
         }
 
         /// <summary>
-        /// Accounts table
-        /// </summary>
-        public DbSet<Account> Accounts { get; set; }
-
-        /// <summary>
-        /// Users table
-        /// </summary>
-        public DbSet<User> Users { get; set; }
-
-        /// <summary>
         /// Firms table
         /// </summary>
         public DbSet<Firm> Firms { get; set; }
@@ -97,11 +87,6 @@ namespace TheBeautyHubData.Context
         public DbSet<Partner> Partners { get; set; }
 
         /// <summary>
-        /// UserSessions table
-        /// </summary>
-        public DbSet<UserSession> UserSessions { get; set; }
-
-        /// <summary>
         /// ExceptionLogs table
         /// </summary>
         public DbSet<ExceptionLog> ExceptionLogs { get; set; }
@@ -129,104 +114,6 @@ namespace TheBeautyHubData.Context
         {
             base.OnModelCreating(modelBuilder);
 
-            // Configure Account entity
-            modelBuilder.Entity<Account>(entity =>
-            {
-                // Primary key
-                entity.HasKey(e => e.AccountId);
-
-                // Default value for AccountId - PostgreSQL
-                entity.Property(e => e.AccountId)
-                    .HasDefaultValueSql("gen_random_uuid()");
-
-                // Unique constraint on AccountCode
-                entity.HasIndex(e => e.AccountCode)
-                    .IsUnique();
-
-                // Check constraints - PostgreSQL syntax
-                entity.ToTable(t =>
-                {
-                    t.HasCheckConstraint("CK_Account_AccountType",
-                        "\"AccountType\" IN ('FirmOwner', 'Customer')");
-                    t.HasCheckConstraint("CK_Account_Mode",
-                        "\"Mode\" IN ('subscription', 'one_time')");
-                });
-
-                // Default value for CreatedAt - PostgreSQL
-                entity.Property(e => e.CreatedAt)
-                    .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                // Default value for IsDeleted
-                entity.Property(e => e.IsDeleted)
-                    .HasDefaultValue(false);
-
-                // Default value for IsUnderTrial
-                entity.Property(e => e.IsUnderTrial)
-                    .HasDefaultValue(false);
-            });
-
-            // Configure User entity
-            modelBuilder.Entity<User>(entity =>
-            {
-                // Primary key
-                entity.HasKey(e => e.UserId);
-
-                // Default value for UserId - PostgreSQL
-                entity.Property(e => e.UserId)
-                    .HasDefaultValueSql("gen_random_uuid()");
-
-                // Unique constraint on UserEmail
-                entity.HasIndex(e => e.UserEmail)
-                    .IsUnique()
-                    .HasFilter("\"UserEmail\" IS NOT NULL");
-
-                // Unique constraint on UserMobile
-                entity.HasIndex(e => e.UserMobile)
-                    .IsUnique()
-                    .HasFilter("\"UserMobile\" IS NOT NULL");
-
-                // Check constraints - PostgreSQL syntax
-                entity.ToTable(t =>
-                {
-                    t.HasCheckConstraint("CK_User_UserRole",
-                        "\"UserRole\" IN ('Admin', 'Manager', 'Employee')");
-                    t.HasCheckConstraint("CK_User_WorkerPaymentType",
-                        "\"WorkerPaymentType\" IS NULL OR \"WorkerPaymentType\" IN ('Fix Pay', 'FP + Incentive', 'Incentive')");
-                });
-
-                // Default value for CreatedAt - PostgreSQL
-                entity.Property(e => e.CreatedAt)
-                    .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                // Default value for IsDeleted
-                entity.Property(e => e.IsDeleted)
-                    .HasDefaultValue(false);
-
-                // Default value for EmailVerified
-                entity.Property(e => e.EmailVerified)
-                    .HasDefaultValue(false);
-
-                // Default value for MobileVerified
-                entity.Property(e => e.MobileVerified)
-                    .HasDefaultValue(false);
-
-                // Default value for Status
-                entity.Property(e => e.Status)
-                    .HasDefaultValue("Active");
-
-                // Foreign key relationship with Account
-                entity.HasOne(e => e.Account)
-                    .WithMany(a => a.Users)
-                    .HasForeignKey(e => e.AccountId)
-                    .OnDelete(DeleteBehavior.Restrict);
-
-                // Self-referencing relationship for Manager
-                entity.HasOne(e => e.Manager)
-                    .WithMany(u => u.ManagedUsers)
-                    .HasForeignKey(e => e.ManagerId)
-                    .OnDelete(DeleteBehavior.Restrict);
-            });
-
             // Configure Firm entity
             modelBuilder.Entity<Firm>(entity =>
             {
@@ -245,11 +132,6 @@ namespace TheBeautyHubData.Context
                 entity.Property(e => e.IsDeleted)
                     .HasDefaultValue(false);
 
-                // Foreign key relationship with Account
-                entity.HasOne(e => e.Account)
-                    .WithMany()
-                    .HasForeignKey(e => e.AccountId)
-                    .OnDelete(DeleteBehavior.Restrict);
             });
 
             // Configure FirmDetails entity
@@ -265,18 +147,6 @@ namespace TheBeautyHubData.Context
                 // Default value for CreatedAt - PostgreSQL
                 entity.Property(e => e.CreatedAt)
                     .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                // Foreign key relationship with User
-                entity.HasOne(e => e.User)
-                    .WithMany()
-                    .HasForeignKey(e => e.UserId)
-                    .OnDelete(DeleteBehavior.Restrict);
-
-                // Foreign key relationship with Account
-                entity.HasOne(e => e.Account)
-                    .WithMany()
-                    .HasForeignKey(e => e.AccountId)
-                    .OnDelete(DeleteBehavior.Restrict);
 
                 // Foreign key relationship with Firm
                 entity.HasOne(e => e.Firm)
@@ -337,11 +207,6 @@ namespace TheBeautyHubData.Context
                         "\"DiscountType\" IS NULL OR \"DiscountType\" IN ('Wallet', 'Coupon')");
                 });
 
-                // Foreign key relationship with Account
-                entity.HasOne(e => e.Account)
-                    .WithMany()
-                    .HasForeignKey(e => e.AccountId)
-                    .OnDelete(DeleteBehavior.Restrict);
 
                 // Foreign key relationship with Plan
                 entity.HasOne(e => e.Plan)
@@ -373,10 +238,6 @@ namespace TheBeautyHubData.Context
                         "\"WalletType\" IN ('ReferralBonus', 'Promotional', 'Cashback')");
                 });
 
-                entity.HasOne(e => e.Account)
-                    .WithMany()
-                    .HasForeignKey(e => e.AccountId)
-                    .OnDelete(DeleteBehavior.Restrict);
             });
 
             // Configure ExpensesType entity
@@ -399,10 +260,6 @@ namespace TheBeautyHubData.Context
                 entity.Property(e => e.Status)
                     .HasDefaultValue("active");
 
-                entity.HasOne(e => e.Account)
-                    .WithMany()
-                    .HasForeignKey(e => e.AccountId)
-                    .OnDelete(DeleteBehavior.Restrict);
 
                 entity.HasOne(e => e.Firm)
                     .WithMany()
@@ -481,10 +338,6 @@ namespace TheBeautyHubData.Context
                         "\"IncentivePercentage\" IS NULL OR (\"IncentivePercentage\" >= 0 AND \"IncentivePercentage\" <= 100)");
                 });
 
-                entity.HasOne(e => e.Account)
-                    .WithMany()
-                    .HasForeignKey(e => e.AccountId)
-                    .OnDelete(DeleteBehavior.Restrict);
 
                 entity.HasOne(e => e.Firm)
                     .WithMany()
@@ -532,10 +385,6 @@ namespace TheBeautyHubData.Context
                 entity.Property(e => e.IsActive)
                     .HasDefaultValue(true);
 
-                entity.HasOne(e => e.Account)
-                    .WithMany()
-                    .HasForeignKey(e => e.AccountId)
-                    .OnDelete(DeleteBehavior.Restrict);
 
                 entity.HasOne(e => e.Firm)
                     .WithMany()
@@ -578,10 +427,6 @@ namespace TheBeautyHubData.Context
                 entity.HasIndex(e => new { e.AccountId, e.Code }).IsUnique();
                 entity.HasIndex(e => new { e.AccountId, e.IdempotencyKey });
 
-                entity.HasOne(e => e.Account)
-                    .WithMany()
-                    .HasForeignKey(e => e.AccountId)
-                    .OnDelete(DeleteBehavior.Restrict);
 
                 entity.HasOne(e => e.Firm)
                     .WithMany()
@@ -644,10 +489,6 @@ namespace TheBeautyHubData.Context
                     .HasForeignKey(e => e.TransactionRuleId)
                     .OnDelete(DeleteBehavior.Restrict);
 
-                entity.HasOne(e => e.Account)
-                    .WithMany()
-                    .HasForeignKey(e => e.AccountId)
-                    .OnDelete(DeleteBehavior.Restrict);
 
                 entity.HasOne(e => e.Firm)
                     .WithMany()
@@ -695,10 +536,6 @@ namespace TheBeautyHubData.Context
                     .HasForeignKey(e => e.ReportId)
                     .OnDelete(DeleteBehavior.Restrict);
 
-                entity.HasOne(e => e.Account)
-                    .WithMany()
-                    .HasForeignKey(e => e.AccountId)
-                    .OnDelete(DeleteBehavior.Restrict);
             });
 
             // Configure Partner entity
@@ -726,27 +563,6 @@ namespace TheBeautyHubData.Context
                         "\"Gender\" IS NULL OR \"Gender\" IN ('Male', 'Female', 'Other')");
                 });
 
-                entity.HasOne(e => e.Account)
-                    .WithMany()
-                    .HasForeignKey(e => e.AccountId)
-                    .OnDelete(DeleteBehavior.Restrict);
-            });
-
-            // Configure UserSession entity
-            modelBuilder.Entity<UserSession>(entity =>
-            {
-                entity.HasKey(e => e.SessionId);
-
-                entity.Property(e => e.SessionId)
-                    .HasDefaultValueSql("gen_random_uuid()");
-
-                entity.Property(e => e.CreatedAt)
-                    .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                entity.HasOne(e => e.User)
-                    .WithMany()
-                    .HasForeignKey(e => e.UserId)
-                    .OnDelete(DeleteBehavior.Restrict);
             });
 
             // Configure ExceptionLog entity
@@ -759,11 +575,6 @@ namespace TheBeautyHubData.Context
 
                 entity.Property(e => e.CreatedAt)
                     .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                entity.HasOne(e => e.User)
-                    .WithMany()
-                    .HasForeignKey(e => e.UserId)
-                    .OnDelete(DeleteBehavior.Restrict);
             });
 
             // Configure Branch entity
@@ -783,11 +594,6 @@ namespace TheBeautyHubData.Context
                 entity.Property(e => e.Status)
                     .HasDefaultValue("active");
 
-                entity.HasOne(e => e.Account)
-                    .WithMany()
-                    .HasForeignKey(e => e.AccountId)
-                    .IsRequired(false)
-                    .OnDelete(DeleteBehavior.Restrict);
             });
 
             // Configure BranchService entity
@@ -815,11 +621,6 @@ namespace TheBeautyHubData.Context
                     .WithMany(b => b.BranchEmployees)
                     .HasForeignKey(e => e.BranchId)
                     .OnDelete(DeleteBehavior.Cascade);
-
-                entity.HasOne(e => e.User)
-                    .WithMany()
-                    .HasForeignKey(e => e.UserId)
-                    .OnDelete(DeleteBehavior.Restrict);
             });
 
             modelBuilder.Entity<SalaryRule>(entity =>
@@ -847,10 +648,6 @@ namespace TheBeautyHubData.Context
                 entity.Property(e => e.SalaryType)
                     .HasDefaultValue("fixed");
 
-                entity.HasOne(e => e.Account)
-                    .WithMany()
-                    .HasForeignKey(e => e.AccountId)
-                    .OnDelete(DeleteBehavior.Restrict);
             });
 
             modelBuilder.Entity<Staff>(entity =>
@@ -869,17 +666,6 @@ namespace TheBeautyHubData.Context
 
                 entity.Property(e => e.AllowAppLogin)
                     .HasDefaultValue(false);
-
-                entity.HasOne(e => e.Account)
-                    .WithMany()
-                    .HasForeignKey(e => e.AccountId)
-                    .OnDelete(DeleteBehavior.Restrict);
-
-                entity.HasOne(e => e.User)
-                    .WithMany()
-                    .HasForeignKey(e => e.UserId)
-                    .IsRequired(false)
-                    .OnDelete(DeleteBehavior.Restrict);
 
                 entity.HasOne(e => e.Branch)
                     .WithMany()

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 
 namespace TheBeautyHubAPI.Models
 {
@@ -169,70 +170,89 @@ namespace TheBeautyHubAPI.Models
     public class SaveStaffRequest
     {
         [Required]
+        [FromForm(Name = "full_name")]
         [JsonPropertyName("full_name")]
         public string FullName { get; set; } = string.Empty;
 
         [Required]
+        [FromForm(Name = "mobile")]
         [JsonPropertyName("mobile")]
         public string Mobile { get; set; } = string.Empty;
 
         [Required]
         [EmailAddress]
+        [FromForm(Name = "email")]
         [JsonPropertyName("email")]
         public string Email { get; set; } = string.Empty;
 
         [Required]
+        [FromForm(Name = "gender")]
         [JsonPropertyName("gender")]
         public string Gender { get; set; } = string.Empty;
 
         [Required]
+        [FromForm(Name = "aadhaar_number")]
         [JsonPropertyName("aadhaar_number")]
         public string AadhaarNumber { get; set; } = string.Empty;
 
+        [FromForm(Name = "employee_code")]
         [JsonPropertyName("employee_code")]
         public string? EmployeeCode { get; set; }
 
+        [FromForm(Name = "joining_date")]
         [JsonPropertyName("joining_date")]
         public string? JoiningDate { get; set; }
 
         [Required]
+        [FromForm(Name = "designation")]
         [JsonPropertyName("designation")]
         public string Designation { get; set; } = string.Empty;
 
         [Required]
+        [FromForm(Name = "specialist")]
         [JsonPropertyName("specialist")]
         public string Specialist { get; set; } = string.Empty;
 
         [Required]
+        [FromForm(Name = "branch_id")]
         [JsonPropertyName("branch_id")]
         public Guid BranchId { get; set; }
 
         [Required]
+        [FromForm(Name = "salary_rule_id")]
         [JsonPropertyName("salary_rule_id")]
         public Guid SalaryRuleId { get; set; }
 
         [Required]
+        [FromForm(Name = "status")]
         [JsonPropertyName("status")]
         public string Status { get; set; } = string.Empty;
 
+        [FromForm(Name = "allow_app_login")]
         [JsonPropertyName("allow_app_login")]
         public bool AllowAppLogin { get; set; }
 
+        [FromForm(Name = "app_role")]
         [JsonPropertyName("app_role")]
         public string? AppRole { get; set; }
 
+        [FromForm(Name = "username")]
         [JsonPropertyName("username")]
         public string? Username { get; set; }
 
+        [FromForm(Name = "remove_photo")]
         [JsonPropertyName("remove_photo")]
         public bool RemovePhoto { get; set; }
 
+        [FromForm(Name = "remove_aadhaar_card")]
         [JsonPropertyName("remove_aadhaar_card")]
         public bool RemoveAadhaarCard { get; set; }
 
+        [FromForm(Name = "photo")]
         [JsonIgnore]
         public IFormFile? Photo { get; set; }
 
+        [FromForm(Name = "aadhaar_card")]
         [JsonIgnore]
         public IFormFile? AadhaarCard { get; set; }
     }

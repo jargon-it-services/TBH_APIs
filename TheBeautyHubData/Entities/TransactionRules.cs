@@ -47,13 +47,6 @@ namespace TheBeautyHubData.Entities
         [Required]
         public bool IsActive { get; set; } = true;
 
-        // Navigation properties
-        /// <summary>
-        /// The account this rule applies to (optional)
-        /// </summary>
-        [ForeignKey("AccountId")]
-        public virtual Account? Account { get; set; }
-
         /// <summary>
         /// The firm this rule applies to (optional)
         /// </summary>

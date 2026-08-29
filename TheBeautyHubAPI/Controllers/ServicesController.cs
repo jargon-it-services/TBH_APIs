@@ -64,14 +64,14 @@ namespace TheBeautyHubAPI.Controllers
                 return Ok(new ApiStatusResponse<ServiceCatalogDataResponse>
                 {
                     Status = true,
-                    Message = ApiMessages.Service.CatalogFetched,
+                    Message = ApiMessages.ServiceCatalogFetched,
                     Data = new ServiceCatalogDataResponse { Services = items }
                 });
             }
             catch (Exception ex)
             {
                 await _exceptionLogService.LogExceptionAsync(ex, _currentUser.UserId);
-                return StatusCode(500, Fail(ApiMessages.Service.CatalogFailed));
+                return StatusCode(500, Fail(ApiMessages.ServiceCatalogFailed));
             }
         }
 
@@ -89,14 +89,14 @@ namespace TheBeautyHubAPI.Controllers
                 return Ok(new ApiStatusResponse<ServiceListDataResponse>
                 {
                     Status = true,
-                    Message = ApiMessages.Service.ListFetched,
+                    Message = ApiMessages.ServiceListFetched,
                     Data = new ServiceListDataResponse { Services = items }
                 });
             }
             catch (Exception ex)
             {
                 await _exceptionLogService.LogExceptionAsync(ex, _currentUser.UserId);
-                return StatusCode(500, Fail(ApiMessages.Service.ListFailed));
+                return StatusCode(500, Fail(ApiMessages.ServiceListFailed));
             }
         }
 
@@ -108,7 +108,7 @@ namespace TheBeautyHubAPI.Controllers
             {
                 var detail = await _servicesService.GetDetailsAsync(serviceId, _currentUser.AccountId);
                 if (detail == null)
-                    return NotFound(Fail(ApiMessages.Service.NotFound));
+                    return NotFound(Fail(ApiMessages.ServiceNotFound));
 
                 var response = _mapper.Map<ServiceDetailResponse>(detail);
                 response.Photo = ToAbsoluteUrl(response.Photo);
@@ -116,24 +116,46 @@ namespace TheBeautyHubAPI.Controllers
                 return Ok(new ApiStatusResponse<ServiceDetailResponse>
                 {
                     Status = true,
-                    Message = ApiMessages.Service.DetailsFetched,
+                    Message = ApiMessages.ServiceDetailsFetched,
                     Data = response
                 });
             }
             catch (Exception ex)
             {
                 await _exceptionLogService.LogExceptionAsync(ex, _currentUser.UserId);
-                return StatusCode(500, Fail(ApiMessages.Service.DetailsFailed));
+                return StatusCode(500, Fail(ApiMessages.ServiceDetailsFailed));
             }
         }
 
-        /// <summary>API_028 Create Service</summary>
+        /// <summary>API_028 Create Service. Multipart form (optional photo) or JSON with the same field names.</summary>
         [HttpPost]
-        public async Task<IActionResult> Create()
+        [Consumes("multipart/form-data")]
+        public Task<IActionResult> Create([FromForm] SaveServiceRequest request)
+            => CreateCoreAsync(request);
+
+        [HttpPost]
+        [Consumes("application/json")]
+        [ApiExplorerSettings(IgnoreApi = true)]
+        public Task<IActionResult> CreateFromJson([FromBody] SaveServiceRequest request)
+            => CreateCoreAsync(request);
+
+        /// <summary>API_029 Update Service. Same payload as create.</summary>
+        [HttpPost("{serviceId:guid}")]
+        [Consumes("multipart/form-data")]
+        public Task<IActionResult> Update(Guid serviceId, [FromForm] SaveServiceRequest request)
+            => UpdateCoreAsync(serviceId, request);
+
+        [HttpPost("{serviceId:guid}")]
+        [Consumes("application/json")]
+        [ApiExplorerSettings(IgnoreApi = true)]
+        public Task<IActionResult> UpdateFromJson(Guid serviceId, [FromBody] SaveServiceRequest request)
+            => UpdateCoreAsync(serviceId, request);
+
+        private async Task<IActionResult> CreateCoreAsync(SaveServiceRequest request)
         {
             try
             {
-                var request = await BindSaveRequestAsync();
+                request = await BindSaveRequestAsync(request);
                 TryValidateModel(request);
                 if (!ModelState.IsValid)
                     return BadRequest(Fail(GetModelStateError()));
@@ -148,7 +170,7 @@ namespace TheBeautyHubAPI.Controllers
                 return Ok(new ApiStatusResponse<ServiceSavedDataResponse>
                 {
                     Status = true,
-                    Message = ApiMessages.Service.Created,
+                    Message = ApiMessages.ServiceCreated,
                     Data = new ServiceSavedDataResponse { Saved = true }
                 });
             }
@@ -158,26 +180,24 @@ namespace TheBeautyHubAPI.Controllers
             }
             catch (JsonException)
             {
-                return BadRequest(Fail(ApiMessages.Common.InvalidRequestBody));
+                return BadRequest(Fail(ApiMessages.InvalidRequestBody));
             }
             catch (Exception ex)
             {
                 await _exceptionLogService.LogExceptionAsync(ex, _currentUser.UserId);
-                return StatusCode(500, Fail(ApiMessages.Service.CreateFailed));
+                return StatusCode(500, Fail(ApiMessages.ServiceCreateFailed));
             }
         }
 
-        /// <summary>API_029 Update Service</summary>
-        [HttpPost("{serviceId:guid}")]
-        public async Task<IActionResult> Update(Guid serviceId)
+        private async Task<IActionResult> UpdateCoreAsync(Guid serviceId, SaveServiceRequest request)
         {
             try
             {
                 var existing = await _servicesService.GetDetailsAsync(serviceId, _currentUser.AccountId);
                 if (existing == null)
-                    return NotFound(Fail(ApiMessages.Service.NotFound));
+                    return NotFound(Fail(ApiMessages.ServiceNotFound));
 
-                var request = await BindSaveRequestAsync();
+                request = await BindSaveRequestAsync(request);
                 TryValidateModel(request);
                 if (!ModelState.IsValid)
                     return BadRequest(Fail(GetModelStateError()));
@@ -195,7 +215,7 @@ namespace TheBeautyHubAPI.Controllers
                 return Ok(new ApiStatusResponse<ServiceSavedDataResponse>
                 {
                     Status = true,
-                    Message = ApiMessages.Service.Updated,
+                    Message = ApiMessages.ServiceUpdated,
                     Data = new ServiceSavedDataResponse { Saved = true }
                 });
             }
@@ -209,12 +229,12 @@ namespace TheBeautyHubAPI.Controllers
             }
             catch (JsonException)
             {
-                return BadRequest(Fail(ApiMessages.Common.InvalidRequestBody));
+                return BadRequest(Fail(ApiMessages.InvalidRequestBody));
             }
             catch (Exception ex)
             {
                 await _exceptionLogService.LogExceptionAsync(ex, _currentUser.UserId);
-                return StatusCode(500, Fail(ApiMessages.Service.UpdateFailed));
+                return StatusCode(500, Fail(ApiMessages.ServiceUpdateFailed));
             }
         }
 
@@ -226,7 +246,7 @@ namespace TheBeautyHubAPI.Controllers
             {
                 var existing = await _servicesService.GetDetailsAsync(serviceId, _currentUser.AccountId);
                 if (existing == null)
-                    return NotFound(Fail(ApiMessages.Service.NotFound));
+                    return NotFound(Fail(ApiMessages.ServiceNotFound));
 
                 await _servicesService.DeleteAsync(serviceId, _currentUser.AccountId);
                 _photoStorage.DeleteIfLocal(existing.Photo);
@@ -234,7 +254,7 @@ namespace TheBeautyHubAPI.Controllers
                 return Ok(new ApiStatusResponse<ServiceDeletedDataResponse>
                 {
                     Status = true,
-                    Message = ApiMessages.Service.Deleted,
+                    Message = ApiMessages.ServiceDeleted,
                     Data = new ServiceDeletedDataResponse { Deleted = true }
                 });
             }
@@ -245,7 +265,7 @@ namespace TheBeautyHubAPI.Controllers
             catch (Exception ex)
             {
                 await _exceptionLogService.LogExceptionAsync(ex, _currentUser.UserId);
-                return StatusCode(500, Fail(ApiMessages.Service.DeleteFailed));
+                return StatusCode(500, Fail(ApiMessages.ServiceDeleteFailed));
             }
         }
 
@@ -279,8 +299,11 @@ namespace TheBeautyHubAPI.Controllers
             };
         }
 
-        private async Task<SaveServiceRequest> BindSaveRequestAsync()
+        private async Task<SaveServiceRequest> BindSaveRequestAsync(SaveServiceRequest? bound)
         {
+            if (bound != null && !string.IsNullOrWhiteSpace(bound.Name))
+                return bound;
+
             if (Request.HasFormContentType)
             {
                 var form = await Request.ReadFormAsync();
@@ -312,11 +335,11 @@ namespace TheBeautyHubAPI.Controllers
             using var reader = new StreamReader(Request.Body);
             var json = await reader.ReadToEndAsync();
             if (string.IsNullOrWhiteSpace(json))
-                throw new ArgumentException(ApiMessages.Common.RequestBodyRequired);
+                throw new ArgumentException(ApiMessages.RequestBodyRequired);
 
             var request = JsonSerializer.Deserialize<SaveServiceRequest>(json, JsonOptions);
             if (request == null)
-                throw new ArgumentException(ApiMessages.Common.InvalidRequestBody);
+                throw new ArgumentException(ApiMessages.InvalidRequestBody);
 
             return request;
         }
@@ -338,7 +361,7 @@ namespace TheBeautyHubAPI.Controllers
                 .SelectMany(v => v.Errors)
                 .Select(e => e.ErrorMessage)
                 .FirstOrDefault(m => !string.IsNullOrWhiteSpace(m))
-                ?? ApiMessages.Common.ValidationOccurred;
+                ?? ApiMessages.ValidationOccurred;
         }
 
         private static ApiStatusResponse<object> Fail(string message)

@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using TheBeautyHubAPI.Auth;
+using TheBeautyHubAPI.Helpers;
 using TheBeautyHubData.Context;
 using TheBeautyHubData.Repositories;
 using TheBeautyHubData.Repositories.Interfaces;
@@ -18,8 +19,6 @@ builder.Services.AddDbContext<BeautyHubDbContext>(options =>
     options.UseNpgsql(connectionString));
 
 // Register repositories
-builder.Services.AddScoped<IAccountRepository, AccountRepository>();
-builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IFirmRepository, FirmRepository>();
 //builder.Services.AddScoped<IFirmDetailsRepository, FirmDetailsRepository>();
 //builder.Services.AddScoped<IPlansRepository, PlansRepository>();
@@ -34,14 +33,11 @@ builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
 //builder.Services.AddScoped<IReportRepository, ReportRepository>();
 //builder.Services.AddScoped<IReportForAccountRepository, ReportForAccountRepository>();
 //builder.Services.AddScoped<IPartnerRepository, PartnerRepository>();
-//builder.Services.AddScoped<IUserSessionRepository, UserSessionRepository>();
 builder.Services.AddScoped<IExceptionLogRepository, ExceptionLogRepository>();
 builder.Services.AddScoped<IBranchRepository, BranchRepository>();
 builder.Services.AddScoped<IStaffRepository, StaffRepository>();
 
 // Register business services
-builder.Services.AddScoped<IAccountService, AccountService>();
-builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IFirmService, FirmService>();
 //builder.Services.AddScoped<IFirmDetailsService, FirmDetailsService>();
 //builder.Services.AddScoped<IPlansService, PlansService>();
@@ -56,7 +52,6 @@ builder.Services.AddScoped<ITransactionService, TransactionService>();
 //builder.Services.AddScoped<IReportService, ReportService>();
 //builder.Services.AddScoped<IReportForAccountService, ReportForAccountService>();
 //builder.Services.AddScoped<IPartnerService, PartnerService>();
-//builder.Services.AddScoped<IUserSessionService, UserSessionService>();
 builder.Services.AddScoped<IExceptionLogService, ExceptionLogService>();
 builder.Services.AddScoped<IBranchService, BranchService>();
 builder.Services.AddScoped<IStaffService, StaffService>();
@@ -77,9 +72,10 @@ builder.Services.AddSwaggerGen(c =>
     {
         Title = "The Beauty Hub API",
         Version = "v1",
-        Description = "API for managing Beauty Hub accounts, users, firms, branches, plans, subscriptions, wallets, expenses, services, transactions, reports, partners, sessions, and logs. Protected endpoints require an AuthCenter Bearer token."
+        Description = "API for The Beauty Hub. Protected endpoints require an AuthCenter Bearer token. Account identity comes from the token accountId claim."
     });
     c.AddBeautyHubSwaggerSecurity();
+    c.OperationFilter<BranchSaveSwaggerFilter>();
 });
 
 // Configure CORS
@@ -101,25 +97,20 @@ using (var scope = app.Services.CreateScope())
     {
         // Apply pending migrations
         await dbContext.Database.MigrateAsync();
-        Console.WriteLine("✅ Database migrations applied successfully");
+        Console.WriteLine("Database migrations applied successfully");
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"❌ Error applying migrations: {ex.Message}");
+        Console.WriteLine($"Error applying migrations: {ex.Message}");
+        if (!app.Environment.IsDevelopment())
+            throw;
     }
 }
 
 app.UseSwagger();
 app.UseSwaggerUI();
 
-// Configure the HTTP request pipeline
 app.UseRouting();
-
-// Remove duplicate HTTPS redirect
-if (!app.Environment.IsProduction())
-{
-    app.UseHttpsRedirection();
-}
 
 app.UseCors("AllowAll");
 app.UseStaticFiles();
@@ -127,6 +118,7 @@ app.UseStaticFiles();
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.MapGet("/", () => Results.Redirect("/swagger")).AllowAnonymous();
 app.MapControllers();
 
 app.Run();

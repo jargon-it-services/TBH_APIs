@@ -12,23 +12,6 @@ namespace TheBeautyHubAPI
     {
         public MappingProfile()
         {
-            // Account mappings
-            CreateMap<CreateAccountRequest, CreateAccountDto>();
-            CreateMap<UpdateAccountRequest, UpdateAccountDto>();
-            CreateMap<AccountDto, AccountResponse>();
-            CreateMap<Account, AccountDto>();
-            CreateMap<CreateAccountDto, Account>();
-            CreateMap<UpdateAccountDto, Account>();
-
-            // User mappings
-            CreateMap<CreateUserRequest, CreateUserDto>();
-            CreateMap<UpdateUserRequest, UpdateUserDto>();
-            CreateMap<UpdateUserPasswordRequest, UpdateUserPasswordDto>();
-            CreateMap<UserDto, UserResponse>();
-            CreateMap<User, UserDto>();
-            CreateMap<CreateUserDto, User>();
-            CreateMap<UpdateUserDto, User>();
-
             // Firm mappings
             CreateMap<CreateFirmRequest, CreateFirmDto>();
             CreateMap<UpdateFirmRequest, UpdateFirmDto>();
@@ -140,14 +123,6 @@ namespace TheBeautyHubAPI
             CreateMap<Partner, PartnerDto>();
             CreateMap<CreatePartnerDto, Partner>();
             CreateMap<UpdatePartnerDto, Partner>();
-
-            // UserSession mappings
-            CreateMap<CreateUserSessionRequest, CreateUserSessionDto>();
-            CreateMap<UpdateUserSessionRequest, UpdateUserSessionDto>();
-            CreateMap<UserSessionDto, UserSessionResponse>();
-            CreateMap<UserSession, UserSessionDto>();
-            CreateMap<CreateUserSessionDto, UserSession>();
-            CreateMap<UpdateUserSessionDto, UserSession>();
 
             // ExceptionLog mappings
             CreateMap<CreateExceptionLogRequest, CreateExceptionLogDto>();

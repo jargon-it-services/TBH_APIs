@@ -21,8 +21,5 @@ namespace TheBeautyHubData.Entities
 
         [ForeignKey("BranchId")]
         public virtual Branch Branch { get; set; } = null!;
-
-        [ForeignKey("UserId")]
-        public virtual User User { get; set; } = null!;
     }
 }

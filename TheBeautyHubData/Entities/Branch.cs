@@ -93,9 +93,6 @@ namespace TheBeautyHubData.Entities
         [Required]
         public bool IsDeleted { get; set; } = false;
 
-        [ForeignKey("AccountId")]
-        public virtual Account? Account { get; set; }
-
         public virtual ICollection<BranchService> BranchServices { get; set; } = new List<BranchService>();
 
         public virtual ICollection<BranchEmployee> BranchEmployees { get; set; } = new List<BranchEmployee>();

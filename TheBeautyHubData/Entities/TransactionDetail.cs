@@ -149,12 +149,6 @@ namespace TheBeautyHubData.Entities
         public virtual TransactionRules? TransactionRule { get; set; }
 
         /// <summary>
-        /// The account (optional)
-        /// </summary>
-        [ForeignKey("AccountId")]
-        public virtual Account? Account { get; set; }
-
-        /// <summary>
         /// The firm (optional)
         /// </summary>
         [ForeignKey("FirmId")]

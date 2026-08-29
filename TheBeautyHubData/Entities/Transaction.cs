@@ -144,8 +144,6 @@ namespace TheBeautyHubData.Entities
         /// <summary>
         /// The account associated with this transaction
         /// </summary>
-        [ForeignKey("AccountId")]
-        public virtual Account Account { get; set; } = null!;
 
         /// <summary>
         /// The firm associated with this transaction (optional)

@@ -62,7 +62,5 @@ namespace TheBeautyHubData.Entities
         /// <summary>
         /// The account for which this report is generated
         /// </summary>
-        [ForeignKey("AccountId")]
-        public virtual Account Account { get; set; } = null!;
     }
 }

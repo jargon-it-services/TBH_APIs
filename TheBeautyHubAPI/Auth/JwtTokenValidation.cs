@@ -53,7 +53,7 @@ namespace TheBeautyHubAPI.Auth
             var principal = context.Principal;
             if (principal == null)
             {
-                context.Fail(ApiMessages.Common.InvalidToken);
+                context.Fail(ApiMessages.InvalidToken);
                 return;
             }
 
@@ -61,44 +61,61 @@ namespace TheBeautyHubAPI.Auth
             var accountId = principal.FindFirst(AuthCenterClaimTypes.AccountId)?.Value;
             var sessionId = principal.FindFirst(AuthCenterClaimTypes.SessionId)?.Value;
 
+            var options = context.HttpContext.RequestServices.GetRequiredService<Microsoft.Extensions.Options.IOptions<AuthCenterOptions>>().Value;
+            if (options.ValidateWithAuthCenter)
+            {
+                var rawToken = context.HttpContext.Items[AuthCenterClaimTypes.RawTokenItemKey] as string;
+                if (string.IsNullOrWhiteSpace(rawToken))
+                {
+                    context.Fail(ApiMessages.InvalidToken);
+                    return;
+                }
+
+                var validator = context.HttpContext.RequestServices.GetRequiredService<IAuthCenterTokenValidator>();
+                var result = await validator.ValidateAsync(rawToken, context.HttpContext.RequestAborted);
+                if (!result.IsValid)
+                {
+                    context.Fail(result.Error ?? ApiMessages.TokenNotValidForApp);
+                    return;
+                }
+
+                if (principal.Identity is ClaimsIdentity identity)
+                {
+                    if (result.UserId.HasValue && result.UserId.Value != Guid.Empty)
+                    {
+                        foreach (var stale in identity.FindAll(AuthCenterClaimTypes.UserId)
+                            .Where(c => !Guid.TryParse(c.Value, out var parsed) || parsed == Guid.Empty)
+                            .ToList())
+                        {
+                            identity.RemoveClaim(stale);
+                        }
+
+                        if (!identity.HasClaim(AuthCenterClaimTypes.UserId, result.UserId.Value.ToString()))
+                            identity.AddClaim(new Claim(AuthCenterClaimTypes.UserId, result.UserId.Value.ToString()));
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(result.Email) && !identity.HasClaim(AuthCenterClaimTypes.Email, result.Email))
+                        identity.AddClaim(new Claim(AuthCenterClaimTypes.Email, result.Email));
+
+                    foreach (var role in result.Roles)
+                    {
+                        if (!identity.HasClaim(AuthCenterClaimTypes.Role, role))
+                            identity.AddClaim(new Claim(AuthCenterClaimTypes.Role, role));
+                    }
+
+                    foreach (var permission in result.Permissions)
+                    {
+                        if (!identity.HasClaim(AuthCenterClaimTypes.Permission, permission))
+                            identity.AddClaim(new Claim(AuthCenterClaimTypes.Permission, permission));
+                    }
+                }
+
+                userId = principal.FindFirst(AuthCenterClaimTypes.UserId)?.Value;
+            }
+
             if (!Guid.TryParse(userId, out _) || !Guid.TryParse(accountId, out _) || !Guid.TryParse(sessionId, out _))
             {
-                context.Fail(ApiMessages.Common.InvalidToken);
-                return;
-            }
-
-            var options = context.HttpContext.RequestServices.GetRequiredService<Microsoft.Extensions.Options.IOptions<AuthCenterOptions>>().Value;
-            if (!options.ValidateWithAuthCenter)
-                return;
-
-            var rawToken = context.HttpContext.Items[AuthCenterClaimTypes.RawTokenItemKey] as string;
-            if (string.IsNullOrWhiteSpace(rawToken))
-            {
-                context.Fail(ApiMessages.Common.InvalidToken);
-                return;
-            }
-
-            var validator = context.HttpContext.RequestServices.GetRequiredService<IAuthCenterTokenValidator>();
-            var result = await validator.ValidateAsync(rawToken, context.HttpContext.RequestAborted);
-            if (!result.IsValid)
-            {
-                context.Fail(result.Error ?? ApiMessages.Common.TokenNotValidForApp);
-                return;
-            }
-
-            if (principal.Identity is ClaimsIdentity identity)
-            {
-                foreach (var role in result.Roles)
-                {
-                    if (!identity.HasClaim(AuthCenterClaimTypes.Role, role))
-                        identity.AddClaim(new Claim(AuthCenterClaimTypes.Role, role));
-                }
-
-                foreach (var permission in result.Permissions)
-                {
-                    if (!identity.HasClaim(AuthCenterClaimTypes.Permission, permission))
-                        identity.AddClaim(new Claim(AuthCenterClaimTypes.Permission, permission));
-                }
+                context.Fail(ApiMessages.InvalidToken);
             }
         }
 
@@ -113,8 +130,8 @@ namespace TheBeautyHubAPI.Auth
             {
                 var hasAuthorization = context.Request.Headers.ContainsKey("Authorization");
                 message = hasAuthorization
-                    ? ApiMessages.Common.InvalidToken
-                    : ApiMessages.Common.MissingToken;
+                    ? ApiMessages.InvalidToken
+                    : ApiMessages.MissingToken;
             }
 
             var payload = JsonSerializer.Serialize(new
@@ -133,7 +150,7 @@ namespace TheBeautyHubAPI.Auth
             var payload = JsonSerializer.Serialize(new
             {
                 status = false,
-                message = ApiMessages.Common.Forbidden
+                message = ApiMessages.Forbidden
             });
             await context.Response.WriteAsync(payload);
         }

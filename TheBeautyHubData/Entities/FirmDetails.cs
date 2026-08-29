@@ -42,22 +42,6 @@ namespace TheBeautyHubData.Entities
         [Required]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-        // Navigation properties
-        /// <summary>
-        /// The user associated with this firm detail
-        /// </summary>
-        [ForeignKey("UserId")]
-        public virtual User User { get; set; } = null!;
-
-        /// <summary>
-        /// The account associated with this firm detail
-        /// </summary>
-        [ForeignKey("AccountId")]
-        public virtual Account Account { get; set; } = null!;
-
-        /// <summary>
-        /// The firm this detail belongs to
-        /// </summary>
         [ForeignKey("FirmId")]
         public virtual Firm Firm { get; set; } = null!;
     }

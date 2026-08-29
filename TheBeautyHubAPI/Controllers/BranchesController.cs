@@ -19,7 +19,7 @@ using TheBeautyHubCore.Services.Interfaces;
 namespace TheBeautyHubAPI.Controllers
 {
     /// <summary>
-    /// Branch list, detail, create, and update endpoints (API_021–API_024).
+    /// Branch list, detail, create, and update endpoints   (API_021–API_024).
     /// Requires an AuthCenter Bearer access token.
     /// </summary>
     [Authorize]
@@ -69,14 +69,14 @@ namespace TheBeautyHubAPI.Controllers
                 return Ok(new ApiStatusResponse<BranchListDataResponse>
                 {
                     Status = true,
-                    Message = ApiMessages.Branch.ListFetched,
+                    Message = ApiMessages.BranchListFetched,
                     Data = new BranchListDataResponse { Branches = items }
                 });
             }
             catch (Exception ex)
             {
                 await _exceptionLogService.LogExceptionAsync(ex, _currentUser.UserId);
-                return StatusCode(500, Fail(ApiMessages.Branch.ListFailed));
+                return StatusCode(500, Fail(ApiMessages.BranchListFailed));
             }
         }
 
@@ -90,7 +90,7 @@ namespace TheBeautyHubAPI.Controllers
             {
                 var detail = await _branchService.GetBranchDetailsAsync(branchId, _currentUser.AccountId);
                 if (detail == null)
-                    return NotFound(Fail(ApiMessages.Branch.NotFound));
+                    return NotFound(Fail(ApiMessages.BranchNotFound));
 
                 var response = _mapper.Map<BranchDetailResponse>(detail);
                 response.Logo = ToAbsoluteUrl(response.Logo);
@@ -107,26 +107,50 @@ namespace TheBeautyHubAPI.Controllers
                 return Ok(new ApiStatusResponse<BranchDetailResponse>
                 {
                     Status = true,
-                    Message = ApiMessages.Branch.DetailsFetched,
+                    Message = ApiMessages.BranchDetailsFetched,
                     Data = response
                 });
             }
             catch (Exception ex)
             {
                 await _exceptionLogService.LogExceptionAsync(ex, _currentUser.UserId);
-                return StatusCode(500, Fail(ApiMessages.Branch.DetailsFailed));
+                return StatusCode(500, Fail(ApiMessages.BranchDetailsFailed));
             }
         }
 
         /// <summary>
-        /// API_023 Create Branch
+        /// API_023 Create Branch. Send multipart form (includes optional logo file) or JSON with the same field names.
         /// </summary>
         [HttpPost]
-        public async Task<IActionResult> CreateBranch()
+        [Consumes("multipart/form-data")]
+        public Task<IActionResult> CreateBranch([FromForm] SaveBranchRequest request)
+            => CreateBranchCoreAsync(request);
+
+        [HttpPost]
+        [Consumes("application/json")]
+        [ApiExplorerSettings(IgnoreApi = true)]
+        public Task<IActionResult> CreateBranchFromJson([FromBody] SaveBranchRequest request)
+            => CreateBranchCoreAsync(request);
+
+        /// <summary>
+        /// API_024 Update Branch. Same payload as create (multipart form or JSON).
+        /// </summary>
+        [HttpPost("{branchId:guid}")]
+        [Consumes("multipart/form-data")]
+        public Task<IActionResult> UpdateBranch(Guid branchId, [FromForm] SaveBranchRequest request)
+            => UpdateBranchCoreAsync(branchId, request);
+
+        [HttpPost("{branchId:guid}")]
+        [Consumes("application/json")]
+        [ApiExplorerSettings(IgnoreApi = true)]
+        public Task<IActionResult> UpdateBranchFromJson(Guid branchId, [FromBody] SaveBranchRequest request)
+            => UpdateBranchCoreAsync(branchId, request);
+
+        private async Task<IActionResult> CreateBranchCoreAsync(SaveBranchRequest request)
         {
             try
             {
-                var request = await BindSaveRequestAsync();
+                request = await BindSaveRequestAsync(request);
                 TryValidateModel(request);
                 if (!ModelState.IsValid)
                     return BadRequest(Fail(GetModelStateError()));
@@ -141,7 +165,7 @@ namespace TheBeautyHubAPI.Controllers
                 return Ok(new ApiStatusResponse<BranchSavedDataResponse>
                 {
                     Status = true,
-                    Message = ApiMessages.Branch.Created,
+                    Message = ApiMessages.BranchCreated,
                     Data = new BranchSavedDataResponse { Saved = true }
                 });
             }
@@ -151,28 +175,24 @@ namespace TheBeautyHubAPI.Controllers
             }
             catch (JsonException)
             {
-                return BadRequest(Fail(ApiMessages.Common.InvalidRequestBody));
+                return BadRequest(Fail(ApiMessages.InvalidRequestBody));
             }
             catch (Exception ex)
             {
                 await _exceptionLogService.LogExceptionAsync(ex, _currentUser.UserId);
-                return StatusCode(500, Fail(ApiMessages.Branch.CreateFailed));
+                return StatusCode(500, Fail(ApiMessages.BranchCreateFailed));
             }
         }
 
-        /// <summary>
-        /// API_024 Update Branch
-        /// </summary>
-        [HttpPost("{branchId:guid}")]
-        public async Task<IActionResult> UpdateBranch(Guid branchId)
+        private async Task<IActionResult> UpdateBranchCoreAsync(Guid branchId, SaveBranchRequest request)
         {
             try
             {
                 var existing = await _branchService.GetBranchDetailsAsync(branchId, _currentUser.AccountId);
                 if (existing == null)
-                    return NotFound(Fail(ApiMessages.Branch.NotFound));
+                    return NotFound(Fail(ApiMessages.BranchNotFound));
 
-                var request = await BindSaveRequestAsync();
+                request = await BindSaveRequestAsync(request);
                 TryValidateModel(request);
                 if (!ModelState.IsValid)
                     return BadRequest(Fail(GetModelStateError()));
@@ -190,7 +210,7 @@ namespace TheBeautyHubAPI.Controllers
                 return Ok(new ApiStatusResponse<BranchSavedDataResponse>
                 {
                     Status = true,
-                    Message = ApiMessages.Branch.Updated,
+                    Message = ApiMessages.BranchUpdated,
                     Data = new BranchSavedDataResponse { Saved = true }
                 });
             }
@@ -204,12 +224,12 @@ namespace TheBeautyHubAPI.Controllers
             }
             catch (JsonException)
             {
-                return BadRequest(Fail(ApiMessages.Common.InvalidRequestBody));
+                return BadRequest(Fail(ApiMessages.InvalidRequestBody));
             }
             catch (Exception ex)
             {
                 await _exceptionLogService.LogExceptionAsync(ex, _currentUser.UserId);
-                return StatusCode(500, Fail(ApiMessages.Branch.UpdateFailed));
+                return StatusCode(500, Fail(ApiMessages.BranchUpdateFailed));
             }
         }
 
@@ -242,14 +262,16 @@ namespace TheBeautyHubAPI.Controllers
             };
         }
 
-        private async Task<SaveBranchRequest> BindSaveRequestAsync()
+        private async Task<SaveBranchRequest> BindSaveRequestAsync(SaveBranchRequest? bound)
         {
+            if (bound != null && !string.IsNullOrWhiteSpace(bound.Name))
+                return bound;
+
             if (Request.HasFormContentType)
             {
                 var form = await Request.ReadFormAsync();
                 return new SaveBranchRequest
                 {
-                    AccountId = ParseGuid(form["account_id"]),
                     Name = form["name"].ToString(),
                     AddressLine1 = form["address_line1"].ToString(),
                     AddressLine2 = NullIfEmpty(form["address_line2"]),
@@ -277,11 +299,11 @@ namespace TheBeautyHubAPI.Controllers
             using var reader = new StreamReader(Request.Body);
             var json = await reader.ReadToEndAsync();
             if (string.IsNullOrWhiteSpace(json))
-                throw new ArgumentException(ApiMessages.Common.RequestBodyRequired);
+                throw new ArgumentException(ApiMessages.RequestBodyRequired);
 
             var request = JsonSerializer.Deserialize<SaveBranchRequest>(json, JsonOptions);
             if (request == null)
-                throw new ArgumentException(ApiMessages.Common.InvalidRequestBody);
+                throw new ArgumentException(ApiMessages.InvalidRequestBody);
 
             return request;
         }
@@ -303,7 +325,7 @@ namespace TheBeautyHubAPI.Controllers
                 .SelectMany(v => v.Errors)
                 .Select(e => e.ErrorMessage)
                 .FirstOrDefault(m => !string.IsNullOrWhiteSpace(m))
-                ?? ApiMessages.Common.ValidationOccurred;
+                ?? ApiMessages.ValidationOccurred;
         }
 
         private static ApiStatusResponse<object> Fail(string message)
@@ -344,23 +366,19 @@ namespace TheBeautyHubAPI.Controllers
                 || value.Equals("on", StringComparison.OrdinalIgnoreCase);
         }
 
+        private static bool IsRealServiceId(Guid id) => id != Guid.Empty;
+
         private static List<Guid>? MergeServiceIds(SaveBranchRequest request)
         {
-            var any = request.Services != null
-                || request.ServiceIds != null
-                || request.ServiceId.HasValue;
-            if (!any)
-                return null;
-
             var ids = new List<Guid>();
             if (request.Services != null)
-                ids.AddRange(request.Services);
+                ids.AddRange(request.Services.Where(IsRealServiceId));
             if (request.ServiceIds != null)
-                ids.AddRange(request.ServiceIds);
-            if (request.ServiceId.HasValue)
+                ids.AddRange(request.ServiceIds.Where(IsRealServiceId));
+            if (request.ServiceId.HasValue && IsRealServiceId(request.ServiceId.Value))
                 ids.Add(request.ServiceId.Value);
 
-            return ids.Distinct().ToList();
+            return ids.Count == 0 ? null : ids.Distinct().ToList();
         }
 
         private static bool FormHas(IFormCollection form, string key)

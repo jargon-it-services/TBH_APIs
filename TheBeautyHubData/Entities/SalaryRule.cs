@@ -56,7 +56,5 @@ namespace TheBeautyHubData.Entities
         [Required]
         public bool IsDeleted { get; set; } = false;
 
-        [ForeignKey("AccountId")]
-        public virtual Account Account { get; set; } = null!;
     }
 }

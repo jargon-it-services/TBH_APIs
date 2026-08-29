@@ -48,8 +48,8 @@ namespace TheBeautyHubAPI.Controllers
                     Permissions = result.Permissions
                 },
                 Message = result.IsValid
-                    ? ApiMessages.Auth.TokenValid
-                    : (result.Message ?? ApiMessages.Auth.TokenInvalid)
+                    ? ApiMessages.AuthTokenValid
+                    : (result.Message ?? ApiMessages.AuthTokenInvalid)
             });
         }
     }

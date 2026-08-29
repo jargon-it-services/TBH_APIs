@@ -55,7 +55,7 @@ namespace TheBeautyHubCore.Services
 
             var existing = await _expensesTypeRepository.GetByIdAsync(expenseId, dto.AccountId);
             if (existing == null)
-                throw new KeyNotFoundException(ApiMessages.Expense.NotFound);
+                throw new KeyNotFoundException(ApiMessages.ExpenseNotFound);
 
             var branchIds = await ResolveBranchIdsAsync(dto);
             ApplyFields(existing, dto);
@@ -67,7 +67,7 @@ namespace TheBeautyHubCore.Services
         {
             var existing = await _expensesTypeRepository.GetByIdAsync(expenseId, accountId);
             if (existing == null)
-                throw new KeyNotFoundException(ApiMessages.Expense.NotFound);
+                throw new KeyNotFoundException(ApiMessages.ExpenseNotFound);
 
             await _expensesTypeRepository.RemoveBranchLinksAsync(expenseId);
             await _expensesTypeRepository.SoftDeleteAsync(existing);
@@ -80,11 +80,11 @@ namespace TheBeautyHubCore.Services
 
             var requested = (dto.Branches ?? new List<Guid>()).Distinct().ToList();
             if (requested.Count == 0)
-                throw new ArgumentException(ApiMessages.Common.BranchesRequiredWhenNotAll);
+                throw new ArgumentException(ApiMessages.BranchesRequiredWhenNotAll);
 
             var found = await _expensesTypeRepository.GetBranchesByIdsAsync(dto.AccountId, requested);
             if (found.Count != requested.Count)
-                throw new ArgumentException(ApiMessages.Common.InvalidBranchIds);
+                throw new ArgumentException(ApiMessages.InvalidBranchIds);
 
             return requested;
         }
@@ -100,11 +100,11 @@ namespace TheBeautyHubCore.Services
         private static void ValidateWrite(SaveExpenseDto dto)
         {
             if (string.IsNullOrWhiteSpace(dto.Name))
-                throw new ArgumentException(ApiMessages.Expense.NameRequired);
+                throw new ArgumentException(ApiMessages.ExpenseNameRequired);
             if (string.IsNullOrWhiteSpace(dto.Description))
-                throw new ArgumentException(ApiMessages.Expense.DescriptionRequired);
+                throw new ArgumentException(ApiMessages.ExpenseDescriptionRequired);
             if (string.IsNullOrWhiteSpace(dto.Status))
-                throw new ArgumentException(ApiMessages.Expense.StatusRequired);
+                throw new ArgumentException(ApiMessages.ExpenseStatusRequired);
         }
 
         private static ExpenseListItemDto MapListItem(ExpensesType expense)

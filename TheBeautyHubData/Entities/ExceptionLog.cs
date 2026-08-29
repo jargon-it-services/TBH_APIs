@@ -47,12 +47,5 @@ namespace TheBeautyHubData.Entities
         /// </summary>
         [Required]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
-        // Navigation properties
-        /// <summary>
-        /// The user associated with this exception (optional)
-        /// </summary>
-        [ForeignKey("UserId")]
-        public virtual User? User { get; set; }
     }
 }

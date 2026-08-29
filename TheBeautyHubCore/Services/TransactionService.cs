@@ -21,22 +21,19 @@ namespace TheBeautyHubCore.Services
         private readonly IExpensesTypeRepository _expensesTypeRepository;
         private readonly IStaffRepository _staffRepository;
         private readonly IBranchRepository _branchRepository;
-        private readonly IUserRepository _userRepository;
 
         public TransactionService(
             ITransactionRepository transactionRepository,
             IServicesRepository servicesRepository,
             IExpensesTypeRepository expensesTypeRepository,
             IStaffRepository staffRepository,
-            IBranchRepository branchRepository,
-            IUserRepository userRepository)
+            IBranchRepository branchRepository)
         {
             _transactionRepository = transactionRepository;
             _servicesRepository = servicesRepository;
             _expensesTypeRepository = expensesTypeRepository;
             _staffRepository = staffRepository;
             _branchRepository = branchRepository;
-            _userRepository = userRepository;
         }
 
         public async Task<TransactionBootstrapDto> GetBootstrapAsync(
@@ -57,7 +54,6 @@ namespace TheBeautyHubCore.Services
 
             var last = await _transactionRepository.GetLatestByUserAsync(accountId, userId);
             var staffForUser = await _staffRepository.GetByUserIdAsync(userId, accountId);
-            var user = await _userRepository.GetUserByIdAsync(userId);
 
             Guid? branchId = staffForUser?.BranchId ?? last?.BranchId ?? branches.FirstOrDefault()?.BranchId;
 
@@ -85,7 +81,7 @@ namespace TheBeautyHubCore.Services
                     Id = b.BranchId,
                     Name = b.Name
                 }).ToList(),
-                UserRole = MapRole(roles, user?.UserRole),
+                UserRole = MapRole(roles),
                 LoggedInUserId = userId,
                 LoggedInBranchId = branchId,
                 LastPaymentMode = last?.PaymentMode,
@@ -153,7 +149,7 @@ namespace TheBeautyHubCore.Services
         {
             ValidateWrite(dto, requireIdempotency: false);
             var existing = await FindAsync(id, dto.AccountId)
-                ?? throw new KeyNotFoundException(ApiMessages.Transaction.NotFound);
+                ?? throw new KeyNotFoundException(ApiMessages.TransactionNotFound);
 
             if (!CanEdit(existing))
                 throw new InvalidOperationException(EditWindowClosedCode);
@@ -196,7 +192,7 @@ namespace TheBeautyHubCore.Services
         public async Task<TransactionSavedDto> MarkPaidAsync(string id, Guid accountId)
         {
             var existing = await FindAsync(id, accountId)
-                ?? throw new KeyNotFoundException(ApiMessages.Transaction.NotFound);
+                ?? throw new KeyNotFoundException(ApiMessages.TransactionNotFound);
 
             existing.Status = "paid";
             existing.PaidAt = DateTime.UtcNow;
@@ -246,7 +242,7 @@ namespace TheBeautyHubCore.Services
         {
             var branch = await _branchRepository.GetByIdAsync(branchId);
             if (branch == null || branch.AccountId != accountId)
-                throw new ArgumentException(ApiMessages.Transaction.BranchInvalid);
+                throw new ArgumentException(ApiMessages.TransactionBranchInvalid);
         }
 
         private async Task<List<TransactionDetail>> BuildLinesAsync(SaveTransactionDto dto)
@@ -257,15 +253,15 @@ namespace TheBeautyHubCore.Services
             foreach (var item in dto.Services)
             {
                 if (!item.ServiceId.HasValue || item.ServiceId == Guid.Empty)
-                    throw new ArgumentException(ApiMessages.Transaction.LineServiceRequired);
+                    throw new ArgumentException(ApiMessages.TransactionLineServiceRequired);
                 if (item.Quantity <= 0)
-                    throw new ArgumentException(ApiMessages.Transaction.QuantityInvalid);
+                    throw new ArgumentException(ApiMessages.TransactionQuantityInvalid);
 
                 if (isExpense)
                 {
                     var expense = await _expensesTypeRepository.GetByIdAsync(item.ServiceId.Value, dto.AccountId);
                     if (expense == null)
-                        throw new ArgumentException(ApiMessages.Transaction.InvalidExpenseIds);
+                        throw new ArgumentException(ApiMessages.TransactionInvalidExpenseIds);
 
                     lines.Add(new TransactionDetail
                     {
@@ -283,7 +279,7 @@ namespace TheBeautyHubCore.Services
 
                 var service = await _servicesRepository.GetByIdAsync(item.ServiceId.Value, dto.AccountId);
                 if (service == null)
-                    throw new ArgumentException(ApiMessages.Transaction.InvalidServiceIds);
+                    throw new ArgumentException(ApiMessages.TransactionInvalidServiceIds);
 
                 var lineTotal = service.ServicePrice * item.Quantity;
                 lines.Add(new TransactionDetail
@@ -319,18 +315,18 @@ namespace TheBeautyHubCore.Services
         private static void ValidateWrite(SaveTransactionDto dto, bool requireIdempotency)
         {
             if (requireIdempotency && string.IsNullOrWhiteSpace(dto.IdempotencyKey))
-                throw new ArgumentException(ApiMessages.Transaction.IdempotencyRequired);
+                throw new ArgumentException(ApiMessages.TransactionIdempotencyRequired);
             if (string.IsNullOrWhiteSpace(dto.Type))
-                throw new ArgumentException(ApiMessages.Transaction.TypeRequired);
+                throw new ArgumentException(ApiMessages.TransactionTypeRequired);
             var type = dto.Type.Trim().ToLowerInvariant();
             if (type != "sale" && type != "expense")
-                throw new ArgumentException(ApiMessages.Transaction.TypeInvalid);
+                throw new ArgumentException(ApiMessages.TransactionTypeInvalid);
             if (dto.BranchId == Guid.Empty)
-                throw new ArgumentException(ApiMessages.Transaction.BranchRequired);
+                throw new ArgumentException(ApiMessages.TransactionBranchRequired);
             if (string.IsNullOrWhiteSpace(dto.PaymentMode))
-                throw new ArgumentException(ApiMessages.Transaction.PaymentModeRequired);
+                throw new ArgumentException(ApiMessages.TransactionPaymentModeRequired);
             if (dto.Services == null || dto.Services.Count == 0)
-                throw new ArgumentException(ApiMessages.Transaction.ServicesRequired);
+                throw new ArgumentException(ApiMessages.TransactionServicesRequired);
         }
 
         private static bool CanEdit(Transaction transaction)
@@ -471,9 +467,9 @@ namespace TheBeautyHubCore.Services
             };
         }
 
-        private static string MapRole(IReadOnlyList<string> roles, string? userRole)
+        private static string MapRole(IReadOnlyList<string> roles)
         {
-            var raw = roles.FirstOrDefault(r => !string.IsNullOrWhiteSpace(r)) ?? userRole ?? string.Empty;
+            var raw = roles.FirstOrDefault(r => !string.IsNullOrWhiteSpace(r)) ?? string.Empty;
             return raw.Trim().ToLowerInvariant() switch
             {
                 "admin" => "account_admin",

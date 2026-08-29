@@ -9,22 +9,6 @@ namespace TheBeautyHubAPI.Mappings
     {
         public MappingProfile()
         {
-            // Account mappings
-            CreateMap<Account, AccountDto>().ReverseMap();
-            CreateMap<CreateAccountDto, Account>();
-            CreateMap<UpdateAccountDto, Account>();
-            CreateMap<CreateAccountRequest, CreateAccountDto>();
-            CreateMap<UpdateAccountRequest, UpdateAccountDto>();
-            CreateMap<AccountDto, AccountResponse>();
-
-            // User mappings
-            CreateMap<User, UserDto>().ReverseMap();
-            CreateMap<CreateUserDto, User>();
-            CreateMap<UpdateUserDto, User>();
-            CreateMap<CreateUserRequest, CreateUserDto>();
-            CreateMap<UpdateUserRequest, UpdateUserDto>();
-            CreateMap<UserDto, UserResponse>();
-
             // Firm mappings
             CreateMap<Firm, FirmDto>().ReverseMap();
             CreateMap<CreateFirmDto, Firm>();

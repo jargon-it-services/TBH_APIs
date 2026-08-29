@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -24,11 +23,6 @@ namespace TheBeautyHubAPI.Controllers
     [Produces("application/json")]
     public class ExpensesTypesController : ControllerBase
     {
-        private static readonly JsonSerializerOptions JsonOptions = new()
-        {
-            PropertyNameCaseInsensitive = true
-        };
-
         private readonly IExpensesTypeService _expensesTypeService;
         private readonly IExceptionLogService _exceptionLogService;
         private readonly IMapper _mapper;
@@ -56,7 +50,7 @@ namespace TheBeautyHubAPI.Controllers
                 return Ok(new ApiStatusResponse<ExpenseListDataResponse>
                 {
                     Status = true,
-                    Message = ApiMessages.Expense.ListFetched,
+                    Message = ApiMessages.ExpenseListFetched,
                     Data = new ExpenseListDataResponse
                     {
                         Expenses = _mapper.Map<List<ExpenseListItemResponse>>(list)
@@ -66,7 +60,7 @@ namespace TheBeautyHubAPI.Controllers
             catch (Exception ex)
             {
                 await _exceptionLogService.LogExceptionAsync(ex, _currentUser.UserId);
-                return StatusCode(500, Fail(ApiMessages.Expense.ListFailed));
+                return StatusCode(500, Fail(ApiMessages.ExpenseListFailed));
             }
         }
 
@@ -78,29 +72,29 @@ namespace TheBeautyHubAPI.Controllers
             {
                 var detail = await _expensesTypeService.GetDetailsAsync(expenseId, _currentUser.AccountId);
                 if (detail == null)
-                    return NotFound(Fail(ApiMessages.Expense.NotFound));
+                    return NotFound(Fail(ApiMessages.ExpenseNotFound));
 
                 return Ok(new ApiStatusResponse<ExpenseDetailResponse>
                 {
                     Status = true,
-                    Message = ApiMessages.Expense.DetailsFetched,
+                    Message = ApiMessages.ExpenseDetailsFetched,
                     Data = _mapper.Map<ExpenseDetailResponse>(detail)
                 });
             }
             catch (Exception ex)
             {
                 await _exceptionLogService.LogExceptionAsync(ex, _currentUser.UserId);
-                return StatusCode(500, Fail(ApiMessages.Expense.DetailsFailed));
+                return StatusCode(500, Fail(ApiMessages.ExpenseDetailsFailed));
             }
         }
 
         /// <summary>API_046 Create Expense</summary>
         [HttpPost]
-        public async Task<IActionResult> Create()
+        [Consumes("application/json")]
+        public async Task<IActionResult> Create([FromBody] SaveExpenseRequest request)
         {
             try
             {
-                var request = await BindSaveRequestAsync();
                 TryValidateModel(request);
                 if (!ModelState.IsValid)
                     return BadRequest(Fail(GetModelStateError()));
@@ -109,7 +103,7 @@ namespace TheBeautyHubAPI.Controllers
                 return Ok(new ApiStatusResponse<ExpenseSavedDataResponse>
                 {
                     Status = true,
-                    Message = ApiMessages.Expense.Created,
+                    Message = ApiMessages.ExpenseCreated,
                     Data = new ExpenseSavedDataResponse { Saved = true }
                 });
             }
@@ -119,26 +113,26 @@ namespace TheBeautyHubAPI.Controllers
             }
             catch (JsonException)
             {
-                return BadRequest(Fail(ApiMessages.Common.InvalidRequestBody));
+                return BadRequest(Fail(ApiMessages.InvalidRequestBody));
             }
             catch (Exception ex)
             {
                 await _exceptionLogService.LogExceptionAsync(ex, _currentUser.UserId);
-                return StatusCode(500, Fail(ApiMessages.Expense.CreateFailed));
+                return StatusCode(500, Fail(ApiMessages.ExpenseCreateFailed));
             }
         }
 
         /// <summary>API_047 Update Expense</summary>
         [HttpPost("{expenseId:guid}")]
-        public async Task<IActionResult> Update(Guid expenseId)
+        [Consumes("application/json")]
+        public async Task<IActionResult> Update(Guid expenseId, [FromBody] SaveExpenseRequest request)
         {
             try
             {
                 var existing = await _expensesTypeService.GetDetailsAsync(expenseId, _currentUser.AccountId);
                 if (existing == null)
-                    return NotFound(Fail(ApiMessages.Expense.NotFound));
+                    return NotFound(Fail(ApiMessages.ExpenseNotFound));
 
-                var request = await BindSaveRequestAsync();
                 TryValidateModel(request);
                 if (!ModelState.IsValid)
                     return BadRequest(Fail(GetModelStateError()));
@@ -147,7 +141,7 @@ namespace TheBeautyHubAPI.Controllers
                 return Ok(new ApiStatusResponse<ExpenseSavedDataResponse>
                 {
                     Status = true,
-                    Message = ApiMessages.Expense.Updated,
+                    Message = ApiMessages.ExpenseUpdated,
                     Data = new ExpenseSavedDataResponse { Saved = true }
                 });
             }
@@ -161,12 +155,12 @@ namespace TheBeautyHubAPI.Controllers
             }
             catch (JsonException)
             {
-                return BadRequest(Fail(ApiMessages.Common.InvalidRequestBody));
+                return BadRequest(Fail(ApiMessages.InvalidRequestBody));
             }
             catch (Exception ex)
             {
                 await _exceptionLogService.LogExceptionAsync(ex, _currentUser.UserId);
-                return StatusCode(500, Fail(ApiMessages.Expense.UpdateFailed));
+                return StatusCode(500, Fail(ApiMessages.ExpenseUpdateFailed));
             }
         }
 
@@ -178,13 +172,13 @@ namespace TheBeautyHubAPI.Controllers
             {
                 var existing = await _expensesTypeService.GetDetailsAsync(expenseId, _currentUser.AccountId);
                 if (existing == null)
-                    return NotFound(Fail(ApiMessages.Expense.NotFound));
+                    return NotFound(Fail(ApiMessages.ExpenseNotFound));
 
                 await _expensesTypeService.DeleteAsync(expenseId, _currentUser.AccountId);
                 return Ok(new ApiStatusResponse<ExpenseDeletedDataResponse>
                 {
                     Status = true,
-                    Message = ApiMessages.Expense.Deleted,
+                    Message = ApiMessages.ExpenseDeleted,
                     Data = new ExpenseDeletedDataResponse { Deleted = true }
                 });
             }
@@ -195,7 +189,7 @@ namespace TheBeautyHubAPI.Controllers
             catch (Exception ex)
             {
                 await _exceptionLogService.LogExceptionAsync(ex, _currentUser.UserId);
-                return StatusCode(500, Fail(ApiMessages.Expense.DeleteFailed));
+                return StatusCode(500, Fail(ApiMessages.ExpenseDeleteFailed));
             }
         }
 
@@ -213,24 +207,13 @@ namespace TheBeautyHubAPI.Controllers
             };
         }
 
-        private async Task<SaveExpenseRequest> BindSaveRequestAsync()
-        {
-            using var reader = new StreamReader(Request.Body);
-            var json = await reader.ReadToEndAsync();
-            if (string.IsNullOrWhiteSpace(json))
-                throw new ArgumentException(ApiMessages.Common.RequestBodyRequired);
-
-            return JsonSerializer.Deserialize<SaveExpenseRequest>(json, JsonOptions)
-                ?? throw new ArgumentException(ApiMessages.Common.InvalidRequestBody);
-        }
-
         private string GetModelStateError()
         {
             return ModelState.Values
                 .SelectMany(v => v.Errors)
                 .Select(e => e.ErrorMessage)
                 .FirstOrDefault(m => !string.IsNullOrWhiteSpace(m))
-                ?? ApiMessages.Common.ValidationOccurred;
+                ?? ApiMessages.ValidationOccurred;
         }
 
         private static ApiStatusResponse<object> Fail(string message)

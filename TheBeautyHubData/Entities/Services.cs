@@ -152,8 +152,6 @@ namespace TheBeautyHubData.Entities
         /// <summary>
         /// The account this service belongs to
         /// </summary>
-        [ForeignKey("AccountId")]
-        public virtual Account Account { get; set; } = null!;
 
         /// <summary>
         /// The firm this service belongs to (optional)

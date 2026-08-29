@@ -54,7 +54,5 @@ namespace TheBeautyHubData.Entities
         /// <summary>
         /// The account this wallet belongs to
         /// </summary>
-        [ForeignKey("AccountId")]
-        public virtual Account Account { get; set; } = null!;
     }
 }

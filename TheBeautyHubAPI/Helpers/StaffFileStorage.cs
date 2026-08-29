@@ -29,10 +29,10 @@ namespace TheBeautyHubAPI.Helpers
         {
             var extension = Path.GetExtension(file.FileName)?.ToLowerInvariant() ?? string.Empty;
             if (!AllowedExtensions.Contains(extension))
-                throw new ArgumentException(ApiMessages.Common.InvalidImageOrPdfType(label.ToLowerInvariant()));
+                throw new ArgumentException(ApiMessages.InvalidImageOrPdfType(label.ToLowerInvariant()));
 
             if (file.Length <= 0 || file.Length > MaxFileBytes)
-                throw new ArgumentException(ApiMessages.Common.FileTooLargeFor(label.ToLowerInvariant()));
+                throw new ArgumentException(ApiMessages.FileTooLargeFor(label.ToLowerInvariant()));
 
             var webRoot = string.IsNullOrWhiteSpace(_environment.WebRootPath)
                 ? Path.Combine(_environment.ContentRootPath, "wwwroot")
