@@ -355,9 +355,8 @@ namespace TheBeautyHubAPI.Models
         [JsonPropertyName("name")]
         public string Name { get; set; } = string.Empty;
 
-        [Required]
         [JsonPropertyName("description")]
-        public string Description { get; set; } = string.Empty;
+        public string? Description { get; set; }
 
         [Required]
         [JsonPropertyName("salary_type")]

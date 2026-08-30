@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -150,69 +149,62 @@ namespace TheBeautyHubAPI.Models
         public bool Deleted { get; set; }
     }
 
+    /// <summary>
+    /// Create/update service payload (API_028 / API_029).
+    /// Create still requires catalog fields (validated in the service layer).
+    /// Status-only update is allowed: { "status": "active" } or { "status": "inactive" }.
+    /// Extra fields such as app_name and platform are ignored.
+    /// </summary>
     public class SaveServiceRequest
     {
-        [Required]
         [FromForm(Name = "name")]
         [JsonPropertyName("name")]
-        public string Name { get; set; } = string.Empty;
+        public string? Name { get; set; }
 
-        [Required]
         [FromForm(Name = "description")]
         [JsonPropertyName("description")]
-        public string Description { get; set; } = string.Empty;
+        public string? Description { get; set; }
 
-        [Required]
         [FromForm(Name = "category")]
         [JsonPropertyName("category")]
-        public string Category { get; set; } = string.Empty;
+        public string? Category { get; set; }
 
-        [Required]
         [FromForm(Name = "duration_minutes")]
         [JsonPropertyName("duration_minutes")]
         public int? DurationMinutes { get; set; }
 
-        [Required]
         [FromForm(Name = "applicable_gender")]
         [JsonPropertyName("applicable_gender")]
-        public string ApplicableGender { get; set; } = string.Empty;
+        public string? ApplicableGender { get; set; }
 
-        [Required]
         [FromForm(Name = "type")]
         [JsonPropertyName("type")]
-        public string Type { get; set; } = string.Empty;
+        public string? Type { get; set; }
 
-        [Required]
         [FromForm(Name = "status")]
         [JsonPropertyName("status")]
-        public string Status { get; set; } = string.Empty;
+        public string? Status { get; set; }
 
-        [Required]
         [FromForm(Name = "customer_price")]
         [JsonPropertyName("customer_price")]
         public decimal? CustomerPrice { get; set; }
 
-        [Required]
         [FromForm(Name = "material_cost")]
         [JsonPropertyName("material_cost")]
         public decimal? MaterialCost { get; set; }
 
-        [Required]
         [FromForm(Name = "commission_type")]
         [JsonPropertyName("commission_type")]
-        public string CommissionType { get; set; } = string.Empty;
+        public string? CommissionType { get; set; }
 
-        [Required]
         [FromForm(Name = "commission_value")]
         [JsonPropertyName("commission_value")]
         public decimal? CommissionValue { get; set; }
 
-        [Required]
         [FromForm(Name = "other_cost")]
         [JsonPropertyName("other_cost")]
         public decimal? OtherCost { get; set; }
 
-        [Required]
         [FromForm(Name = "home_service_available")]
         [JsonPropertyName("home_service_available")]
         public bool? HomeServiceAvailable { get; set; }
@@ -229,7 +221,6 @@ namespace TheBeautyHubAPI.Models
         [JsonPropertyName("extra_charge_per_km")]
         public decimal? ExtraChargePerKm { get; set; }
 
-        [Required]
         [FromForm(Name = "all_branches")]
         [JsonPropertyName("all_branches")]
         public bool? AllBranches { get; set; }

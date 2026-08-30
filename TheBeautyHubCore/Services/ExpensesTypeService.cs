@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using TheBeautyHubCore.Constants;
 using TheBeautyHubCore.DTOs;
+using TheBeautyHubData.Enums;
 using TheBeautyHubCore.Services.Interfaces;
 using TheBeautyHubData.Entities;
 using TheBeautyHubData.Repositories.Interfaces;
@@ -92,19 +93,18 @@ namespace TheBeautyHubCore.Services
         private static void ApplyFields(ExpensesType expense, SaveExpenseDto dto)
         {
             expense.ExpensesTypeName = dto.Name.Trim();
-            expense.Description = dto.Description.Trim();
+            expense.Description = string.IsNullOrWhiteSpace(dto.Description) ? string.Empty : dto.Description.Trim();
             expense.AllBranches = dto.AllBranches;
-            expense.Status = dto.Status.Trim();
+            expense.Status = RecordStatuses.ParseOrThrow(dto.Status, ApiMessages.RecordStatusInvalid).ToApiValue();
         }
 
         private static void ValidateWrite(SaveExpenseDto dto)
         {
             if (string.IsNullOrWhiteSpace(dto.Name))
                 throw new ArgumentException(ApiMessages.ExpenseNameRequired);
-            if (string.IsNullOrWhiteSpace(dto.Description))
-                throw new ArgumentException(ApiMessages.ExpenseDescriptionRequired);
             if (string.IsNullOrWhiteSpace(dto.Status))
                 throw new ArgumentException(ApiMessages.ExpenseStatusRequired);
+            _ = RecordStatuses.ParseOrThrow(dto.Status, ApiMessages.RecordStatusInvalid);
         }
 
         private static ExpenseListItemDto MapListItem(ExpensesType expense)

@@ -5,17 +5,18 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using TheBeautyHubData.Context;
 using TheBeautyHubData.Entities;
+using TheBeautyHubData.Enums;
 using TheBeautyHubData.Repositories.Interfaces;
 
 namespace TheBeautyHubData.Repositories
 {
     public class StaffRepository : IStaffRepository
     {
-        private static readonly (string Name, string SalaryType)[] DefaultSalaryRules =
+        private static readonly (string Name, SalaryType Type)[] DefaultSalaryRules =
         {
-            ("Fixed Pay", "fixed"),
-            ("Fixed + Target Bonus", "fixed_plus_target"),
-            ("Incentive", "commission")
+            ("Fixed Pay", SalaryType.Fixed),
+            ("Fixed + Target Bonus", SalaryType.FixedPlusTarget),
+            ("Incentive", SalaryType.Commission)
         };
 
         private readonly BeautyHubDbContext _context;
@@ -87,8 +88,8 @@ namespace TheBeautyHubData.Repositories
                     AccountId = accountId,
                     Name = seed.Name,
                     Description = seed.Name,
-                    SalaryType = seed.SalaryType,
-                    Status = "active",
+                    SalaryType = seed.Type.ToApiValue(),
+                    Status = RecordStatus.Active.ToApiValue(),
                     IsActive = true,
                     AllowAdvanceRecovery = false,
                     CreatedAt = DateTime.UtcNow,

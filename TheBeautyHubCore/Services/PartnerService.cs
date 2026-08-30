@@ -1,8 +1,9 @@
 using AutoMapper;
+using TheBeautyHubCore.Constants;
 using TheBeautyHubCore.DTOs;
 using TheBeautyHubCore.Services.Interfaces;
 using TheBeautyHubData.Entities;
-using TheBeautyHubData.Repositories;
+using TheBeautyHubData.Enums;
 using TheBeautyHubData.Repositories.Interfaces;
 
 namespace TheBeautyHubCore.Services
@@ -34,9 +35,7 @@ namespace TheBeautyHubCore.Services
             // Validate gender if provided
             if (!string.IsNullOrWhiteSpace(dto.Gender))
             {
-                var validGenders = new[] { "Male", "Female", "Other" };
-                if (!validGenders.Contains(dto.Gender, StringComparer.OrdinalIgnoreCase))
-                    throw new ArgumentException("Gender must be Male, Female, or Other.");
+                dto.Gender = PersonGenders.ParseOrThrow(dto.Gender, ApiMessages.PartnerGenderInvalid).ToApiValue();
             }
 
             var entity = _mapper.Map<Partner>(dto);
@@ -64,9 +63,7 @@ namespace TheBeautyHubCore.Services
             // Validate gender if provided
             if (!string.IsNullOrWhiteSpace(dto.Gender))
             {
-                var validGenders = new[] { "Male", "Female", "Other" };
-                if (!validGenders.Contains(dto.Gender, StringComparer.OrdinalIgnoreCase))
-                    throw new ArgumentException("Gender must be Male, Female, or Other.");
+                dto.Gender = PersonGenders.ParseOrThrow(dto.Gender, ApiMessages.PartnerGenderInvalid).ToApiValue();
             }
 
             existing.Name = dto.Name;

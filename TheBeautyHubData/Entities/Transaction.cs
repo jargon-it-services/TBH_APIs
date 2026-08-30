@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using TheBeautyHubData.Enums;
 
 namespace TheBeautyHubData.Entities
 {
@@ -24,7 +25,7 @@ namespace TheBeautyHubData.Entities
         /// </summary>
         [Required]
         [StringLength(20)]
-        public string Status { get; set; } = "pending";
+        public string Status { get; set; } = TransactionStatus.Pending.ToApiValue();
 
         /// <summary>
         /// Total amount of the transaction

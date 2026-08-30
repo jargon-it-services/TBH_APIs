@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using TheBeautyHubData.Enums;
 
 namespace TheBeautyHubData.Entities
 {
@@ -24,7 +25,7 @@ namespace TheBeautyHubData.Entities
 
         [Required]
         [StringLength(50)]
-        public string SalaryType { get; set; } = string.Empty;
+        public string SalaryType { get; set; } = Enums.SalaryType.Fixed.ToApiValue();
 
         [Column(TypeName = "decimal(18,2)")]
         public decimal? FixedSalary { get; set; }
@@ -43,7 +44,7 @@ namespace TheBeautyHubData.Entities
 
         [Required]
         [StringLength(20)]
-        public string Status { get; set; } = "active";
+        public string Status { get; set; } = RecordStatus.Active.ToApiValue();
 
         [Required]
         public bool IsActive { get; set; } = true;

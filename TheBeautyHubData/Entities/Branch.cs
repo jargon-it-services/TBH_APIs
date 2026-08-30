@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using TheBeautyHubData.Enums;
 
 namespace TheBeautyHubData.Entities
 {
@@ -69,7 +70,7 @@ namespace TheBeautyHubData.Entities
 
         [Required]
         [StringLength(20)]
-        public string Status { get; set; } = "active";
+        public string Status { get; set; } = RecordStatus.Active.ToApiValue();
 
         [Column(TypeName = "decimal(9,6)")]
         public decimal? Latitude { get; set; }

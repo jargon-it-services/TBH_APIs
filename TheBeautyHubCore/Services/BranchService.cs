@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using TheBeautyHubCore.Constants;
 using TheBeautyHubCore.DTOs;
+using TheBeautyHubData.Enums;
 using TheBeautyHubCore.Services.Interfaces;
 using TheBeautyHubData.Entities;
 using TheBeautyHubData.Repositories.Interfaces;
@@ -59,7 +60,7 @@ namespace TheBeautyHubCore.Services
                 OpeningTime = dto.OpeningTime.Trim(),
                 ClosingTime = dto.ClosingTime.Trim(),
                 WeeklyOff = dto.WeeklyOff.Trim(),
-                Status = dto.Status.Trim(),
+                Status = RecordStatuses.ParseOrThrow(dto.Status, ApiMessages.BranchStatusInvalid).ToApiValue(),
                 Latitude = dto.Latitude,
                 Longitude = dto.Longitude,
                 MapsLink = string.IsNullOrWhiteSpace(dto.MapsLink) ? null : dto.MapsLink.Trim(),
@@ -97,7 +98,7 @@ namespace TheBeautyHubCore.Services
             existing.OpeningTime = dto.OpeningTime.Trim();
             existing.ClosingTime = dto.ClosingTime.Trim();
             existing.WeeklyOff = dto.WeeklyOff.Trim();
-            existing.Status = dto.Status.Trim();
+            existing.Status = RecordStatuses.ParseOrThrow(dto.Status, ApiMessages.BranchStatusInvalid).ToApiValue();
             existing.Latitude = dto.Latitude;
             existing.Longitude = dto.Longitude;
             existing.MapsLink = string.IsNullOrWhiteSpace(dto.MapsLink) ? null : dto.MapsLink.Trim();
@@ -112,6 +113,17 @@ namespace TheBeautyHubCore.Services
             if (dto.Services != null)
                 await _branchRepository.ReplaceServicesAsync(existing.BranchId, serviceIds);
 
+            return new BranchSavedDto { Saved = true };
+        }
+
+        public async Task<BranchSavedDto> UpdateStatusAsync(Guid branchId, Guid accountId, string status)
+        {
+            var existing = await _branchRepository.GetByIdAsync(branchId);
+            if (existing == null || !BelongsToAccount(existing, accountId))
+                throw new KeyNotFoundException(ApiMessages.BranchNotFound);
+
+            existing.Status = RecordStatuses.ParseOrThrow(status, ApiMessages.BranchStatusInvalid).ToApiValue();
+            await _branchRepository.UpdateAsync(existing);
             return new BranchSavedDto { Saved = true };
         }
 
@@ -159,6 +171,7 @@ namespace TheBeautyHubCore.Services
                 throw new ArgumentException(ApiMessages.BranchWeeklyOffRequired);
             if (string.IsNullOrWhiteSpace(dto.Status))
                 throw new ArgumentException(ApiMessages.BranchStatusRequired);
+            _ = RecordStatuses.ParseOrThrow(dto.Status, ApiMessages.BranchStatusInvalid);
         }
 
         private static bool BelongsToAccount(Branch branch, Guid accountId)

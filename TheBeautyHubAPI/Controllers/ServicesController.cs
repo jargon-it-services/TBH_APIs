@@ -198,6 +198,17 @@ namespace TheBeautyHubAPI.Controllers
                     return NotFound(Fail(ApiMessages.ServiceNotFound));
 
                 request = await BindSaveRequestAsync(request);
+                if (IsStatusOnlyUpdate(request))
+                {
+                    await _servicesService.UpdateStatusAsync(serviceId, _currentUser.AccountId, request.Status ?? string.Empty);
+                    return Ok(new ApiStatusResponse<ServiceSavedDataResponse>
+                    {
+                        Status = true,
+                        Message = ApiMessages.ServiceUpdated,
+                        Data = new ServiceSavedDataResponse { Saved = true }
+                    });
+                }
+
                 TryValidateModel(request);
                 if (!ModelState.IsValid)
                     return BadRequest(Fail(GetModelStateError()));
@@ -275,16 +286,16 @@ namespace TheBeautyHubAPI.Controllers
             {
                 AccountId = _currentUser.AccountId,
                 CreatedBy = _currentUser.UserId,
-                Name = request.Name,
+                Name = request.Name ?? string.Empty,
                 Description = request.Description,
-                Category = request.Category,
+                Category = request.Category ?? string.Empty,
                 DurationMinutes = request.DurationMinutes ?? 0,
-                ApplicableGender = request.ApplicableGender,
-                Type = request.Type,
-                Status = request.Status,
+                ApplicableGender = request.ApplicableGender ?? string.Empty,
+                Type = request.Type ?? string.Empty,
+                Status = request.Status ?? string.Empty,
                 CustomerPrice = request.CustomerPrice ?? 0,
                 MaterialCost = request.MaterialCost ?? 0,
-                CommissionType = request.CommissionType,
+                CommissionType = request.CommissionType ?? string.Empty,
                 CommissionValue = request.CommissionValue ?? 0,
                 OtherCost = request.OtherCost ?? 0,
                 HomeServiceAvailable = request.HomeServiceAvailable ?? false,
@@ -301,7 +312,7 @@ namespace TheBeautyHubAPI.Controllers
 
         private async Task<SaveServiceRequest> BindSaveRequestAsync(SaveServiceRequest? bound)
         {
-            if (bound != null && !string.IsNullOrWhiteSpace(bound.Name))
+            if (bound != null && HasAnyServiceField(bound))
                 return bound;
 
             if (Request.HasFormContentType)
@@ -342,6 +353,45 @@ namespace TheBeautyHubAPI.Controllers
                 throw new ArgumentException(ApiMessages.InvalidRequestBody);
 
             return request;
+        }
+
+        private static bool IsStatusOnlyUpdate(SaveServiceRequest request)
+        {
+            return !string.IsNullOrWhiteSpace(request.Status)
+                && string.IsNullOrWhiteSpace(request.Name)
+                && string.IsNullOrWhiteSpace(request.Category)
+                && string.IsNullOrWhiteSpace(request.Type)
+                && string.IsNullOrWhiteSpace(request.ApplicableGender)
+                && string.IsNullOrWhiteSpace(request.CommissionType)
+                && request.DurationMinutes == null
+                && request.CustomerPrice == null
+                && request.MaterialCost == null
+                && request.CommissionValue == null
+                && request.OtherCost == null
+                && request.HomeServiceAvailable == null
+                && request.AllBranches == null
+                && request.Photo == null;
+        }
+
+        private static bool HasAnyServiceField(SaveServiceRequest request)
+        {
+            return !string.IsNullOrWhiteSpace(request.Name)
+                || !string.IsNullOrWhiteSpace(request.Status)
+                || !string.IsNullOrWhiteSpace(request.Description)
+                || !string.IsNullOrWhiteSpace(request.Category)
+                || !string.IsNullOrWhiteSpace(request.Type)
+                || !string.IsNullOrWhiteSpace(request.ApplicableGender)
+                || !string.IsNullOrWhiteSpace(request.CommissionType)
+                || request.DurationMinutes != null
+                || request.CustomerPrice != null
+                || request.MaterialCost != null
+                || request.CommissionValue != null
+                || request.OtherCost != null
+                || request.HomeServiceAvailable != null
+                || request.AllBranches != null
+                || request.Photo != null
+                || request.RemovePhoto
+                || (request.Branches != null && request.Branches.Count > 0);
         }
 
         private string? ToAbsoluteUrl(string? path)

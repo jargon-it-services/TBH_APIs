@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using TheBeautyHubCore.Constants;
 using TheBeautyHubCore.DTOs;
+using TheBeautyHubData.Enums;
 using TheBeautyHubCore.Services.Interfaces;
 using TheBeautyHubData.Entities;
 using TheBeautyHubData.Repositories.Interfaces;
@@ -112,9 +113,9 @@ namespace TheBeautyHubCore.Services
                 CreatedAt = now,
                 IsDeleted = false,
                 Code = await NextCodeAsync(dto.AccountId),
-                Type = dto.Type.Trim().ToLowerInvariant(),
+                Type = TransactionKinds.ParseOrThrow(dto.Type, ApiMessages.TransactionTypeInvalid).ToApiValue(),
                 BranchId = dto.BranchId,
-                PaymentMode = dto.PaymentMode.Trim().ToLowerInvariant(),
+                PaymentMode = PaymentModes.ParseOrThrow(dto.PaymentMode, ApiMessages.TransactionPaymentModeInvalid).ToApiValue(),
                 CustomerName = NullIfEmpty(dto.CustomerName),
                 CustomerMobile = NullIfEmpty(dto.CustomerMobile),
                 Remark = NullIfEmpty(dto.Remark),
@@ -122,7 +123,7 @@ namespace TheBeautyHubCore.Services
                 CouponCode = NullIfEmpty(dto.CouponCode),
                 CouponDiscount = totals.CouponDiscount,
                 IdempotencyKey = dto.IdempotencyKey?.Trim(),
-                Status = "paid",
+                Status = TransactionStatus.Paid.ToApiValue(),
                 PaidAt = now,
                 TotalAmount = totals.Total,
                 TaxAmount = totals.TaxAmount,
@@ -159,9 +160,9 @@ namespace TheBeautyHubCore.Services
             var totals = ComputeTotals(lines, dto.CouponCode);
             var now = DateTime.UtcNow;
 
-            existing.Type = dto.Type.Trim().ToLowerInvariant();
+            existing.Type = TransactionKinds.ParseOrThrow(dto.Type, ApiMessages.TransactionTypeInvalid).ToApiValue();
             existing.BranchId = dto.BranchId;
-            existing.PaymentMode = dto.PaymentMode.Trim().ToLowerInvariant();
+            existing.PaymentMode = PaymentModes.ParseOrThrow(dto.PaymentMode, ApiMessages.TransactionPaymentModeInvalid).ToApiValue();
             existing.CustomerName = NullIfEmpty(dto.CustomerName);
             existing.CustomerMobile = NullIfEmpty(dto.CustomerMobile);
             existing.Remark = NullIfEmpty(dto.Remark);
@@ -194,7 +195,7 @@ namespace TheBeautyHubCore.Services
             var existing = await FindAsync(id, accountId)
                 ?? throw new KeyNotFoundException(ApiMessages.TransactionNotFound);
 
-            existing.Status = "paid";
+            existing.Status = TransactionStatus.Paid.ToApiValue();
             existing.PaidAt = DateTime.UtcNow;
             await _transactionRepository.UpdateAsync(existing);
             return MapSaved(existing);
@@ -215,11 +216,11 @@ namespace TheBeautyHubCore.Services
                     Branches = branches.Select(b => new TransactionNamedItemDto { Id = b.BranchId, Name = b.Name }).ToList(),
                     Services = services.Select(s => new TransactionNamedItemDto { Id = s.ServiceId, Name = s.ServiceName }).ToList(),
                     Staff = staff.Select(s => new TransactionNamedItemDto { Id = s.StaffId, Name = s.FullName }).ToList(),
-                    Statuses = new List<string> { "paid", "pending" },
-                    Types = new List<string> { "sale", "expense" },
-                    PaymentModes = new List<string> { "cash", "upi", "card" },
-                    Periods = new List<string> { "today", "week", "month" },
-                    Currency = "INR"
+                    Statuses = TransactionStatuses.ListFilterApiValues.ToList(),
+                    Types = TransactionKinds.AllApiValues.ToList(),
+                    PaymentModes = EnumText.AllApiValues<PaymentMode>().ToList(),
+                    Periods = TransactionListPeriods.AllApiValues.ToList(),
+                    Currency = CurrencyCode.Inr.ToApiValue()
                 },
                 Transactions = transactions.Select(MapListItem).ToList()
             };
@@ -247,7 +248,7 @@ namespace TheBeautyHubCore.Services
 
         private async Task<List<TransactionDetail>> BuildLinesAsync(SaveTransactionDto dto)
         {
-            var isExpense = string.Equals(dto.Type.Trim(), "expense", StringComparison.OrdinalIgnoreCase);
+            var isExpense = TransactionKinds.ParseOrThrow(dto.Type, ApiMessages.TransactionTypeInvalid) == TransactionKind.Expense;
             var lines = new List<TransactionDetail>();
 
             foreach (var item in dto.Services)
@@ -318,13 +319,12 @@ namespace TheBeautyHubCore.Services
                 throw new ArgumentException(ApiMessages.TransactionIdempotencyRequired);
             if (string.IsNullOrWhiteSpace(dto.Type))
                 throw new ArgumentException(ApiMessages.TransactionTypeRequired);
-            var type = dto.Type.Trim().ToLowerInvariant();
-            if (type != "sale" && type != "expense")
-                throw new ArgumentException(ApiMessages.TransactionTypeInvalid);
+            _ = TransactionKinds.ParseOrThrow(dto.Type, ApiMessages.TransactionTypeInvalid);
             if (dto.BranchId == Guid.Empty)
                 throw new ArgumentException(ApiMessages.TransactionBranchRequired);
             if (string.IsNullOrWhiteSpace(dto.PaymentMode))
                 throw new ArgumentException(ApiMessages.TransactionPaymentModeRequired);
+            _ = PaymentModes.ParseOrThrow(dto.PaymentMode, ApiMessages.TransactionPaymentModeInvalid);
             if (dto.Services == null || dto.Services.Count == 0)
                 throw new ArgumentException(ApiMessages.TransactionServicesRequired);
         }
@@ -410,7 +410,7 @@ namespace TheBeautyHubCore.Services
                 coupon = new TransactionCouponDto
                 {
                     Code = transaction.CouponCode,
-                    Type = transaction.CouponType ?? "percentage",
+                    Type = transaction.CouponType ?? CommissionType.Percentage.ToApiValue(),
                     Value = transaction.CouponValue ?? 0,
                     DiscountAmount = transaction.CouponDiscount
                 };

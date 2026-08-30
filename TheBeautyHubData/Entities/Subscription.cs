@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using TheBeautyHubData.Enums;
 
 namespace TheBeautyHubData.Entities
 {
@@ -35,7 +36,7 @@ namespace TheBeautyHubData.Entities
         /// </summary>
         [Required]
         [StringLength(20)]
-        public string Status { get; set; } = "Pending";
+        public string Status { get; set; } = SubscriptionStatus.Pending.ToApiValue();
 
         /// <summary>
         /// Date and time when subscription expires

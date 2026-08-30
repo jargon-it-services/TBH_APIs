@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using TheBeautyHubCore.Constants;
 using TheBeautyHubCore.DTOs;
+using TheBeautyHubData.Enums;
 using TheBeautyHubCore.Services.Interfaces;
 using TheBeautyHubData.Repositories.Interfaces;
 using ServiceEntity = TheBeautyHubData.Entities.Services;
@@ -26,7 +27,7 @@ namespace TheBeautyHubCore.Services
             {
                 Id = s.ServiceId,
                 Name = s.ServiceName,
-                Active = string.Equals(s.Status, "active", StringComparison.OrdinalIgnoreCase)
+                Active = RecordStatuses.IsActive(s.Status)
             }).ToList();
         }
 
@@ -91,6 +92,16 @@ namespace TheBeautyHubCore.Services
             await _servicesRepository.ReplaceBranchesAsync(existing.ServiceId, branchIds);
         }
 
+        public async Task UpdateStatusAsync(Guid serviceId, Guid accountId, string status)
+        {
+            var existing = await _servicesRepository.GetByIdAsync(serviceId, accountId);
+            if (existing == null)
+                throw new KeyNotFoundException(ApiMessages.ServiceNotFound);
+
+            existing.Status = RecordStatuses.ParseOrThrow(status, ApiMessages.RecordStatusInvalid).ToApiValue();
+            await _servicesRepository.UpdateAsync(existing);
+        }
+
         public async Task DeleteAsync(Guid serviceId, Guid accountId)
         {
             var existing = await _servicesRepository.GetByIdAsync(serviceId, accountId);
@@ -119,18 +130,18 @@ namespace TheBeautyHubCore.Services
 
         private static void ApplyFields(ServiceEntity service, SaveServiceDto dto)
         {
-            var commissionType = dto.CommissionType.Trim().ToLowerInvariant();
+            var commissionType = CommissionTypes.ParseOrThrow(dto.CommissionType, ApiMessages.ServiceCommissionTypeInvalid);
 
             service.ServiceName = dto.Name.Trim();
-            service.ServiceDescription = dto.Description.Trim();
+            service.ServiceDescription = string.IsNullOrWhiteSpace(dto.Description) ? null : dto.Description.Trim();
             service.ServicePrice = dto.CustomerPrice;
             service.Category = dto.Category.Trim();
             service.DurationMinutes = dto.DurationMinutes;
-            service.ApplicableGender = dto.ApplicableGender.Trim();
-            service.OfferingType = dto.Type.Trim();
-            service.Status = dto.Status.Trim();
+            service.ApplicableGender = ServiceGenders.ParseOrThrow(dto.ApplicableGender, ApiMessages.ServiceGenderInvalid).ToApiValue();
+            service.OfferingType = ServiceOfferingTypes.ParseOrThrow(dto.Type, ApiMessages.ServiceTypeInvalid).ToApiValue();
+            service.Status = RecordStatuses.ParseOrThrow(dto.Status, ApiMessages.RecordStatusInvalid).ToApiValue();
             service.MaterialCost = dto.MaterialCost;
-            service.CommissionType = commissionType;
+            service.CommissionType = commissionType.ToApiValue();
             service.CommissionValue = dto.CommissionValue;
             service.OtherCost = dto.OtherCost;
             service.HomeServiceAvailable = dto.HomeServiceAvailable;
@@ -142,7 +153,7 @@ namespace TheBeautyHubCore.Services
                 service.Photo = dto.Photo;
 
             service.IsIncentiveApplicable = dto.CommissionValue > 0;
-            if (commissionType == "percentage")
+            if (commissionType == CommissionType.Percentage)
             {
                 service.IncentivePercentage = dto.CommissionValue;
                 service.IncentiveAmount = null;
@@ -158,18 +169,19 @@ namespace TheBeautyHubCore.Services
         {
             if (string.IsNullOrWhiteSpace(dto.Name))
                 throw new ArgumentException(ApiMessages.ServiceNameRequired);
-            if (string.IsNullOrWhiteSpace(dto.Description))
-                throw new ArgumentException(ApiMessages.ServiceDescriptionRequired);
             if (string.IsNullOrWhiteSpace(dto.Category))
                 throw new ArgumentException(ApiMessages.ServiceCategoryRequired);
             if (dto.DurationMinutes < 0)
                 throw new ArgumentException(ApiMessages.ServiceDurationInvalid);
             if (string.IsNullOrWhiteSpace(dto.ApplicableGender))
                 throw new ArgumentException(ApiMessages.ServiceGenderRequired);
+            _ = ServiceGenders.ParseOrThrow(dto.ApplicableGender, ApiMessages.ServiceGenderInvalid);
             if (string.IsNullOrWhiteSpace(dto.Type))
                 throw new ArgumentException(ApiMessages.ServiceTypeRequired);
+            _ = ServiceOfferingTypes.ParseOrThrow(dto.Type, ApiMessages.ServiceTypeInvalid);
             if (string.IsNullOrWhiteSpace(dto.Status))
                 throw new ArgumentException(ApiMessages.ServiceStatusRequired);
+            _ = RecordStatuses.ParseOrThrow(dto.Status, ApiMessages.RecordStatusInvalid);
             if (dto.CustomerPrice < 0)
                 throw new ArgumentException(ApiMessages.ServiceCustomerPriceInvalid);
             if (dto.MaterialCost < 0)
@@ -177,10 +189,8 @@ namespace TheBeautyHubCore.Services
             if (string.IsNullOrWhiteSpace(dto.CommissionType))
                 throw new ArgumentException(ApiMessages.ServiceCommissionTypeRequired);
 
-            var commissionType = dto.CommissionType.Trim().ToLowerInvariant();
-            if (commissionType != "percentage" && commissionType != "flat")
-                throw new ArgumentException(ApiMessages.ServiceCommissionTypeInvalid);
-            if (commissionType == "percentage" && (dto.CommissionValue < 0 || dto.CommissionValue > 100))
+            var commissionType = CommissionTypes.ParseOrThrow(dto.CommissionType, ApiMessages.ServiceCommissionTypeInvalid);
+            if (commissionType == CommissionType.Percentage && (dto.CommissionValue < 0 || dto.CommissionValue > 100))
                 throw new ArgumentException(ApiMessages.ServiceCommissionPercentageInvalid);
             if (dto.CommissionValue < 0)
                 throw new ArgumentException(ApiMessages.ServiceCommissionValueInvalid);
@@ -214,7 +224,7 @@ namespace TheBeautyHubCore.Services
                 Status = service.Status,
                 CustomerPrice = service.ServicePrice,
                 MaterialCost = service.MaterialCost,
-                CommissionType = service.CommissionType,
+                CommissionType = MapCommissionTypeForResponse(service.CommissionType),
                 CommissionValue = service.CommissionValue,
                 OtherCost = service.OtherCost,
                 HomeServiceAvailable = service.HomeServiceAvailable,
@@ -225,6 +235,13 @@ namespace TheBeautyHubCore.Services
                 Branches = branches,
                 Photo = service.Photo
             };
+        }
+
+        private static string MapCommissionTypeForResponse(string? stored)
+        {
+            return CommissionTypes.TryParse(stored, out var type)
+                ? type.ToApiValue()
+                : stored ?? string.Empty;
         }
     }
 }

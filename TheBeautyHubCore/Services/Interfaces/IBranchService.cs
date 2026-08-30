@@ -11,5 +11,6 @@ namespace TheBeautyHubCore.Services.Interfaces
         Task<BranchDetailDto?> GetBranchDetailsAsync(Guid branchId, Guid accountId);
         Task<BranchSavedDto> CreateBranchAsync(SaveBranchDto dto);
         Task<BranchSavedDto> UpdateBranchAsync(Guid branchId, Guid accountId, SaveBranchDto dto);
+        Task<BranchSavedDto> UpdateStatusAsync(Guid branchId, Guid accountId, string status);
     }
 }

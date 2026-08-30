@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using TheBeautyHubData.Enums;
 
 namespace TheBeautyHubData.Entities
 {
@@ -40,7 +41,7 @@ namespace TheBeautyHubData.Entities
 
         [Required]
         [StringLength(20)]
-        public string Status { get; set; } = "active";
+        public string Status { get; set; } = RecordStatus.Active.ToApiValue();
 
         /// <summary>
         /// User ID who created this expense type

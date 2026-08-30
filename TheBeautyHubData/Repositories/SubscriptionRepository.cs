@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using TheBeautyHubData.Context;
 using TheBeautyHubData.Entities;
+using TheBeautyHubData.Enums;
 using TheBeautyHubData.Repositories.Interfaces;
 
 namespace TheBeautyHubData.Repositories
@@ -64,7 +65,8 @@ namespace TheBeautyHubData.Repositories
         public async Task<IEnumerable<Subscription>> GetActiveSubscriptionsByAccountIdAsync(Guid accountId)
         {
             return await _context.Subscriptions
-                .Where(s => s.AccountId == accountId && s.Status == "Active")
+                .Include(s => s.Plan)
+                .Where(s => s.AccountId == accountId && s.Status == SubscriptionStatus.Active.ToApiValue())
                 .ToListAsync();
         }
 

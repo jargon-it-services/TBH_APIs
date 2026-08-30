@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -145,76 +144,64 @@ namespace TheBeautyHubAPI.Models
 
     /// <summary>
     /// Create/update branch payload (API_023 / API_024).
-    /// Required: name, address_line1, city, state, pincode, mobile, email, branch_type, opening_time, closing_time, weekly_off, status.
+    /// Required for full create/update: name, address_line1, city, state, pincode, mobile, email, branch_type, opening_time, closing_time, weekly_off, status.
+    /// Status-only update is allowed: { "status": "active" } or { "status": "inactive" }. Extra fields such as app_name and platform are ignored.
     /// Optional: address_line2, services / service_id / service_ids, latitude, longitude, maps_link, logo, remove_logo.
     /// Account is taken from the AuthCenter access token, not from the body.
     /// </summary>
     public class SaveBranchRequest
     {
-        [Required]
         [FromForm(Name = "name")]
         [JsonPropertyName("name")]
-        public string Name { get; set; } = string.Empty;
+        public string? Name { get; set; }
 
-        [Required]
         [FromForm(Name = "address_line1")]
         [JsonPropertyName("address_line1")]
-        public string AddressLine1 { get; set; } = string.Empty;
+        public string? AddressLine1 { get; set; }
 
         [FromForm(Name = "address_line2")]
         [JsonPropertyName("address_line2")]
         public string? AddressLine2 { get; set; }
 
-        [Required]
         [FromForm(Name = "city")]
         [JsonPropertyName("city")]
-        public string City { get; set; } = string.Empty;
+        public string? City { get; set; }
 
-        [Required]
         [FromForm(Name = "state")]
         [JsonPropertyName("state")]
-        public string State { get; set; } = string.Empty;
+        public string? State { get; set; }
 
-        [Required]
         [FromForm(Name = "pincode")]
         [JsonPropertyName("pincode")]
-        public string Pincode { get; set; } = string.Empty;
+        public string? Pincode { get; set; }
 
-        [Required]
         [FromForm(Name = "mobile")]
         [JsonPropertyName("mobile")]
-        public string Mobile { get; set; } = string.Empty;
+        public string? Mobile { get; set; }
 
-        [Required]
-        [EmailAddress]
         [FromForm(Name = "email")]
         [JsonPropertyName("email")]
-        public string Email { get; set; } = string.Empty;
+        public string? Email { get; set; }
 
-        [Required]
         [FromForm(Name = "branch_type")]
         [JsonPropertyName("branch_type")]
-        public string BranchType { get; set; } = string.Empty;
+        public string? BranchType { get; set; }
 
-        [Required]
         [FromForm(Name = "opening_time")]
         [JsonPropertyName("opening_time")]
-        public string OpeningTime { get; set; } = string.Empty;
+        public string? OpeningTime { get; set; }
 
-        [Required]
         [FromForm(Name = "closing_time")]
         [JsonPropertyName("closing_time")]
-        public string ClosingTime { get; set; } = string.Empty;
+        public string? ClosingTime { get; set; }
 
-        [Required]
         [FromForm(Name = "weekly_off")]
         [JsonPropertyName("weekly_off")]
-        public string WeeklyOff { get; set; } = string.Empty;
+        public string? WeeklyOff { get; set; }
 
-        [Required]
         [FromForm(Name = "status")]
         [JsonPropertyName("status")]
-        public string Status { get; set; } = string.Empty;
+        public string? Status { get; set; }
 
         [FromForm(Name = "services")]
         [JsonPropertyName("services")]

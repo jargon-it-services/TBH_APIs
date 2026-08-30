@@ -124,7 +124,7 @@ namespace TheBeautyHubCore.DTOs
     {
         public Guid AccountId { get; set; }
         public string Name { get; set; } = string.Empty;
-        public string Description { get; set; } = string.Empty;
+        public string? Description { get; set; }
         public string SalaryType { get; set; } = string.Empty;
         public decimal? FixedSalary { get; set; }
         public decimal? MonthlyTarget { get; set; }

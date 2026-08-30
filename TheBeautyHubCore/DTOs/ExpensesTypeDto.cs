@@ -34,7 +34,7 @@ namespace TheBeautyHubCore.DTOs
         public Guid AccountId { get; set; }
         public Guid? CreatedBy { get; set; }
         public string Name { get; set; } = string.Empty;
-        public string Description { get; set; } = string.Empty;
+        public string? Description { get; set; }
         public bool AllBranches { get; set; }
         public List<Guid>? Branches { get; set; }
         public string Status { get; set; } = string.Empty;

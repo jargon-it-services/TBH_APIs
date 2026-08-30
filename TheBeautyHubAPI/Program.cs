@@ -56,6 +56,7 @@ builder.Services.AddScoped<IExceptionLogService, ExceptionLogService>();
 builder.Services.AddScoped<IBranchService, BranchService>();
 builder.Services.AddScoped<IStaffService, StaffService>();
 builder.Services.AddScoped<ISalaryRuleService, SalaryRuleService>();
+builder.Services.AddScoped<IManagementService, ManagementService>();
 builder.Services.AddScoped<TheBeautyHubAPI.Helpers.BranchLogoStorage>();
 builder.Services.AddScoped<TheBeautyHubAPI.Helpers.StaffFileStorage>();
 builder.Services.AddScoped<TheBeautyHubAPI.Helpers.ServicePhotoStorage>();

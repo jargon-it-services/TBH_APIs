@@ -35,6 +35,11 @@ public static class ApiMessages
     public const string AuthTokenValid = "The access token is valid.";
     public const string AuthTokenInvalid = "The access token could not be validated.";
 
+    public const string AccountSummaryFetched = "Account summary fetched successfully";
+    public const string AccountSummaryFailed = "We could not load the account summary right now. Please try again later.";
+    public const string FeatureLockFetched = "Feature lock fetched successfully";
+    public const string FeatureLockFailed = "We could not load feature lock right now. Please try again later.";
+
     public const string BranchListFetched = "Branches were fetched successfully.";
     public const string BranchDetailsFetched = "Branch details were fetched successfully.";
     public const string BranchCreated = "The branch was created successfully.";
@@ -57,6 +62,8 @@ public static class ApiMessages
         public const string BranchTimeTooLong = "Opening and closing times must be 10 characters or fewer (for example 09:00).";
     public const string BranchWeeklyOffRequired = "Please select a weekly off day.";
     public const string BranchStatusRequired = "Please select a branch status.";
+    public const string BranchStatusInvalid = "Branch status must be active or inactive.";
+    public const string RecordStatusInvalid = "Status must be active or inactive.";
 
     public const string ServiceCatalogFetched = "The services catalog was fetched successfully.";
     public const string ServiceListFetched = "Services were fetched successfully.";
@@ -76,13 +83,18 @@ public static class ApiMessages
     public const string ServiceCategoryRequired = "Please select a service category.";
     public const string ServiceDurationInvalid = "Duration must be zero or greater.";
     public const string ServiceGenderRequired = "Please select the applicable gender.";
+    public const string ServiceGenderInvalid = "Applicable gender must be unisex, male, or female.";
+    public const string ServiceTypeInvalid = "Service type must be in_salon or home.";
+    public const string PartnerGenderInvalid = "Gender must be Male, Female, or Other.";
+    public const string StaffGenderInvalid = "Gender must be Male, Female, or Other.";
+    public const string SalaryRuleTypeInvalid = "Salary type must be fixed, fixed_plus_target, or commission.";
     public const string ServiceTypeRequired = "Please select a service type.";
     public const string ServiceStatusRequired = "Please select a service status.";
     public const string ServiceCustomerPriceInvalid = "Customer price must be zero or greater.";
     public const string ServiceMaterialCostInvalid = "Material cost must be zero or greater.";
     public const string ServiceCommissionTypeRequired = "Please select a commission type.";
-    public const string ServiceCommissionTypeInvalid = "Commission type must be percentage or flat.";
-    public const string ServiceCommissionPercentageInvalid = "Commission value must be between 0 and 100 when the type is percentage.";
+    public const string ServiceCommissionTypeInvalid = "Commission type must be Fixed Amount or Percentage.";
+    public const string ServiceCommissionPercentageInvalid = "Commission value must be between 0 and 100 when the type is Percentage.";
     public const string ServiceCommissionValueInvalid = "Commission value must be zero or greater.";
     public const string ServiceOtherCostInvalid = "Other cost must be zero or greater.";
 
@@ -171,6 +183,7 @@ public static class ApiMessages
     public const string TransactionBranchRequired = "Please select a branch.";
     public const string TransactionBranchInvalid = "The selected branch was not found. Please choose a valid branch.";
     public const string TransactionPaymentModeRequired = "Please select a payment mode.";
+    public const string TransactionPaymentModeInvalid = "Payment mode must be cash, upi, or card.";
     public const string TransactionServicesRequired = "Please add at least one service or expense line item.";
     public const string TransactionLineServiceRequired = "Each line item must include a valid service or expense.";
     public const string TransactionQuantityInvalid = "Quantity must be greater than zero.";

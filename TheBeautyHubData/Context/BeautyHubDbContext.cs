@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using TheBeautyHubData.Entities;
+using TheBeautyHubData.Enums;
 
 namespace TheBeautyHubData.Context
 {
@@ -258,7 +259,7 @@ namespace TheBeautyHubData.Context
                     .HasDefaultValue(true);
 
                 entity.Property(e => e.Status)
-                    .HasDefaultValue("active");
+                    .HasDefaultValue(RecordStatus.Active.ToApiValue());
 
 
                 entity.HasOne(e => e.Firm)
@@ -306,19 +307,19 @@ namespace TheBeautyHubData.Context
                     .HasDefaultValue(0);
 
                 entity.Property(e => e.ApplicableGender)
-                    .HasDefaultValue("unisex");
+                    .HasDefaultValue(ServiceGender.Unisex.ToApiValue());
 
                 entity.Property(e => e.OfferingType)
-                    .HasDefaultValue("in_salon");
+                    .HasDefaultValue(ServiceOfferingType.InSalon.ToApiValue());
 
                 entity.Property(e => e.Status)
-                    .HasDefaultValue("active");
+                    .HasDefaultValue(RecordStatus.Active.ToApiValue());
 
                 entity.Property(e => e.MaterialCost)
                     .HasDefaultValue(0);
 
                 entity.Property(e => e.CommissionType)
-                    .HasDefaultValue("flat");
+                    .HasDefaultValue(CommissionType.FixedAmount.ToStoredDefault());
 
                 entity.Property(e => e.CommissionValue)
                     .HasDefaultValue(0);
@@ -410,7 +411,7 @@ namespace TheBeautyHubData.Context
                     .HasDefaultValue(0);
 
                 entity.Property(e => e.Status)
-                    .HasDefaultValue("pending");
+                    .HasDefaultValue(TransactionStatus.Pending.ToApiValue());
 
                 entity.Property(e => e.EditCount)
                     .HasDefaultValue(0);
@@ -592,7 +593,7 @@ namespace TheBeautyHubData.Context
                     .HasDefaultValue(false);
 
                 entity.Property(e => e.Status)
-                    .HasDefaultValue("active");
+                    .HasDefaultValue(RecordStatus.Active.ToApiValue());
 
             });
 
@@ -643,10 +644,10 @@ namespace TheBeautyHubData.Context
                     .HasDefaultValue(false);
 
                 entity.Property(e => e.Status)
-                    .HasDefaultValue("active");
+                    .HasDefaultValue(RecordStatus.Active.ToApiValue());
 
                 entity.Property(e => e.SalaryType)
-                    .HasDefaultValue("fixed");
+                    .HasDefaultValue(SalaryType.Fixed.ToApiValue());
 
             });
 

@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using TheBeautyHubCore.Constants;
 using TheBeautyHubCore.DTOs;
+using TheBeautyHubData.Enums;
 using TheBeautyHubCore.Services.Interfaces;
 using TheBeautyHubData.Entities;
 using TheBeautyHubData.Repositories.Interfaces;
@@ -54,7 +55,7 @@ namespace TheBeautyHubCore.Services
                 {
                     Id = r.SalaryRuleId,
                     Name = r.Name,
-                    Active = string.Equals(r.Status, "active", StringComparison.OrdinalIgnoreCase) || r.IsActive
+                    Active = RecordStatuses.IsActive(r.Status) || r.IsActive
                 }).ToList(),
                 Specialists = specialists
             };
@@ -221,7 +222,7 @@ namespace TheBeautyHubCore.Services
             staff.FullName = dto.FullName.Trim();
             staff.Mobile = dto.Mobile.Trim();
             staff.Email = dto.Email.Trim();
-            staff.Gender = dto.Gender.Trim();
+            staff.Gender = PersonGenders.ParseOrThrow(dto.Gender, ApiMessages.StaffGenderInvalid).ToApiValue();
             staff.AadhaarNumber = dto.AadhaarNumber.Trim();
             staff.EmployeeCode = string.IsNullOrWhiteSpace(dto.EmployeeCode) ? null : dto.EmployeeCode.Trim();
             staff.JoiningDate = ParseJoiningDate(dto.JoiningDate);
@@ -229,7 +230,7 @@ namespace TheBeautyHubCore.Services
             staff.Specialist = dto.Specialist.Trim();
             staff.BranchId = dto.BranchId;
             staff.SalaryRuleId = dto.SalaryRuleId;
-            staff.Status = dto.Status.Trim();
+            staff.Status = RecordStatuses.ParseOrThrow(dto.Status, ApiMessages.RecordStatusInvalid).ToApiValue();
             staff.AllowAppLogin = dto.AllowAppLogin;
             staff.AppRole = dto.AllowAppLogin ? dto.AppRole?.Trim() : dto.AppRole?.Trim();
             staff.Username = dto.AllowAppLogin ? dto.Username?.Trim() : dto.Username?.Trim();
@@ -247,6 +248,7 @@ namespace TheBeautyHubCore.Services
                 throw new ArgumentException(ApiMessages.StaffEmailRequired);
             if (string.IsNullOrWhiteSpace(dto.Gender))
                 throw new ArgumentException(ApiMessages.StaffGenderRequired);
+            _ = PersonGenders.ParseOrThrow(dto.Gender, ApiMessages.StaffGenderInvalid);
             if (string.IsNullOrWhiteSpace(dto.AadhaarNumber))
                 throw new ArgumentException(ApiMessages.StaffAadhaarRequired);
             if (string.IsNullOrWhiteSpace(dto.Designation))
@@ -259,6 +261,7 @@ namespace TheBeautyHubCore.Services
                 throw new ArgumentException(ApiMessages.StaffSalaryRuleRequired);
             if (string.IsNullOrWhiteSpace(dto.Status))
                 throw new ArgumentException(ApiMessages.StaffStatusRequired);
+            _ = RecordStatuses.ParseOrThrow(dto.Status, ApiMessages.RecordStatusInvalid);
 
             if (dto.AllowAppLogin)
             {

@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using TheBeautyHubData.Enums;
 
 namespace TheBeautyHubData.Entities
 {
@@ -81,16 +82,16 @@ namespace TheBeautyHubData.Entities
 
         [Required]
         [StringLength(20)]
-        public string ApplicableGender { get; set; } = "unisex";
+        public string ApplicableGender { get; set; } = ServiceGender.Unisex.ToApiValue();
 
         [Required]
         [Column("Type")]
         [StringLength(30)]
-        public string OfferingType { get; set; } = "in_salon";
+        public string OfferingType { get; set; } = ServiceOfferingType.InSalon.ToApiValue();
 
         [Required]
         [StringLength(20)]
-        public string Status { get; set; } = "active";
+        public string Status { get; set; } = RecordStatus.Active.ToApiValue();
 
         [Required]
         [Column(TypeName = "decimal(18,2)")]
@@ -98,7 +99,7 @@ namespace TheBeautyHubData.Entities
 
         [Required]
         [StringLength(20)]
-        public string CommissionType { get; set; } = "flat";
+        public string CommissionType { get; set; } = Enums.CommissionType.FixedAmount.ToStoredDefault();
 
         [Required]
         [Column(TypeName = "decimal(18,2)")]

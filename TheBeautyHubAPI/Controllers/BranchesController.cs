@@ -193,6 +193,17 @@ namespace TheBeautyHubAPI.Controllers
                     return NotFound(Fail(ApiMessages.BranchNotFound));
 
                 request = await BindSaveRequestAsync(request);
+                if (IsStatusOnlyUpdate(request))
+                {
+                    await _branchService.UpdateStatusAsync(branchId, _currentUser.AccountId, request.Status ?? string.Empty);
+                    return Ok(new ApiStatusResponse<BranchSavedDataResponse>
+                    {
+                        Status = true,
+                        Message = ApiMessages.BranchUpdated,
+                        Data = new BranchSavedDataResponse { Saved = true }
+                    });
+                }
+
                 TryValidateModel(request);
                 if (!ModelState.IsValid)
                     return BadRequest(Fail(GetModelStateError()));
@@ -239,19 +250,19 @@ namespace TheBeautyHubAPI.Controllers
             {
                 AccountId = _currentUser.AccountId,
                 CreatedBy = _currentUser.UserId,
-                Name = request.Name,
-                AddressLine1 = request.AddressLine1,
+                Name = request.Name ?? string.Empty,
+                AddressLine1 = request.AddressLine1 ?? string.Empty,
                 AddressLine2 = request.AddressLine2,
-                City = request.City,
-                State = request.State,
-                Pincode = request.Pincode,
-                Mobile = request.Mobile,
-                Email = request.Email,
-                BranchType = request.BranchType,
-                OpeningTime = request.OpeningTime,
-                ClosingTime = request.ClosingTime,
-                WeeklyOff = request.WeeklyOff,
-                Status = request.Status,
+                City = request.City ?? string.Empty,
+                State = request.State ?? string.Empty,
+                Pincode = request.Pincode ?? string.Empty,
+                Mobile = request.Mobile ?? string.Empty,
+                Email = request.Email ?? string.Empty,
+                BranchType = request.BranchType ?? string.Empty,
+                OpeningTime = request.OpeningTime ?? string.Empty,
+                ClosingTime = request.ClosingTime ?? string.Empty,
+                WeeklyOff = request.WeeklyOff ?? string.Empty,
+                Status = request.Status ?? string.Empty,
                 Services = MergeServiceIds(request),
                 Latitude = request.Latitude,
                 Longitude = request.Longitude,
@@ -264,7 +275,8 @@ namespace TheBeautyHubAPI.Controllers
 
         private async Task<SaveBranchRequest> BindSaveRequestAsync(SaveBranchRequest? bound)
         {
-            if (bound != null && !string.IsNullOrWhiteSpace(bound.Name))
+            // JSON [FromBody] already consumed the stream. Do not re-read it for status-only payloads.
+            if (bound != null && HasAnyBranchField(bound))
                 return bound;
 
             if (Request.HasFormContentType)
@@ -306,6 +318,27 @@ namespace TheBeautyHubAPI.Controllers
                 throw new ArgumentException(ApiMessages.InvalidRequestBody);
 
             return request;
+        }
+
+        private static bool IsStatusOnlyUpdate(SaveBranchRequest request)
+        {
+            return !string.IsNullOrWhiteSpace(request.Status)
+                && string.IsNullOrWhiteSpace(request.Name)
+                && string.IsNullOrWhiteSpace(request.AddressLine1)
+                && string.IsNullOrWhiteSpace(request.City)
+                && string.IsNullOrWhiteSpace(request.Mobile)
+                && string.IsNullOrWhiteSpace(request.Email);
+        }
+
+        private static bool HasAnyBranchField(SaveBranchRequest request)
+        {
+            return !string.IsNullOrWhiteSpace(request.Name)
+                || !string.IsNullOrWhiteSpace(request.Status)
+                || !string.IsNullOrWhiteSpace(request.AddressLine1)
+                || !string.IsNullOrWhiteSpace(request.City)
+                || !string.IsNullOrWhiteSpace(request.Mobile)
+                || !string.IsNullOrWhiteSpace(request.Email)
+                || request.Logo != null;
         }
 
         private string? ToAbsoluteUrl(string? path)
