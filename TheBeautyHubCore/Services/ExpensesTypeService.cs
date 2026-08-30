@@ -64,6 +64,16 @@ namespace TheBeautyHubCore.Services
             await _expensesTypeRepository.ReplaceBranchesAsync(existing.ExpensesTypeId, branchIds);
         }
 
+        public async Task UpdateStatusAsync(Guid expenseId, Guid accountId, string status)
+        {
+            var existing = await _expensesTypeRepository.GetByIdAsync(expenseId, accountId);
+            if (existing == null)
+                throw new KeyNotFoundException(ApiMessages.ExpenseNotFound);
+
+            existing.Status = RecordStatuses.ParseOrThrow(status, ApiMessages.RecordStatusInvalid).ToApiValue();
+            await _expensesTypeRepository.UpdateAsync(existing);
+        }
+
         public async Task DeleteAsync(Guid expenseId, Guid accountId)
         {
             var existing = await _expensesTypeRepository.GetByIdAsync(expenseId, accountId);

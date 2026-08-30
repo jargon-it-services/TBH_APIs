@@ -193,6 +193,16 @@ namespace TheBeautyHubCore.Services
                 await _staffRepository.AssignBranchEmployeeAsync(existing.UserId.Value, existing.BranchId, existing.Photo);
         }
 
+        public async Task UpdateStatusAsync(Guid staffId, Guid accountId, string status)
+        {
+            var existing = await _staffRepository.GetByIdAsync(staffId, accountId);
+            if (existing == null)
+                throw new KeyNotFoundException(ApiMessages.StaffNotFound);
+
+            existing.Status = RecordStatuses.ParseOrThrow(status, ApiMessages.RecordStatusInvalid).ToApiValue();
+            await _staffRepository.UpdateAsync(existing);
+        }
+
         public async Task DeleteAsync(Guid staffId, Guid accountId)
         {
             var existing = await _staffRepository.GetByIdAsync(staffId, accountId);
@@ -267,6 +277,8 @@ namespace TheBeautyHubCore.Services
             {
                 if (string.IsNullOrWhiteSpace(dto.AppRole))
                     throw new ArgumentException(ApiMessages.StaffAppRoleRequired);
+                if (string.IsNullOrWhiteSpace(dto.Username) && !string.IsNullOrWhiteSpace(dto.Email))
+                    dto.Username = dto.Email.Trim();
                 if (!isUpdate && string.IsNullOrWhiteSpace(dto.Username))
                     throw new ArgumentException(ApiMessages.StaffUsernameRequired);
             }

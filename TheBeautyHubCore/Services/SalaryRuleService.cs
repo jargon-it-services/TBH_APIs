@@ -74,6 +74,18 @@ namespace TheBeautyHubCore.Services
             await _staffRepository.UpdateSalaryRuleAsync(existing);
         }
 
+        public async Task UpdateStatusAsync(Guid ruleId, Guid accountId, string status)
+        {
+            var existing = await _staffRepository.GetSalaryRuleAsync(ruleId, accountId);
+            if (existing == null)
+                throw new KeyNotFoundException(ApiMessages.SalaryRuleNotFound);
+
+            var parsed = RecordStatuses.ParseOrThrow(status, ApiMessages.RecordStatusInvalid);
+            existing.Status = parsed.ToApiValue();
+            existing.IsActive = parsed == RecordStatus.Active;
+            await _staffRepository.UpdateSalaryRuleAsync(existing);
+        }
+
         public async Task DeleteAsync(Guid ruleId, Guid accountId)
         {
             var existing = await _staffRepository.GetSalaryRuleAsync(ruleId, accountId);

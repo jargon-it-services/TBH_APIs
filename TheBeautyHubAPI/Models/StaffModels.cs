@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -169,31 +168,25 @@ namespace TheBeautyHubAPI.Models
 
     public class SaveStaffRequest
     {
-        [Required]
         [FromForm(Name = "full_name")]
         [JsonPropertyName("full_name")]
-        public string FullName { get; set; } = string.Empty;
+        public string? FullName { get; set; }
 
-        [Required]
         [FromForm(Name = "mobile")]
         [JsonPropertyName("mobile")]
-        public string Mobile { get; set; } = string.Empty;
+        public string? Mobile { get; set; }
 
-        [Required]
-        [EmailAddress]
         [FromForm(Name = "email")]
         [JsonPropertyName("email")]
-        public string Email { get; set; } = string.Empty;
+        public string? Email { get; set; }
 
-        [Required]
         [FromForm(Name = "gender")]
         [JsonPropertyName("gender")]
-        public string Gender { get; set; } = string.Empty;
+        public string? Gender { get; set; }
 
-        [Required]
         [FromForm(Name = "aadhaar_number")]
         [JsonPropertyName("aadhaar_number")]
-        public string AadhaarNumber { get; set; } = string.Empty;
+        public string? AadhaarNumber { get; set; }
 
         [FromForm(Name = "employee_code")]
         [JsonPropertyName("employee_code")]
@@ -203,34 +196,29 @@ namespace TheBeautyHubAPI.Models
         [JsonPropertyName("joining_date")]
         public string? JoiningDate { get; set; }
 
-        [Required]
         [FromForm(Name = "designation")]
         [JsonPropertyName("designation")]
-        public string Designation { get; set; } = string.Empty;
+        public string? Designation { get; set; }
 
-        [Required]
         [FromForm(Name = "specialist")]
         [JsonPropertyName("specialist")]
-        public string Specialist { get; set; } = string.Empty;
+        public string? Specialist { get; set; }
 
-        [Required]
         [FromForm(Name = "branch_id")]
         [JsonPropertyName("branch_id")]
-        public Guid BranchId { get; set; }
+        public Guid? BranchId { get; set; }
 
-        [Required]
         [FromForm(Name = "salary_rule_id")]
         [JsonPropertyName("salary_rule_id")]
-        public Guid SalaryRuleId { get; set; }
+        public Guid? SalaryRuleId { get; set; }
 
-        [Required]
         [FromForm(Name = "status")]
         [JsonPropertyName("status")]
-        public string Status { get; set; } = string.Empty;
+        public string? Status { get; set; }
 
         [FromForm(Name = "allow_app_login")]
         [JsonPropertyName("allow_app_login")]
-        public bool AllowAppLogin { get; set; }
+        public bool? AllowAppLogin { get; set; }
 
         [FromForm(Name = "app_role")]
         [JsonPropertyName("app_role")]
@@ -351,16 +339,14 @@ namespace TheBeautyHubAPI.Models
 
     public class SaveSalaryRuleRequest
     {
-        [Required]
         [JsonPropertyName("name")]
-        public string Name { get; set; } = string.Empty;
+        public string? Name { get; set; }
 
         [JsonPropertyName("description")]
         public string? Description { get; set; }
 
-        [Required]
         [JsonPropertyName("salary_type")]
-        public string SalaryType { get; set; } = string.Empty;
+        public string? SalaryType { get; set; }
 
         [JsonPropertyName("fixed_salary")]
         public decimal? FixedSalary { get; set; }
@@ -371,15 +357,13 @@ namespace TheBeautyHubAPI.Models
         [JsonPropertyName("target_bonus")]
         public decimal? TargetBonus { get; set; }
 
-        [Required]
         [JsonPropertyName("allow_advance_recovery")]
         public bool? AllowAdvanceRecovery { get; set; }
 
         [JsonPropertyName("max_recovery_per_month")]
         public decimal? MaxRecoveryPerMonth { get; set; }
 
-        [Required]
         [JsonPropertyName("status")]
-        public string Status { get; set; } = string.Empty;
+        public string? Status { get; set; }
     }
 }

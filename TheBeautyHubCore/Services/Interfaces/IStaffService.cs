@@ -13,6 +13,7 @@ namespace TheBeautyHubCore.Services.Interfaces
         Task<string?> GetNextEmployeeCodeAsync(Guid accountId);
         Task CreateAsync(SaveStaffDto dto);
         Task UpdateAsync(Guid staffId, SaveStaffDto dto);
+        Task UpdateStatusAsync(Guid staffId, Guid accountId, string status);
         Task DeleteAsync(Guid staffId, Guid accountId);
     }
 }

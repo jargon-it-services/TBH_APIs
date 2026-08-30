@@ -222,6 +222,17 @@ namespace TheBeautyHubAPI.Controllers
                     return NotFound(Fail(ApiMessages.StaffNotFound));
 
                 request = await BindSaveRequestAsync(request);
+                if (IsStatusOnlyUpdate(request))
+                {
+                    await _staffService.UpdateStatusAsync(userId, _currentUser.AccountId, request.Status ?? string.Empty);
+                    return Ok(new ApiStatusResponse<StaffSavedDataResponse>
+                    {
+                        Status = true,
+                        Message = ApiMessages.StaffUpdated,
+                        Data = new StaffSavedDataResponse { Saved = true }
+                    });
+                }
+
                 TryValidateModel(request);
                 if (!ModelState.IsValid)
                     return BadRequest(Fail(GetModelStateError()));
@@ -302,7 +313,7 @@ namespace TheBeautyHubAPI.Controllers
         {
             var createdBy = await _authCenterUsers.ResolveCurrentUserIdAsync() ?? _currentUser.UserId;
             Guid? staffUserId = null;
-            if (request.AllowAppLogin)
+            if (request.AllowAppLogin == true)
                 staffUserId = await _authCenterUsers.ResolveUserIdAsync(request.Email, request.Username);
 
             return new SaveStaffDto
@@ -310,19 +321,19 @@ namespace TheBeautyHubAPI.Controllers
                 AccountId = _currentUser.AccountId,
                 CreatedBy = createdBy == Guid.Empty ? null : createdBy,
                 UserId = staffUserId,
-                FullName = request.FullName,
-                Mobile = request.Mobile,
-                Email = request.Email,
-                Gender = request.Gender,
-                AadhaarNumber = request.AadhaarNumber,
+                FullName = request.FullName ?? string.Empty,
+                Mobile = request.Mobile ?? string.Empty,
+                Email = request.Email ?? string.Empty,
+                Gender = request.Gender ?? string.Empty,
+                AadhaarNumber = request.AadhaarNumber ?? string.Empty,
                 EmployeeCode = request.EmployeeCode,
                 JoiningDate = request.JoiningDate,
-                Designation = request.Designation,
-                Specialist = request.Specialist,
-                BranchId = request.BranchId,
-                SalaryRuleId = request.SalaryRuleId,
-                Status = request.Status,
-                AllowAppLogin = request.AllowAppLogin,
+                Designation = request.Designation ?? string.Empty,
+                Specialist = request.Specialist ?? string.Empty,
+                BranchId = request.BranchId ?? Guid.Empty,
+                SalaryRuleId = request.SalaryRuleId ?? Guid.Empty,
+                Status = request.Status ?? string.Empty,
+                AllowAppLogin = request.AllowAppLogin ?? false,
                 AppRole = request.AppRole,
                 Username = request.Username,
                 Photo = photoPath,
@@ -336,7 +347,7 @@ namespace TheBeautyHubAPI.Controllers
 
         private async Task<SaveStaffRequest> BindSaveRequestAsync(SaveStaffRequest? bound)
         {
-            if (bound != null && !string.IsNullOrWhiteSpace(bound.FullName))
+            if (bound != null && HasAnyStaffField(bound))
                 return bound;
 
             if (Request.HasFormContentType)
@@ -353,10 +364,10 @@ namespace TheBeautyHubAPI.Controllers
                     JoiningDate = NullIfEmpty(form["joining_date"]),
                     Designation = form["designation"].ToString(),
                     Specialist = form["specialist"].ToString(),
-                    BranchId = ParseGuid(form["branch_id"]) ?? Guid.Empty,
-                    SalaryRuleId = ParseGuid(form["salary_rule_id"]) ?? Guid.Empty,
-                    Status = form["status"].ToString(),
-                    AllowAppLogin = ParseBool(form["allow_app_login"]),
+                    BranchId = ParseGuid(form["branch_id"]),
+                    SalaryRuleId = ParseGuid(form["salary_rule_id"]),
+                    Status = NullIfEmpty(form["status"]),
+                    AllowAppLogin = FormHas(form, "allow_app_login") ? ParseBool(form["allow_app_login"]) : null,
                     AppRole = NullIfEmpty(form["app_role"]),
                     Username = NullIfEmpty(form["username"]),
                     RemovePhoto = ParseBool(form["remove_photo"]),
@@ -374,6 +385,42 @@ namespace TheBeautyHubAPI.Controllers
             return JsonSerializer.Deserialize<SaveStaffRequest>(json, JsonOptions)
                 ?? throw new ArgumentException(ApiMessages.InvalidRequestBody);
         }
+
+        private static bool IsStatusOnlyUpdate(SaveStaffRequest request)
+        {
+            return !string.IsNullOrWhiteSpace(request.Status)
+                && string.IsNullOrWhiteSpace(request.FullName)
+                && string.IsNullOrWhiteSpace(request.Mobile)
+                && string.IsNullOrWhiteSpace(request.Email)
+                && string.IsNullOrWhiteSpace(request.Gender)
+                && string.IsNullOrWhiteSpace(request.AadhaarNumber)
+                && string.IsNullOrWhiteSpace(request.Designation)
+                && string.IsNullOrWhiteSpace(request.Specialist)
+                && request.BranchId == null
+                && request.SalaryRuleId == null
+                && request.AllowAppLogin == null
+                && request.Photo == null
+                && request.AadhaarCard == null;
+        }
+
+        private static bool HasAnyStaffField(SaveStaffRequest request)
+        {
+            return !string.IsNullOrWhiteSpace(request.FullName)
+                || !string.IsNullOrWhiteSpace(request.Status)
+                || !string.IsNullOrWhiteSpace(request.Mobile)
+                || !string.IsNullOrWhiteSpace(request.Email)
+                || !string.IsNullOrWhiteSpace(request.Gender)
+                || request.BranchId != null
+                || request.SalaryRuleId != null
+                || request.AllowAppLogin != null
+                || request.Photo != null
+                || request.AadhaarCard != null
+                || request.RemovePhoto
+                || request.RemoveAadhaarCard;
+        }
+
+        private static bool FormHas(Microsoft.AspNetCore.Http.IFormCollection form, string key)
+            => form.ContainsKey(key);
 
         private string? ToAbsoluteUrl(string? path)
         {

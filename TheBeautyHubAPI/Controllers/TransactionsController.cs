@@ -129,7 +129,7 @@ namespace TheBeautyHubAPI.Controllers
                 if (!ModelState.IsValid)
                     return BadRequest(Fail(GetModelStateError()));
 
-                var saved = await _transactionService.CreateAsync(await MapSaveDto(request));
+                var saved = await _transactionService.CreateAsync(MapSaveDto(request));
                 return Ok(new ApiStatusResponse<TransactionSavedResponse>
                 {
                     Status = true,
@@ -163,7 +163,7 @@ namespace TheBeautyHubAPI.Controllers
                 if (!ModelState.IsValid)
                     return BadRequest(Fail(GetModelStateError()));
 
-                var saved = await _transactionService.UpdateAsync(id, await MapSaveDto(request));
+                var saved = await _transactionService.UpdateAsync(id, MapSaveDto(request));
                 return Ok(new ApiStatusResponse<TransactionSavedResponse>
                 {
                     Status = true,
@@ -224,7 +224,7 @@ namespace TheBeautyHubAPI.Controllers
             }
         }
 
-        private async Task<SaveTransactionDto> MapSaveDto(SaveTransactionRequest request)
+        private SaveTransactionDto MapSaveDto(SaveTransactionRequest request)
         {
             var editorName = ResolveEditorName();
             return new SaveTransactionDto

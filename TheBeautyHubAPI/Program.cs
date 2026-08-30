@@ -1,3 +1,4 @@
+using AutoMapper.Internal;
 using Microsoft.EntityFrameworkCore;
 using TheBeautyHubAPI.Auth;
 using TheBeautyHubAPI.Helpers;
@@ -63,7 +64,11 @@ builder.Services.AddScoped<TheBeautyHubAPI.Helpers.ServicePhotoStorage>();
 builder.Services.AddBeautyHubAuth(builder.Configuration);
 
 // Configure AutoMapper
-builder.Services.AddAutoMapper(typeof(Program));
+builder.Services.AddAutoMapper(cfg =>
+{
+    // GHSA-rvv3-g6hj-g44x: 12.0.1 has no patched MIT release; cap recursion so nested graphs cannot stack-overflow.
+    cfg.Internal().ForAllMaps((_, mapping) => mapping.MaxDepth(32));
+}, typeof(Program));
 
 // Configure Swagger/OpenAPI
 builder.Services.AddEndpointsApiExplorer();

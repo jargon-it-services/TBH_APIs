@@ -157,6 +157,17 @@ namespace TheBeautyHubAPI.Controllers
                 if (existing == null)
                     return NotFound(Fail(ApiMessages.SalaryRuleNotFound));
 
+                if (IsStatusOnlyUpdate(request))
+                {
+                    await _salaryRuleService.UpdateStatusAsync(ruleId, _currentUser.AccountId, request.Status ?? string.Empty);
+                    return Ok(new ApiStatusResponse<SalaryRuleSavedDataResponse>
+                    {
+                        Status = true,
+                        Message = ApiMessages.SalaryRuleUpdated,
+                        Data = new SalaryRuleSavedDataResponse { Saved = true }
+                    });
+                }
+
                 TryValidateModel(request);
                 if (!ModelState.IsValid)
                     return BadRequest(Fail(GetModelStateError()));
@@ -222,16 +233,27 @@ namespace TheBeautyHubAPI.Controllers
             return new SaveSalaryRuleDto
             {
                 AccountId = _currentUser.AccountId,
-                Name = request.Name,
+                Name = request.Name ?? string.Empty,
                 Description = request.Description,
-                SalaryType = request.SalaryType,
+                SalaryType = request.SalaryType ?? string.Empty,
                 FixedSalary = request.FixedSalary,
                 MonthlyTarget = request.MonthlyTarget,
                 TargetBonus = request.TargetBonus,
                 AllowAdvanceRecovery = request.AllowAdvanceRecovery ?? false,
                 MaxRecoveryPerMonth = request.MaxRecoveryPerMonth,
-                Status = request.Status
+                Status = request.Status ?? string.Empty
             };
+        }
+
+        private static bool IsStatusOnlyUpdate(SaveSalaryRuleRequest request)
+        {
+            return !string.IsNullOrWhiteSpace(request.Status)
+                && string.IsNullOrWhiteSpace(request.Name)
+                && string.IsNullOrWhiteSpace(request.SalaryType)
+                && request.AllowAdvanceRecovery == null
+                && request.FixedSalary == null
+                && request.MonthlyTarget == null
+                && request.TargetBonus == null;
         }
 
         private string GetModelStateError()

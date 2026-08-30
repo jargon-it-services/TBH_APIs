@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
 namespace TheBeautyHubAPI.Models
@@ -76,22 +75,19 @@ namespace TheBeautyHubAPI.Models
 
     public class SaveExpenseRequest
     {
-        [Required]
         [JsonPropertyName("name")]
-        public string Name { get; set; } = string.Empty;
+        public string? Name { get; set; }
 
         [JsonPropertyName("description")]
         public string? Description { get; set; }
 
-        [Required]
         [JsonPropertyName("all_branches")]
         public bool? AllBranches { get; set; }
 
         [JsonPropertyName("branches")]
         public List<Guid>? Branches { get; set; }
 
-        [Required]
         [JsonPropertyName("status")]
-        public string Status { get; set; } = string.Empty;
+        public string? Status { get; set; }
     }
 }

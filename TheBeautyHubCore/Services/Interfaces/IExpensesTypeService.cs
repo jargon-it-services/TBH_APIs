@@ -11,6 +11,7 @@ namespace TheBeautyHubCore.Services.Interfaces
         Task<ExpenseDetailDto?> GetDetailsAsync(Guid expenseId, Guid accountId);
         Task CreateAsync(SaveExpenseDto dto);
         Task UpdateAsync(Guid expenseId, SaveExpenseDto dto);
+        Task UpdateStatusAsync(Guid expenseId, Guid accountId, string status);
         Task DeleteAsync(Guid expenseId, Guid accountId);
     }
 }

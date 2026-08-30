@@ -12,6 +12,7 @@ namespace TheBeautyHubCore.Services.Interfaces
         Task<SalaryRuleDetailDto?> GetDetailsAsync(Guid ruleId, Guid accountId);
         Task CreateAsync(SaveSalaryRuleDto dto);
         Task UpdateAsync(Guid ruleId, SaveSalaryRuleDto dto);
+        Task UpdateStatusAsync(Guid ruleId, Guid accountId, string status);
         Task DeleteAsync(Guid ruleId, Guid accountId);
     }
 }

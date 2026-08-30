@@ -133,6 +133,17 @@ namespace TheBeautyHubAPI.Controllers
                 if (existing == null)
                     return NotFound(Fail(ApiMessages.ExpenseNotFound));
 
+                if (IsStatusOnlyUpdate(request))
+                {
+                    await _expensesTypeService.UpdateStatusAsync(expenseId, _currentUser.AccountId, request.Status ?? string.Empty);
+                    return Ok(new ApiStatusResponse<ExpenseSavedDataResponse>
+                    {
+                        Status = true,
+                        Message = ApiMessages.ExpenseUpdated,
+                        Data = new ExpenseSavedDataResponse { Saved = true }
+                    });
+                }
+
                 TryValidateModel(request);
                 if (!ModelState.IsValid)
                     return BadRequest(Fail(GetModelStateError()));
@@ -199,12 +210,20 @@ namespace TheBeautyHubAPI.Controllers
             {
                 AccountId = _currentUser.AccountId,
                 CreatedBy = _currentUser.UserId,
-                Name = request.Name,
+                Name = request.Name ?? string.Empty,
                 Description = request.Description,
                 AllBranches = request.AllBranches ?? false,
                 Branches = request.Branches,
-                Status = request.Status
+                Status = request.Status ?? string.Empty
             };
+        }
+
+        private static bool IsStatusOnlyUpdate(SaveExpenseRequest request)
+        {
+            return !string.IsNullOrWhiteSpace(request.Status)
+                && string.IsNullOrWhiteSpace(request.Name)
+                && request.AllBranches == null
+                && (request.Branches == null || request.Branches.Count == 0);
         }
 
         private string GetModelStateError()
