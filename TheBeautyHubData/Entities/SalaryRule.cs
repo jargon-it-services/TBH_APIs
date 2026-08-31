@@ -25,7 +25,7 @@ namespace TheBeautyHubData.Entities
 
         [Required]
         [StringLength(50)]
-        public string SalaryType { get; set; } = Enums.SalaryType.Fixed.ToApiValue();
+        public string SalaryType { get; set; } = Enums.SalaryType.Fixed.ToStoredDefault();
 
         [Column(TypeName = "decimal(18,2)")]
         public decimal? FixedSalary { get; set; }

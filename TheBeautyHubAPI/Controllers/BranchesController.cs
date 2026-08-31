@@ -14,6 +14,7 @@ using TheBeautyHubAPI.Helpers;
 using TheBeautyHubAPI.Models;
 using TheBeautyHubCore.Constants;
 using TheBeautyHubCore.DTOs;
+using TheBeautyHubCore.Parsing;
 using TheBeautyHubCore.Services.Interfaces;
 
 namespace TheBeautyHubAPI.Controllers
@@ -420,30 +421,6 @@ namespace TheBeautyHubAPI.Controllers
         }
 
         private static List<Guid> ParseServiceIds(Microsoft.Extensions.Primitives.StringValues values)
-        {
-            var ids = new List<Guid>();
-            foreach (var value in values)
-            {
-                if (string.IsNullOrWhiteSpace(value))
-                    continue;
-
-                var trimmed = value.Trim();
-                if (trimmed.StartsWith('['))
-                {
-                    var parsed = JsonSerializer.Deserialize<List<Guid>>(trimmed, JsonOptions);
-                    if (parsed != null)
-                        ids.AddRange(parsed);
-                    continue;
-                }
-
-                foreach (var part in trimmed.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
-                {
-                    if (Guid.TryParse(part, out var id))
-                        ids.Add(id);
-                }
-            }
-
-            return ids.Distinct().ToList();
-        }
+            => GuidListParser.ParseMany(values.Select(v => v));
     }
 }

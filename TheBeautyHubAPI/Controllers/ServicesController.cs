@@ -14,6 +14,7 @@ using TheBeautyHubAPI.Helpers;
 using TheBeautyHubAPI.Models;
 using TheBeautyHubCore.Constants;
 using TheBeautyHubCore.DTOs;
+using TheBeautyHubCore.Parsing;
 using TheBeautyHubCore.Services.Interfaces;
 
 namespace TheBeautyHubAPI.Controllers
@@ -303,7 +304,7 @@ namespace TheBeautyHubAPI.Controllers
                 ServiceRadiusKm = request.ServiceRadiusKm,
                 ExtraChargePerKm = request.ExtraChargePerKm,
                 AllBranches = request.AllBranches ?? false,
-                Branches = request.Branches,
+                Branches = GuidListParser.Merge(request.Branches, request.BranchIds),
                 Photo = photoPath,
                 RemovePhoto = request.RemovePhoto,
                 HasNewPhoto = hasNewPhoto
@@ -338,6 +339,7 @@ namespace TheBeautyHubAPI.Controllers
                     ExtraChargePerKm = ParseDecimal(form["extra_charge_per_km"]),
                     AllBranches = FormHas(form, "all_branches") ? ParseBool(form["all_branches"]) : null,
                     Branches = FormHas(form, "branches") ? ParseGuidList(form["branches"]) : null,
+                    BranchIds = FormHas(form, "branch_ids") ? ParseGuidList(form["branch_ids"]) : null,
                     RemovePhoto = ParseBool(form["remove_photo"]),
                     Photo = form.Files.GetFile("photo")
                 };
@@ -391,7 +393,8 @@ namespace TheBeautyHubAPI.Controllers
                 || request.AllBranches != null
                 || request.Photo != null
                 || request.RemovePhoto
-                || (request.Branches != null && request.Branches.Count > 0);
+                || (request.Branches != null && request.Branches.Count > 0)
+                || (request.BranchIds != null && request.BranchIds.Count > 0);
         }
 
         private string? ToAbsoluteUrl(string? path)
@@ -457,30 +460,6 @@ namespace TheBeautyHubAPI.Controllers
         }
 
         private static List<Guid> ParseGuidList(Microsoft.Extensions.Primitives.StringValues values)
-        {
-            var ids = new List<Guid>();
-            foreach (var value in values)
-            {
-                if (string.IsNullOrWhiteSpace(value))
-                    continue;
-
-                var trimmed = value.Trim();
-                if (trimmed.StartsWith('['))
-                {
-                    var parsed = JsonSerializer.Deserialize<List<Guid>>(trimmed, JsonOptions);
-                    if (parsed != null)
-                        ids.AddRange(parsed);
-                    continue;
-                }
-
-                foreach (var part in trimmed.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
-                {
-                    if (Guid.TryParse(part, out var id))
-                        ids.Add(id);
-                }
-            }
-
-            return ids.Distinct().ToList();
-        }
+            => GuidListParser.ParseMany(values.Select(v => v));
     }
 }

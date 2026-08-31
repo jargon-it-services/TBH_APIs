@@ -18,6 +18,8 @@ public static class ServiceGenders
 {
     public static string ToApiValue(this ServiceGender gender) => EnumText.ToApiValue(gender);
 
+    public static bool TryParse(string? value, out ServiceGender gender) => EnumText.TryParse(value, out gender);
+
     public static ServiceGender ParseOrThrow(string? value, string invalidMessage)
         => EnumText.ParseOrThrow<ServiceGender>(value, invalidMessage);
 }

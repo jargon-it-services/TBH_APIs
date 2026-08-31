@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using TheBeautyHubAPI.Helpers;
 
 namespace TheBeautyHubAPI.Models
 {
@@ -227,7 +228,13 @@ namespace TheBeautyHubAPI.Models
 
         [FromForm(Name = "branches")]
         [JsonPropertyName("branches")]
+        [ModelBinder(BinderType = typeof(GuidListModelBinder))]
         public List<Guid>? Branches { get; set; }
+
+        [FromForm(Name = "branch_ids")]
+        [JsonPropertyName("branch_ids")]
+        [ModelBinder(BinderType = typeof(GuidListModelBinder))]
+        public List<Guid>? BranchIds { get; set; }
 
         [FromForm(Name = "remove_photo")]
         [JsonPropertyName("remove_photo")]

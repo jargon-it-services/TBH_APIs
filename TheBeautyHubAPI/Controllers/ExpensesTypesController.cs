@@ -10,6 +10,7 @@ using TheBeautyHubAPI.Auth;
 using TheBeautyHubAPI.Models;
 using TheBeautyHubCore.Constants;
 using TheBeautyHubCore.DTOs;
+using TheBeautyHubCore.Parsing;
 using TheBeautyHubCore.Services.Interfaces;
 
 namespace TheBeautyHubAPI.Controllers
@@ -213,7 +214,7 @@ namespace TheBeautyHubAPI.Controllers
                 Name = request.Name ?? string.Empty,
                 Description = request.Description,
                 AllBranches = request.AllBranches ?? false,
-                Branches = request.Branches,
+                Branches = GuidListParser.Merge(request.Branches, request.BranchIds),
                 Status = request.Status ?? string.Empty
             };
         }
@@ -223,7 +224,8 @@ namespace TheBeautyHubAPI.Controllers
             return !string.IsNullOrWhiteSpace(request.Status)
                 && string.IsNullOrWhiteSpace(request.Name)
                 && request.AllBranches == null
-                && (request.Branches == null || request.Branches.Count == 0);
+                && (request.Branches == null || request.Branches.Count == 0)
+                && (request.BranchIds == null || request.BranchIds.Count == 0);
         }
 
         private string GetModelStateError()

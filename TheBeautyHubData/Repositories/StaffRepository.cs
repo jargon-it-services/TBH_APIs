@@ -15,7 +15,7 @@ namespace TheBeautyHubData.Repositories
         private static readonly (string Name, SalaryType Type)[] DefaultSalaryRules =
         {
             ("Fixed Pay", SalaryType.Fixed),
-            ("Fixed + Target Bonus", SalaryType.FixedPlusTarget),
+            ("Fixed + Target Bonus", SalaryType.Hybrid),
             ("Incentive", SalaryType.Commission)
         };
 

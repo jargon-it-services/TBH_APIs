@@ -38,7 +38,7 @@ namespace TheBeautyHubCore.Services
             {
                 Id = r.SalaryRuleId,
                 Name = r.Name,
-                SalaryType = r.SalaryType,
+                SalaryType = MapSalaryTypeForResponse(r.SalaryType),
                 FixedSalary = r.FixedSalary,
                 Status = r.Status
             }).ToList();
@@ -129,7 +129,7 @@ namespace TheBeautyHubCore.Services
                 Id = rule.SalaryRuleId,
                 Name = rule.Name,
                 Description = rule.Description,
-                SalaryType = rule.SalaryType,
+                SalaryType = MapSalaryTypeForResponse(rule.SalaryType),
                 FixedSalary = rule.FixedSalary,
                 MonthlyTarget = rule.MonthlyTarget,
                 TargetBonus = rule.TargetBonus,
@@ -137,6 +137,13 @@ namespace TheBeautyHubCore.Services
                 MaxRecoveryPerMonth = rule.MaxRecoveryPerMonth,
                 Status = rule.Status
             };
+        }
+
+        private static string MapSalaryTypeForResponse(string? stored)
+        {
+            return SalaryTypes.TryParse(stored, out var type)
+                ? type.ToApiValue()
+                : stored ?? string.Empty;
         }
     }
 }

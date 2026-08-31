@@ -84,10 +84,9 @@ public static class ApiMessages
     public const string ServiceDurationInvalid = "Duration must be zero or greater.";
     public const string ServiceGenderRequired = "Please select the applicable gender.";
     public const string ServiceGenderInvalid = "Applicable gender must be unisex, male, or female.";
-    public const string ServiceTypeInvalid = "Service type must be in_salon or home.";
+    public const string ServiceTypeInvalid = "Service type must be Service, in_salon, or home.";
     public const string PartnerGenderInvalid = "Gender must be Male, Female, or Other.";
     public const string StaffGenderInvalid = "Gender must be Male, Female, or Other.";
-    public const string SalaryRuleTypeInvalid = "Salary type must be fixed, fixed_plus_target, or commission.";
     public const string ServiceTypeRequired = "Please select a service type.";
     public const string ServiceStatusRequired = "Please select a service status.";
     public const string ServiceCustomerPriceInvalid = "Customer price must be zero or greater.";
@@ -146,6 +145,7 @@ public static class ApiMessages
     public const string SalaryRuleNameRequired = "Please enter a salary rule name.";
     public const string SalaryRuleDescriptionRequired = "Please enter a salary rule description.";
     public const string SalaryRuleTypeRequired = "Please select a salary type.";
+    public const string SalaryRuleTypeInvalid = "Salary type must be Fixed Salary, Service Commission, or Hybrid.";
     public const string SalaryRuleStatusRequired = "Please select a salary rule status.";
 
     public const string ExpenseListFetched = "Expenses were fetched successfully.";

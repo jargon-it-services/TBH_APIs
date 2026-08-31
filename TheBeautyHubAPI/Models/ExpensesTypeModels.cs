@@ -87,6 +87,9 @@ namespace TheBeautyHubAPI.Models
         [JsonPropertyName("branches")]
         public List<Guid>? Branches { get; set; }
 
+        [JsonPropertyName("branch_ids")]
+        public List<Guid>? BranchIds { get; set; }
+
         [JsonPropertyName("status")]
         public string? Status { get; set; }
     }

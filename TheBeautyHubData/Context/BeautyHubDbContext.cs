@@ -647,7 +647,7 @@ namespace TheBeautyHubData.Context
                     .HasDefaultValue(RecordStatus.Active.ToApiValue());
 
                 entity.Property(e => e.SalaryType)
-                    .HasDefaultValue(SalaryType.Fixed.ToApiValue());
+                    .HasDefaultValue(SalaryType.Fixed.ToStoredDefault());
 
             });
 
